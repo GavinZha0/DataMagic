@@ -1,0 +1,69 @@
+package com.ninestar.datapie.datamagic.controller;
+
+
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import com.ninestar.datapie.datamagic.bridge.DashboardListRspType;
+import com.ninestar.datapie.datamagic.entity.SysMenuEntity;
+import com.ninestar.datapie.datamagic.entity.VizReportEntity;
+import com.ninestar.datapie.datamagic.repository.SysMenuRepository;
+import com.ninestar.datapie.framework.utils.UniformResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * <p>
+ *  Controller
+ * </p>
+ *
+ * @author Gavin.Zhao
+ * @since 2021-11-13
+ */
+@RestController
+@RequestMapping("/dashboard")
+@Api(tags = "Dashboard")
+@CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+public class SysDashboardController {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Resource
+    private SysMenuRepository menuRepository;
+
+    @PostMapping(value="{id}")
+    @ApiOperation(value = "getReports", httpMethod = "POST")
+    public UniformResponse getReports(@PathVariable("id") Integer id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        //String tokenUser = auth.getCredentials().toString();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+
+        SysMenuEntity queryEntities = menuRepository.findById(id).get();
+
+        // build response
+        List<DashboardListRspType> rspList = new ArrayList<DashboardListRspType>();
+        for(VizReportEntity entity: queryEntities.getReports()){
+            DashboardListRspType item = new DashboardListRspType();
+            JSONArray pages = new JSONArray(entity.getPages());
+            item.id = entity.getId();
+            item.name = entity.getName();
+            item.desc = entity.getDesc();
+            item.type = entity.getType();
+            item.pages = pages;
+            item.pageCount = pages.size();
+            item.updatedBy = entity.getUpdatedBy();
+            item.updatedAt = entity.getUpdatedAt();
+            rspList.add(item);
+        }
+
+        return UniformResponse.ok().data(rspList);
+    }
+}

@@ -1,0 +1,27 @@
+package com.ninestar.datapie.datamagic.bridge;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.sql.Date;
+
+//camel style to match with column name of DB
+public class UserActionReqType {
+    public Integer id; // for update only
+    public String name;
+    public String password;
+    public String desc;
+    public String realname;
+    public String avatar;
+    public String email;
+    public String phone;
+    public String social;
+    public String orgName;
+    public String[] roleNames;
+    public Boolean active;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    public Date expDate;
+    public Integer part;
+}
+

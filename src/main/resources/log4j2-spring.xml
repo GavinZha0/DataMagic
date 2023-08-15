@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志级别以及优先级排序: OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
+<Configuration monitorInterval="5">
+    <!--全局属性-->
+    <Properties>
+        <Property name="APP_NAME">DataMagic</Property>
+        <Property name="LOG_FILE_PATH">./output/logs/${APP_NAME}</Property>
+        <Property name="PATTERN_FORMAT">%d %-5level %c{1.}.%M(%L): %msg%n</Property>
+    </Properties>
+
+    <!--输出源-->
+    <Appenders>
+        <!--输出到控制台-->
+        <Console name="Console" target="SYSTEM_ERR"><!--输出的类型SYSTEM_ERR-->
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%highlight{%d %-5level}{ERROR=Bright RED, WARN=Bright Yellow, INFO=Bright Green, DEBUG=Bright Cyan, TRACE=Bright White} %style{[%t]}{bright,magenta} %style{%c{1.}.%M(%L)}{cyan}: %highlight{%msg}{ERROR=Bright RED, WARN=Bright Yellow, INFO=Bright Green, DEBUG=Bright Cyan, TRACE=Bright White}%n"/>
+        </Console>
+        <!--输出到UDP-->
+        <Socket name="Socket" host="localhost" port="9514" protocol="UDP" appName="DataMagic">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%t| %d{yyyy-MM-dd HH:mm:ss} %-5level -> %msg%n" />
+        </Socket>
+
+        <!--*********************WebSocket日志***********************-->
+        <WebSocketAppender name="stompAppender">
+            <PatternLayout pattern="%t| %d{yyyy-MM-dd HH:mm:ss} %-5level ${hostName}-> %msg%n" />
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+        </WebSocketAppender>
+
+
+        <!--输出警告日志到文件-->
+        <RollingFile name="RollingWarnFile" filename="${LOG_FILE_PATH}/warn.log"
+                     filePattern="${LOG_FILE_PATH}/$${date:yyyyMMdd}/warn-%d{MMdd}-%i.log.gz">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <Filters>
+                <ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout>
+                <pattern>${PATTERN_FORMAT}</pattern>
+            </PatternLayout>
+
+            <Policies>
+                <!--在系统启动时, 触发拆分规则，生产一个新的日志文件-->
+                <OnStartupTriggeringPolicy/>
+                <!--按照文件大小拆分, 30 MB -->
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <!--按照时间节点拆分, 规则根据filePattern定义的-->
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <!--在同一个目录下，文件的个数限定为 30 个, 超过进行覆盖-->
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <!--输出错误日志到文件-->
+        <RollingFile name="RollingErrorFile"  filename="${LOG_FILE_PATH}/error.log"
+                     filePattern="${LOG_FILE_PATH}/$${date:yyyyMMdd}/error-%d{MMdd}-%i.log.gz">
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <pattern>${PATTERN_FORMAT}</pattern>
+            </PatternLayout>
+
+            <Policies>
+                <!--在系统启动时, 触发拆分规则，生产一个新的日志文件-->
+                <OnStartupTriggeringPolicy/>
+                <!--按照文件大小拆分, 30 MB -->
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <!--按照时间节点拆分, 规则根据filePattern定义的-->
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <!--在同一个目录下，文件的个数限定为 30 个, 超过进行覆盖-->
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+    </Appenders>
+
+
+    <!--定义logger,日志记录器配置-->
+    <Loggers>
+        <!--过滤掉spring和mybatis的一些无用的DEBUG和INFO信息-->
+        <logger name="org" level="info"/>
+
+        <Root level="ALL">
+            <!--指定日志使用的处理器-->
+            <AppenderRef ref="Console"/>
+            <!--AppenderRef ref="stompAppender"/-->
+            <AppenderRef ref="Socket"/>
+            <!--AppenderRef ref="RollingErrorFile"/-->
+            <!--AppenderRef ref="RollingWarnFile"/-->
+        </Root>
+    </Loggers>
+
+</Configuration>
