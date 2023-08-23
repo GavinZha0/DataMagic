@@ -12,10 +12,7 @@ import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
 import com.ninestar.datapie.datamagic.entity.*;
-import com.ninestar.datapie.datamagic.repository.SysMenuRepository;
-import com.ninestar.datapie.datamagic.repository.VizDatareportRepository;
-import com.ninestar.datapie.datamagic.repository.VizDatasetRepository;
-import com.ninestar.datapie.datamagic.repository.VizDataviewRepository;
+import com.ninestar.datapie.datamagic.repository.*;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.datamagic.utils.SqlUtils;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
@@ -70,6 +67,9 @@ public class VizReportController {
 
     @Resource
     public SysMenuRepository menuRepository;
+
+    @Resource
+    private SysOrgRepository orgRepository;
 
     @Resource
     private DbUtils dbUtils;
@@ -144,7 +144,7 @@ public class VizReportController {
                 item.id = entity.getId();
                 item.pubFlag = entity.getPubFlag();
                 item.publishPub = entity.getPublishPub();
-
+                item.viewIds = JSONUtil.parseArray(entity.getViewIds()).toList(Integer.class);
                 item.pages = new JSONArray(entity.getPages()); // String to Json Array
                 item.pageCount = item.pages.size();
                 if (entity.getMenu() != null) {
@@ -206,10 +206,12 @@ public class VizReportController {
     @PostMapping("/create")
     @ApiOperation(value = "createDatareport", httpMethod = "POST")
     public UniformResponse createDatareport(@RequestBody @ApiParam(name = "req", value = "report info") DatareportActionReqType req){
-        //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         if(StrUtil.isEmpty(req.name) || req.pages.size()==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -228,8 +230,10 @@ public class VizReportController {
             newEntity.setGroup(req.group);
             newEntity.setType(req.type);
             newEntity.setPages(req.pages.toString());
+            newEntity.setViewIds(req.viewIds.toString());
             newEntity.setPubFlag(false);// default value
             newEntity.setPublishPub(false);// default value
+            newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
             //create_time and update_time are generated automatically by jpa
 
             // save source
@@ -274,6 +278,7 @@ public class VizReportController {
             targetEntity.setType(req.type);
             targetEntity.setPages(req.pages.toString());
             targetEntity.setPubFlag(req.pubFlag);
+            targetEntity.setViewIds(req.viewIds.toString());
             //create_time and update_time are generated automatically by jpa
 
             // update report

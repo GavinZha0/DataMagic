@@ -13,8 +13,11 @@ public interface VizDataviewRepository extends JpaRepository<VizViewEntity, Inte
     public List<VizViewEntity> findByNameContainingOrderByIdDesc(String name);
     public List<VizViewEntity> findByGroupOrderByName(String group);
 
+    @Query(value = "select distinct `group` from viz_view where org_id = ? order by `group`",nativeQuery = true)
+    public List<Object> findDistinctGroupByOrg(Integer orgId);
+
     @Query(value = "select distinct `group` from viz_view order by `group`",nativeQuery = true)
-    public List<Object> findDistinctGroup();
+    public List<Object> findAllDistinctGroup();
 
     @Query(value = "select count(id) from viz_view where dataset_id=?",nativeQuery = true)
     public Integer countByDatasetId(Integer id);

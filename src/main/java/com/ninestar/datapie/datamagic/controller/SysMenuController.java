@@ -102,7 +102,7 @@ public class SysMenuController {
     }
 
     @PostMapping("/tree")
-    @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
+    //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "getMenuTree", httpMethod = "POST")
     public UniformResponse getMenuTree(@RequestBody @ApiParam(name = "request", value = "menu name") JSONObject request) {
         List<Sort.Order> orders = new ArrayList<Sort.Order>();

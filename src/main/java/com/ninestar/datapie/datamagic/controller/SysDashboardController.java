@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -42,15 +43,20 @@ public class SysDashboardController {
     @ApiOperation(value = "getReports", httpMethod = "POST")
     public UniformResponse getReports(@PathVariable("id") Integer id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         SysMenuEntity queryEntities = menuRepository.findById(id).get();
 
         // build response
         List<DashboardListRspType> rspList = new ArrayList<DashboardListRspType>();
         for(VizReportEntity entity: queryEntities.getReports()){
+            if(!tokenIsSuperuser && !entity.getOrg().getId().equals(tokenOrgId)){
+                continue;
+            }
             DashboardListRspType item = new DashboardListRspType();
             JSONArray pages = new JSONArray(entity.getPages());
             item.id = entity.getId();

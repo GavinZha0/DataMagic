@@ -180,10 +180,14 @@ public class VizDatasetController {
         for(String group : datasetMap.keySet()){
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
             for(VizDatasetEntity source: datasetMap.get(group)){
-                TreeSelect treeNode = new TreeSelect(source.getId(), source.getDatasource().getType(), source.getName(), source.getName(), true, true);
-                treeGroup.getChildren().add(treeNode);
+                if(tokenIsSuperuser || source.getOrg().getId().equals(tokenOrgId)){
+                    TreeSelect treeNode = new TreeSelect(source.getId(), source.getDatasource().getType(), source.getName(), source.getName(), true, true);
+                    treeGroup.getChildren().add(treeNode);
+                }
             }
-            treeDatasets.add(treeGroup);
+            if(treeGroup.getChildren().size()>0){
+                treeDatasets.add(treeGroup);
+            }
             i+=100;
         }
 

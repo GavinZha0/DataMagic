@@ -315,7 +315,7 @@ public class DataSourceController {
         if (targetEntity == null) {
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
-        } else if(!targetEntity.getOrg().equals(tokenOrgId)){
+        } else if(!targetEntity.getOrg().getId().equals(tokenOrgId)){
             // only the user which is in same org has permission to clone it
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
@@ -550,7 +550,7 @@ public class DataSourceController {
         }
 
         DataSourceEntity targetSource = sourceRepository.findById(sourceId).get();
-        if(!targetSource.getOrg().equals(tokenOrgId) && !tokenIsSuperuser){
+        if(!targetSource.getOrg().getId().equals(tokenOrgId) && !tokenIsSuperuser){
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 
@@ -613,7 +613,7 @@ public class DataSourceController {
         if(source==null){
             // datasource doesn't exist
             return UniformResponse.error(UniformResponseCode.DATASOURCE_NOT_EXIST);
-        } else if(!source.getOrg().equals(tokenOrgId) && !tokenIsSuperuser){
+        } else if(!source.getOrg().getId().equals(tokenOrgId) && !tokenIsSuperuser){
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 

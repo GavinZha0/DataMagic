@@ -208,6 +208,10 @@ public class VizViewController {
         // build response
         List<DataviewListRspType> rspList = new ArrayList<DataviewListRspType>();
         for(VizViewEntity entity: queryEntities){
+            if(!tokenSuperuser && !entity.getOrg().getId().equals(tokenOrgId)){
+                // no permit
+                continue;
+            }
             DataviewListRspType item = new DataviewListRspType();
             BeanUtil.copyProperties(entity, item, new String[]{"dim", "metrics", "filter", "sorter", "variable", "calculation", "model", "libCfg"});
             item.pubFlag = entity.getPubFlag();
@@ -522,11 +526,22 @@ public class VizViewController {
     @ApiOperation(value = "getGroups", httpMethod = "POST")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        List<Object> distinctGroups = dataviewRepository.findDistinctGroup();
+        List<Object> distinctGroups = null;
+        if(tokenIsSuperuser){
+            distinctGroups = dataviewRepository.findAllDistinctGroup();
+        } else {
+            distinctGroups = dataviewRepository.findDistinctGroupByOrg(tokenOrgId);
+        }
+
+        if(distinctGroups!=null && distinctGroups.get(0)==null){
+            distinctGroups.set(0, "");
+        }
 
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", distinctGroups);

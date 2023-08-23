@@ -10,6 +10,7 @@ public class DatareportActionReqType {
     public String desc;
     public String group;
     public String type;
+    public JSONArray viewIds;
     public JSONArray pages;
     public Boolean pubFlag;
 }

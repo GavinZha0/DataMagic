@@ -4,6 +4,8 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 //camel style to match with column name of DB
 public class DatareportListRspType {
@@ -17,6 +19,7 @@ public class DatareportListRspType {
     public Boolean pubFlag;
     public Integer menuId;
     public String menuName;
+    public List<Integer> viewIds = new ArrayList<>();
     public Boolean publishPub;
     public String createdBy;
     public Timestamp createdAt;
