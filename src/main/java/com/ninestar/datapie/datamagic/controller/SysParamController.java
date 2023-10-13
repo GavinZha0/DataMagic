@@ -58,8 +58,11 @@ public class SysParamController {
     public UniformResponse getConfigList(@RequestBody @ApiParam(name = "request", value = "request") TableListReqType request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         Long totalRecords = 0L;
         Page<SysParamEntity> pageEntities = null;
@@ -98,7 +101,7 @@ public class SysParamController {
         }
 
         // build JPA specification
-        Specification<SysParamEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,request.filter, request.search);
+        Specification<SysParamEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, request.filter, request.search);
 
         // query data from database
         if(pageable!=null){

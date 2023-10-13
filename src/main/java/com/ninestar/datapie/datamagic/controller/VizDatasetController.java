@@ -119,7 +119,7 @@ public class VizDatasetController {
         }
 
         // build JPA specification
-        Specification<VizDatasetEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,req.filter, req.search);
+        Specification<VizDatasetEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){
@@ -440,6 +440,11 @@ public class VizDatasetController {
         } else if(!tokenIsAdmin && !targetEntity.getCreatedBy().equals(tokenUsername)){
             // only author can do it
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
+        }
+
+        Integer usageInView = dataviewRepository.countByDatasetId(id);
+        if(usageInView > 0){
+            return UniformResponse.error(UniformResponseCode.DATASET_IN_USE);
         }
 
         try {

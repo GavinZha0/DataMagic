@@ -27,6 +27,10 @@ public class GisPointEntity {
     private String name;
 
     @Basic
+    @Column(name = "abbr", nullable = true, length = 32)
+    private String abbr;
+
+    @Basic
     @Column(name = "type", nullable = true, length = 16)
     private String type;
 

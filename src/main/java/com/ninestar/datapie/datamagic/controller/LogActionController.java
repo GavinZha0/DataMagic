@@ -106,7 +106,7 @@ public class LogActionController {
         }
 
         // build JPA specification
-        Specification<LogActionEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,request.filter, request.search);
+        Specification<LogActionEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, request.filter, request.search);
 
         // query data from database
         if(pageable!=null){

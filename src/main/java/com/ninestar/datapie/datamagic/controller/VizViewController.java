@@ -130,7 +130,7 @@ public class VizViewController {
         }
 
         // build JPA specification
-        Specification<VizViewEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,req.filter, req.search);
+        Specification<VizViewEntity> specification = JpaSpecUtil.build(tokenOrgId, tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){
@@ -146,7 +146,7 @@ public class VizViewController {
         // build response
         List<DataviewListRspType> rspList = new ArrayList<DataviewListRspType>();
         for(VizViewEntity entity: queryEntities){
-            if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || entity.getPubFlag()) {
+            if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || (entity.getOrg().getId() == tokenOrgId && entity.getPubFlag())) {
                 DataviewListRspType item = new DataviewListRspType();
                 BeanUtil.copyProperties(entity, item, new String[]{"dim", "metrics", "filter", "sorter", "variable", "calculation", "model", "libCfg"});
                 item.pubFlag = entity.getPubFlag();
@@ -179,15 +179,16 @@ public class VizViewController {
 
                 // get related view count
                 List<VizReportEntity> reports = reportRepository.findAll();
-                Long reportCount = reports.stream().filter(p->p.getViewIds().toString().contains(entity.getId().toString())).count();
-                item.usage = reportCount.intValue();
+                //Long reportCount = reports.stream().filter(p->p.getViewIds().toString().contains(entity.getId().toString())).count();
+                Integer vId = entity.getId();
+                item.usage = reportRepository.countByViewId("["+vId+"]", "["+vId+",", ","+vId+",", ","+vId+"]");
                 rspList.add(item);
             }
         }
 
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", rspList);
-        jsonResponse.set("total", totalRecords);
+        jsonResponse.set("total", rspList.size());
         jsonResponse.set("current", req.page.current);
 
         return UniformResponse.ok().data(jsonResponse);
@@ -219,25 +220,25 @@ public class VizViewController {
             item.datasetName = entity.getDataset().getGroup() + "/" + entity.getDataset().getName();
             item.dim = JSONUtil.parseArray(entity.getDim()).toList(String.class);
             item.metrics = JSONUtil.parseArray(entity.getMetrics()).toList(String.class);
-            if (entity.getRelation() != null && entity.getRelation() != "") {
+            if (StrUtil.isNotEmpty(entity.getRelation())) {
                 item.relation = JSONUtil.parseArray(entity.getRelation()).toList(String.class);
             }
-            if (entity.getLocation() != null && entity.getLocation() != "") {
+            if (StrUtil.isNotEmpty(entity.getLocation())) {
                 item.location = JSONUtil.parseArray(entity.getLocation()).toList(String.class);
             }
-            if(entity.getVariable()!=null && entity.getVariable()!=""){
+            if(StrUtil.isNotEmpty(entity.getVariable())){
                 item.variable = new JSONArray(entity.getVariable()); // convert string to json array
             }
-            if(entity.getCalculation()!=null && entity.getCalculation()!=""){
+            if(StrUtil.isNotEmpty(entity.getCalculation())){
                 item.calculation = new JSONArray(entity.getCalculation()); // convert string to json array
             }
-            if(entity.getModel()!=null && entity.getModel()!=""){
+            if(StrUtil.isNotEmpty(entity.getModel())){
                 item.model = new JSONObject(entity.getModel()); // convert string to json object
             }
-            if(entity.getFilter()!=null && entity.getFilter()!=""){
+            if(StrUtil.isNotEmpty(entity.getFilter())){
                 item.filter = new JSONObject(entity.getFilter());
             }
-            if(entity.getSorter()!=null && entity.getSorter()!=""){
+            if(StrUtil.isNotEmpty(entity.getSorter())){
                 item.sorter = new JSONArray(entity.getSorter());
             }
             item.libCfg = new JSONObject(entity.getLibCfg());
@@ -511,6 +512,11 @@ public class VizViewController {
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 
+        Integer usageInReport = reportRepository.countByViewId("["+id+"]", "["+id+",", ","+id+",", ","+id+"]");
+        if(usageInReport > 0){
+            return UniformResponse.error(UniformResponseCode.DATAVIEW_IN_USE);
+        }
+
         try {
             // delete entity
             dataviewRepository.deleteById(id);
@@ -534,12 +540,13 @@ public class VizViewController {
 
         List<Object> distinctGroups = null;
         if(tokenIsSuperuser){
-            distinctGroups = dataviewRepository.findAllDistinctGroup();
+            distinctGroups = dataviewRepository.findAllDistinctGroup(tokenUsername);
         } else {
-            distinctGroups = dataviewRepository.findDistinctGroupByOrg(tokenOrgId);
+            distinctGroups = dataviewRepository.findDistinctGroupByOrg(tokenOrgId, tokenUsername);
         }
 
         if(distinctGroups!=null && distinctGroups.get(0)==null){
+            // show empty as a group ""
             distinctGroups.set(0, "");
         }
 

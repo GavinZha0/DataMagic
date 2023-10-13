@@ -112,7 +112,7 @@ public class DataSourceController {
         }
 
         // build JPA specification
-        Specification<DataSourceEntity> specification = JpaSpecUtil.build(tokenOrgId, tokenIsSuperuser, req.filter, req.search);
+        Specification<DataSourceEntity> specification = JpaSpecUtil.build(tokenOrgId, tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if (pageable != null) {
@@ -447,6 +447,11 @@ public class DataSourceController {
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 
+        Integer usageInDataset = datasetRepository.countBySourceId(id);
+        if(usageInDataset > 0){
+            return UniformResponse.error(UniformResponseCode.DATASOURCE_IN_USE);
+        }
+
         try {
             // delete entity
             sourceRepository.deleteById(id);
@@ -698,19 +703,7 @@ public class DataSourceController {
 
     private String testSource(String type, String url, JSONArray params, String username, String password) {
         String dbVersion = null;
-        String paramStr = "";
-        if(params!=null && params.size()>0){
-            List<String> paramList = new ArrayList<String>();
-            for(Object param: params) {
-                JSONObject obj = JSONUtil.parseObj(param);
-                String name = obj.getStr("name");
-                String value = obj.getStr("value");
-                paramList.add(name+"="+value);
-            }
-            paramStr = String.join("&", paramList);
-        }
-
-        dbUtils.add(99999, "connection_test", type, url, paramStr, username, password);
+        dbUtils.add(99999, "connection_test", type, url, params.toString(), username, password);
 
         try {
             dbVersion = dbUtils.testConnection(99999);

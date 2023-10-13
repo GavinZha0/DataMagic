@@ -67,8 +67,11 @@ public class SysRoleController {
     public UniformResponse getRoleList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         Long totalRecords = 0L;
         Page<SysRoleEntity> pageEntities = null;
@@ -107,7 +110,7 @@ public class SysRoleController {
         }
 
         // build JPA specification
-        Specification<SysRoleEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,req.filter, req.search);
+        Specification<SysRoleEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){

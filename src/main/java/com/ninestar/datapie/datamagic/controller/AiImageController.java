@@ -78,11 +78,12 @@ public class AiImageController {
     @ApiOperation(value = "getImageList", httpMethod = "POST")
     public UniformResponse getImageList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //String loginUser = auth.getCredentials().toString();
-        String orgId = auth.getDetails().toString();
-        String  userId = auth.getPrincipal().toString();
-        Boolean tokenSuperuser = auth.getAuthorities().contains("ROLE_superuser");
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         Long totalRecords = 0L;
         Page<AiImageEntity> pageEntities = null;
@@ -121,7 +122,7 @@ public class AiImageController {
         }
 
         // build JPA specification
-        Specification<AiImageEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenSuperuser,req.filter, req.search);
+        Specification<AiImageEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){

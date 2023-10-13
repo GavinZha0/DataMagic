@@ -122,7 +122,7 @@ public class VizReportController {
         }
 
         // build JPA specification
-        Specification<VizReportEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,req.filter, req.search);
+        Specification<VizReportEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){

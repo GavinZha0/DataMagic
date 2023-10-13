@@ -67,8 +67,8 @@ public class JpaSpecUtil {
         return new JpaSpecImpl<>(BoolOperator.OR);
     }
 
-    public static  <T> Specification<T> build(Integer orgId, Boolean isSuperuser, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
-        return new JpaSpecImpl().buildSpecification(orgId,isSuperuser,filter, search);
+    public static  <T> Specification<T> build(Integer orgId, Boolean isSuperuser, String loginUser, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
+        return new JpaSpecImpl().buildSpecification(orgId, isSuperuser, loginUser, filter, search);
     }
 
     public static  <T> Specification<T> build(Integer orgId, Integer userId, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
@@ -99,7 +99,7 @@ public class JpaSpecUtil {
 
         private Method specMethod;
 
-        public Specification<T> buildSpecification(Integer orgId, Boolean isSuperuser, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
+        public Specification<T> buildSpecification(Integer orgId, Boolean isSuperuser, String loginUser, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
             // build query conditions
             Specification<T> specification = new Specification<T>() {
                 @Override
@@ -115,6 +115,10 @@ public class JpaSpecUtil {
                     if (!isSuperuser && orgId!=null) {
                         // only superuser can see users of all orgs
                         preconditions.add(cb.equal(root.get("org"), orgId));
+                        preconditions.add(cb.or(
+                                cb.equal(root.get("pubFlag"), true),
+                                cb.equal(root.get("createdBy"), loginUser)
+                        ));
                         prePredicate = cb.and(preconditions.toArray(new Predicate[preconditions.size()]));
                     }
 

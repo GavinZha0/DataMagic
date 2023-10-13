@@ -123,7 +123,7 @@ public class DataImportController {
         }
 
         // build JPA specification
-        Specification<DataImportEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser,req.filter, req.search);
+        Specification<DataImportEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){

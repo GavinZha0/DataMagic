@@ -57,15 +57,22 @@ public enum UniformResponseCode {
     TARGET_RESOURCE_EXIST(2402, "api.target.exist"),
     TARGET_RESOURCE_NOT_EXIST(2403, "api.target.not.exist"),
     TARGET_RESOURCE_NOT_AVAILABLE(2404, "api.target.not.available"),
-    DATASOURCE_NOT_EXIST(2405, "api.datasource.not.exist"),
-    DATASET_NOT_EXIST(2406, "api.dataset.not.exist"),
-    DATAVIEW_NOT_EXIST(2407, "api.dataview.not.exist"),
-    DATAREPORT_NOT_EXIST(2408, "api.datareport.not.exist"),
 
-    DATASOURCE_CONFIG_ERR(2409, "api.datasource.config.error"),
+    DATASOURCE_NOT_EXIST(2405, "api.datasource.not.exist"),
+    DATASOURCE_IN_USE(2406, "api.datasource.in.use"),
+    DATASOURCE_CONFIG_ERR(2407, "api.datasource.config.error"),
+
+    DATASET_NOT_EXIST(2408, "api.dataset.not.exist"),
+    DATASET_IN_USE(2409, "api.dataset.in.use"),
     DATASET_CONFIG_ERR(2410, "api.dataset.config.error"),
-    DATAVIEW_CONFIG_ERR(2411, "api.dataview.config.error"),
-    DATAREPORT_CONFIG_ERR(2412, "api.datareport.config.error"),
+
+    DATAVIEW_NOT_EXIST(2411, "api.dataview.not.exist"),
+    DATAVIEW_IN_USE(2412, "api.dataview.in.use"),
+    DATAVIEW_CONFIG_ERR(2413, "api.dataview.config.error"),
+
+    DATAREPORT_NOT_EXIST(2414, "api.datareport.not.exist"),
+    DATAREPORT_IN_USE(2415, "api.datareport.in.use"),
+    DATAREPORT_CONFIG_ERR(2416, "api.datareport.config.error"),
 
     /**
      * 3000～3999 区间表示接口异常
