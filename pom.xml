@@ -31,6 +31,12 @@
 		<jnl.version>5.8.0</jnl.version>
 		<dl4j.version>1.0.0-beta7</dl4j.version>
 		<xxl-job.version>2.3.1</xxl-job.version>
+
+		<lib-path>lib</lib-path>
+		<jar-path>jar</jar-path>
+		<config-path>config</config-path>
+		<final-name>datamagic</final-name>
+		<main-class>com.ninestar.datapie.datamagic.DataMagicApplication</main-class>
 	</properties>
 
 	<dependencies>
@@ -280,19 +286,11 @@
 	</dependencies>
 
 	<build>
+		<finalName>${final-name}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<fork>true</fork>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -300,38 +298,85 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<!--plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
 				<configuration>
-					<encoding>UTF-8</encoding>
-					<nonFilteredFileExtensions>
-						<nonFilteredFileExtension>xdb</nonFilteredFileExtension>
-						<nonFilteredFileExtension>db</nonFilteredFileExtension>
-					</nonFilteredFileExtensions>
+					<skip>true</skip>
 				</configuration>
-			</plugin-->
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.ninestar.datapie.datamagic.DataMagicApplication</mainClass>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>${lib-path}/</classpathPrefix>
+							<useUniqueVersions>false</useUniqueVersions>
+							<mainClass>${main-class}</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Class-Path>${config-path}/</Class-Path>
+						</manifestEntries>
 					</archive>
+					<outputDirectory>${project.build.directory}</outputDirectory>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/${lib-path}/</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<filtering>false</filtering>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>**/*</include>
+									</includes>
+								</resource>
+								<resource>
+									<filtering>true</filtering>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>*.yml</include>
+									</includes>
+								</resource>
+							</resources>
+							<outputDirectory>${project.build.directory}/${config-path}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
-	<distributionManagement>
+	<!--distributionManagement>
 		<repository>
 			<id>DataMagic</id>
 			<name>DataMagic</name>
 			<url>file:d:/MyM2</url>
 		</repository>
-	</distributionManagement>
+	</distributionManagement-->
 
 </project>
