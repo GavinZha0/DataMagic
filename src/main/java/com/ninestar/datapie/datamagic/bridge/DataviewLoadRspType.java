@@ -12,6 +12,7 @@ public class DataviewLoadRspType {
     public String name;
     public String group;
     public String type;
+    public List<String> dim = new ArrayList<>();
     public String libName;
     public String libVer;
     public JSONObject libCfg;
