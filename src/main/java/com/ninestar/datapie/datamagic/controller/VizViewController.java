@@ -198,10 +198,12 @@ public class VizViewController {
     @ApiOperation(value = "getViewsByGroup", httpMethod = "POST")
     public UniformResponse getViewsByGroup(@RequestBody @ApiParam(name = "request", value = "group") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
-        Boolean tokenSuperuser = auth.getAuthorities().contains("ROLE_superuser");
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         List<VizViewEntity> queryEntities = dataviewRepository.findByGroupOrderByName(request.get("group").toString());
         Integer totalRecords = queryEntities.size();
@@ -209,46 +211,44 @@ public class VizViewController {
         // build response
         List<DataviewListRspType> rspList = new ArrayList<DataviewListRspType>();
         for(VizViewEntity entity: queryEntities){
-            if(!tokenSuperuser && !entity.getOrg().getId().equals(tokenOrgId)){
-                // no permit
-                continue;
-            }
-            DataviewListRspType item = new DataviewListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"dim", "metrics", "filter", "sorter", "variable", "calculation", "model", "libCfg"});
-            item.pubFlag = entity.getPubFlag();
-            item.datasetId = entity.getDataset().getId();
-            item.datasetName = entity.getDataset().getGroup() + "/" + entity.getDataset().getName();
-            item.dim = JSONUtil.parseArray(entity.getDim()).toList(String.class);
-            item.metrics = JSONUtil.parseArray(entity.getMetrics()).toList(String.class);
-            if (StrUtil.isNotEmpty(entity.getRelation())) {
-                item.relation = JSONUtil.parseArray(entity.getRelation()).toList(String.class);
-            }
-            if (StrUtil.isNotEmpty(entity.getLocation())) {
-                item.location = JSONUtil.parseArray(entity.getLocation()).toList(String.class);
-            }
-            if(StrUtil.isNotEmpty(entity.getVariable())){
-                item.variable = new JSONArray(entity.getVariable()); // convert string to json array
-            }
-            if(StrUtil.isNotEmpty(entity.getCalculation())){
-                item.calculation = new JSONArray(entity.getCalculation()); // convert string to json array
-            }
-            if(StrUtil.isNotEmpty(entity.getModel())){
-                item.model = new JSONObject(entity.getModel()); // convert string to json object
-            }
-            if(StrUtil.isNotEmpty(entity.getFilter())){
-                item.filter = new JSONObject(entity.getFilter());
-            }
-            if(StrUtil.isNotEmpty(entity.getSorter())){
-                item.sorter = new JSONArray(entity.getSorter());
-            }
-            item.libCfg = new JSONObject(entity.getLibCfg());
+            if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || (entity.getOrg().getId().equals(tokenOrgId) && entity.getPubFlag())) {
+                DataviewListRspType item = new DataviewListRspType();
+                BeanUtil.copyProperties(entity, item, new String[]{"dim", "metrics", "filter", "sorter", "variable", "calculation", "model", "libCfg"});
+                item.pubFlag = entity.getPubFlag();
+                item.datasetId = entity.getDataset().getId();
+                item.datasetName = entity.getDataset().getGroup() + "/" + entity.getDataset().getName();
+                item.dim = JSONUtil.parseArray(entity.getDim()).toList(String.class);
+                item.metrics = JSONUtil.parseArray(entity.getMetrics()).toList(String.class);
+                if (StrUtil.isNotEmpty(entity.getRelation())) {
+                    item.relation = JSONUtil.parseArray(entity.getRelation()).toList(String.class);
+                }
+                if (StrUtil.isNotEmpty(entity.getLocation())) {
+                    item.location = JSONUtil.parseArray(entity.getLocation()).toList(String.class);
+                }
+                if (StrUtil.isNotEmpty(entity.getVariable())) {
+                    item.variable = new JSONArray(entity.getVariable()); // convert string to json array
+                }
+                if (StrUtil.isNotEmpty(entity.getCalculation())) {
+                    item.calculation = new JSONArray(entity.getCalculation()); // convert string to json array
+                }
+                if (StrUtil.isNotEmpty(entity.getModel())) {
+                    item.model = new JSONObject(entity.getModel()); // convert string to json object
+                }
+                if (StrUtil.isNotEmpty(entity.getFilter())) {
+                    item.filter = new JSONObject(entity.getFilter());
+                }
+                if (StrUtil.isNotEmpty(entity.getSorter())) {
+                    item.sorter = new JSONArray(entity.getSorter());
+                }
+                item.libCfg = new JSONObject(entity.getLibCfg());
 
-            rspList.add(item);
+                rspList.add(item);
+            }
         }
 
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", rspList);
-        jsonResponse.set("total", totalRecords);
+        jsonResponse.set("total", rspList.size());
         jsonResponse.set("current", 1);
 
         return UniformResponse.ok().data(jsonResponse);
@@ -824,7 +824,7 @@ public class VizViewController {
 
                 // build data frame for agg
                 Integer finalI = i;
-                List<String> colData = records.stream().map(x->x[finalI].toString()).collect(Collectors.toList());
+                List<String> colData = records.stream().map(x->{if (x[finalI]==null){return null;}else {return x[finalI].toString();}}).collect(Collectors.toList());
                 if(columns.get(i).getType().equalsIgnoreCase("NUMBER")){
                     dfTable.addColumns(DoubleColumn.create(columns.get(i).getName(), colData.stream().map(x->Double.parseDouble(x)).collect(Collectors.toList())));
                 } else {

@@ -540,7 +540,7 @@ public class VizReportController {
             }
         }
         else {
-            if(targetEntity.getMenu()!=null && targetEntity.getMenu().getId() == request.menuId){
+            if(targetEntity.getMenu()!=null && targetEntity.getMenu().getId() == request.menuId && targetEntity.getPublishPub() == request.publishPub){
                 // no change
                 return UniformResponse.ok();
             }

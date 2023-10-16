@@ -48,26 +48,26 @@ public class SysDashboardController {
         String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         SysMenuEntity queryEntities = menuRepository.findById(id).get();
 
         // build response
         List<DashboardListRspType> rspList = new ArrayList<DashboardListRspType>();
         for(VizReportEntity entity: queryEntities.getReports()){
-            if(!tokenIsSuperuser && !entity.getOrg().getId().equals(tokenOrgId)){
-                continue;
+            if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || (entity.getOrg().getId().equals(tokenOrgId) && entity.getPublishPub())) {
+                DashboardListRspType item = new DashboardListRspType();
+                JSONArray pages = new JSONArray(entity.getPages());
+                item.id = entity.getId();
+                item.name = entity.getName();
+                item.desc = entity.getDesc();
+                item.type = entity.getType();
+                item.pages = pages;
+                item.pageCount = pages.size();
+                item.updatedBy = entity.getUpdatedBy();
+                item.updatedAt = entity.getUpdatedAt();
+                rspList.add(item);
             }
-            DashboardListRspType item = new DashboardListRspType();
-            JSONArray pages = new JSONArray(entity.getPages());
-            item.id = entity.getId();
-            item.name = entity.getName();
-            item.desc = entity.getDesc();
-            item.type = entity.getType();
-            item.pages = pages;
-            item.pageCount = pages.size();
-            item.updatedBy = entity.getUpdatedBy();
-            item.updatedAt = entity.getUpdatedAt();
-            rspList.add(item);
         }
 
         return UniformResponse.ok().data(rspList);
