@@ -59,6 +59,7 @@ public class LogAccessController {
         String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         Long totalRecords = 0L;
         Page<LogAccessEntity> pageEntities = null;
@@ -133,6 +134,25 @@ public class LogAccessController {
 
         return UniformResponse.ok().data(jsonResponse);
     }
+
+    @PostMapping("/latest")
+    @ApiOperation(value = "getLatestAccLog", httpMethod = "POST")
+    public UniformResponse getLatestAccLog(@RequestBody @ApiParam(name = "request", value = "user id") JSONObject request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role -> role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
+        // find user
+        Integer userId = Integer.parseInt(request.get("id").toString());
+        LogAccessEntity targetEntity = accRepository.findLatestByUserId(userId);
+
+        return UniformResponse.ok().data(targetEntity);
+    }
+
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")

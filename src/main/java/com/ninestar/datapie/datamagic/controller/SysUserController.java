@@ -206,36 +206,39 @@ public class SysUserController {
 
     @PostMapping("/one")
     @ApiOperation(value = "getOneUser", httpMethod = "POST")
-    @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
+    //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     public UniformResponse getOneUser(@RequestBody @ApiParam(name = "request", value = "user id") JSONObject request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         // find user
         Integer userId = Integer.parseInt(request.get("id").toString());
         SysUserEntity entity = userRepository.findById(userId).get();
 
-        if(!tokenIsSuperuser && !entity.getOrg().getId().equals(tokenOrgId)){
+        if(tokenIsSuperuser || (tokenIsAdmin && entity.getOrg().getId().equals(tokenOrgId)) || entity.getName().equals(tokenUsername)){
+            // add roles to response
+            List<String> roleList = new ArrayList<>();
+            for(SysRoleEntity sysRole: entity.getRoles()){
+                roleList.add(sysRole.getName());
+            }
+            entity.setRoleNames(roleList.toArray(new String[roleList.size()]));
+
+            entity.setPassword("******"); // remove password
+            entity.setOId(entity.getOrg().getId()); // org id
+            entity.setOrgName(entity.getOrg().getName()); // org name
+            entity.setOrg(null); // set entity to null
+            entity.setRoles(null); // set entity to null
+
+            return UniformResponse.ok().data(entity);
+        } else {
             // current user doesn't have permission to review this info
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
-
-        // add roles to response
-        List<String> roleList = new ArrayList<>();
-        for(SysRoleEntity sysRole: entity.getRoles()){
-            roleList.add(sysRole.getName());
-        }
-        entity.setRoleNames(roleList.toArray(new String[roleList.size()]));
-
-        entity.setPassword("******"); // remove password
-        entity.setOId(entity.getOrg().getId()); // org id
-        entity.setOrgName(entity.getOrg().getName()); // org name
-        entity.setOrg(null); // set entity to null
-        entity.setRoles(null); // set entity to null
-
-        return UniformResponse.ok().data(entity);
     }
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
@@ -466,7 +469,7 @@ public class SysUserController {
     }
 
     @PostMapping("/options")
-    @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
+    //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "getUserOptions", httpMethod = "POST")
     public UniformResponse getUserOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -480,7 +483,8 @@ public class SysUserController {
         for(SysUserEntity sysUser: sysUsers){
             if(sysUser.getActive()){
                 OptionsRspType user = new OptionsRspType();
-                BeanUtil.copyProperties(sysUser, user);
+                user.id = sysUser.getId();
+                user.name = sysUser.getRealname();
                 userList.add(user);
             }
         }
