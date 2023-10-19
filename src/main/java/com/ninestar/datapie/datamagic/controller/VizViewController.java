@@ -717,6 +717,7 @@ public class VizViewController {
         response.libVer = viewEntity.getLibVer();
         response.libCfg = new JSONObject(viewEntity.getLibCfg());
         response.dim = JSONUtil.parseArray(viewEntity.getDim()).toList(String.class);
+        response.metrics = JSONUtil.parseArray(viewEntity.getMetrics()).toList(String.class);
 
         // get view data
         DatasetResultType result = execute(id);

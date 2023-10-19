@@ -38,6 +38,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -514,9 +515,13 @@ public class VizReportController {
     @PostMapping("/publish")
     @ApiOperation(value = "publishReport", httpMethod = "POST")
     public UniformResponse publishReport(@RequestBody @ApiParam(name = "id", value = "Report id") PublishReqType request){
-        //Hibernate: update data_source set category=?, create_time=?, created_by=?, description=?, name=?, org_id=?, password=?, pub_flag=?, type=?, update_time=?, updated_by=?, url=?, username=?, version=? where id=?
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         if(request.id==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -524,7 +529,7 @@ public class VizReportController {
 
         VizReportEntity targetEntity = reportRepository.findById(request.id).get();
         if(targetEntity==null){
-            //target entity doesn't exist
+            //target report doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
@@ -534,7 +539,7 @@ public class VizReportController {
                 return UniformResponse.ok();
             }
             else{
-                // remove menu
+                // remove report from menu
                 targetEntity.setMenu(null);
                 targetEntity.setPublishPub(false);//default
             }
@@ -549,8 +554,21 @@ public class VizReportController {
                 SysMenuEntity menuEntity = menuRepository.findById(request.menuId).get();
                 if(menuEntity==null){
                     return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
-                }
-                else{
+                } else if(menuEntity.getName().equalsIgnoreCase("home")){
+                    Set<VizReportEntity> prevHomeReport = menuEntity.getReports();
+                    for(VizReportEntity report: prevHomeReport){
+                        if(report.getOrg().getId().equals(tokenOrgId)){
+                            // remove old home page of your org
+                            report.setMenu(null);
+                            reportRepository.save(report);
+                        }
+                    }
+
+                    // replace home report
+                    targetEntity.setMenu(menuEntity);
+                    targetEntity.setPublishPub(true);
+                } else {
+                    // bind report to specific menu
                     targetEntity.setMenu(menuEntity);
                     targetEntity.setPublishPub(request.publishPub);
                 }

@@ -449,22 +449,33 @@ public class SysUserController {
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "deleteUser", httpMethod = "DELETE")
     public UniformResponse deleteUser(@RequestParam @ApiParam(name = "id", value = "user id") Integer id){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
         SysUserEntity targetEntity = userRepository.findById(id).get();
-
-        try {
-            // delete entity (set deleted to true)
-            targetEntity.setActive(false);
-            targetEntity.setDeleted(true);
-            userRepository.save(targetEntity);
-            return UniformResponse.ok();
-        }
-        catch (Exception e){
-            logger.error(e.toString());
-            return UniformResponse.error(e.getMessage());
+        if(tokenIsSuperuser || (tokenIsAdmin && targetEntity.getOrg().getId() == tokenOrgId)){
+            try {
+                // delete entity (set deleted to true)
+                targetEntity.setActive(false);
+                targetEntity.setDeleted(true);
+                userRepository.save(targetEntity);
+                return UniformResponse.ok();
+            }
+            catch (Exception e){
+                logger.error(e.toString());
+                return UniformResponse.error(e.getMessage());
+            }
+        } else {
+            return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
     }
 

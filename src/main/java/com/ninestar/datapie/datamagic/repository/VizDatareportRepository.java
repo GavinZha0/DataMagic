@@ -17,4 +17,7 @@ public interface VizDatareportRepository extends JpaRepository<VizReportEntity, 
 
     @Query(value = "select count(*) from viz_report where view_ids like ? or view_ids like %?% or view_ids like %?% or view_ids like %?%",nativeQuery = true)
     public Integer countByViewId(String id1, String id2, String id3, String id4);
+
+    @Query(value = "select distinct org_id from viz_report where menu_id = ?",nativeQuery = true)
+    public List<Integer> findDistinctOrgByMenuId(Integer menuId);
 }

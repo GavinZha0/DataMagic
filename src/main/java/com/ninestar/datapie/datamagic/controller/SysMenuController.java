@@ -12,6 +12,7 @@ import com.ninestar.datapie.datamagic.entity.SysMenuEntity;
 import com.ninestar.datapie.datamagic.entity.SysOrgEntity;
 import com.ninestar.datapie.datamagic.entity.VizReportEntity;
 import com.ninestar.datapie.datamagic.repository.SysMenuRepository;
+import com.ninestar.datapie.datamagic.repository.VizDatareportRepository;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
@@ -48,6 +49,9 @@ public class SysMenuController {
 
     @Resource
     private SysMenuRepository menuRepository;
+
+    @Resource
+    public VizDatareportRepository reportRepository;
 
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
@@ -124,13 +128,19 @@ public class SysMenuController {
             // clear up menu in reports in order to avoid exception
             SetMenuNull(treeMenus);
 
+            // 'publish' means to include both 'home' and 'dashboard'
+            String reqName = request.get("name").toString();
+            String[] targetNames = {"dashboard", "placeholder"};
+            if(reqName.equalsIgnoreCase("publish")){
+                targetNames[1] = "home";
+            }
+
             // find target tree based on required name
-            SysMenuEntity targetTree = null;
+            List<SysMenuEntity> targetTree = new ArrayList<>();
             for(SysMenuEntity menu: treeMenus) {
-                if (menu.getName().equalsIgnoreCase(request.get("name").toString())) {
+                if (menu.getName().equalsIgnoreCase(targetNames[0]) || menu.getName().equalsIgnoreCase(targetNames[1])) {
                     // find target
-                    targetTree = menu;
-                    break;
+                    targetTree.add(menu);
                 }
             }
 
@@ -263,6 +273,14 @@ public class SysMenuController {
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "deleteMenu", httpMethod = "DELETE")
     public UniformResponse deleteMenu(@RequestParam @ApiParam(name = "id", value = "menu id") Integer id){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
@@ -273,6 +291,20 @@ public class SysMenuController {
             return UniformResponse.ok();
         }
 
+        if(tokenIsAdmin) {
+            if(targetEntity.getComponent().equals("/dashboard/index")){
+                // admin can delete dashboard only
+                List<Integer> orgList = reportRepository.findDistinctOrgByMenuId(targetEntity.getId());
+                if (orgList.size() > 1 || !orgList.get(0).equals(tokenOrgId)) {
+                    // admin can NOT delete a report which is not in his org
+                    return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
+                }
+            } else {
+                // no permit
+                return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
+            }
+        }
+
         try {
             // set entity to obsolete
             targetEntity.setActive(false);
@@ -281,8 +313,7 @@ public class SysMenuController {
             //menuRepository.deleteById(id);
 
             return UniformResponse.ok();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.toString());
             return UniformResponse.error(e.getMessage());
         }
