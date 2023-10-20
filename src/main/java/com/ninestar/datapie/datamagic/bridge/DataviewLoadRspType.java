@@ -1,5 +1,6 @@
 package com.ninestar.datapie.datamagic.bridge;
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.ninestar.datapie.framework.model.ColumnField;
 
@@ -14,6 +15,7 @@ public class DataviewLoadRspType {
     public String type;
     public List<String> dim = new ArrayList<>();
     public List<String> metrics = new ArrayList<>();
+    public JSONArray variable;
     public String libName;
     public String libVer;
     public JSONObject libCfg;
