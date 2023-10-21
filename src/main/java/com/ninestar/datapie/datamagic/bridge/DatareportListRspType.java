@@ -19,6 +19,7 @@ public class DatareportListRspType {
     public Boolean pubFlag;
     public Integer menuId;
     public String menuName;
+    public String menuTitle;
     public List<Integer> viewIds = new ArrayList<>();
     public Boolean publishPub;
     public String createdBy;

@@ -150,7 +150,8 @@ public class VizReportController {
                 item.pageCount = item.pages.size();
                 if (entity.getMenu() != null) {
                     item.menuId = entity.getMenu().getId();
-                    item.menuName = entity.getMenu().getTitle();
+                    item.menuName = entity.getMenu().getName();
+                    item.menuTitle = entity.getMenu().getTitle();
                 }
                 rspList.add(item);
             }
@@ -521,7 +522,7 @@ public class VizReportController {
         String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
-        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+        Boolean tokenIsAdmin = tokenIsSuperuser || tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         if(request.id==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -531,6 +532,11 @@ public class VizReportController {
         if(targetEntity==null){
             //target report doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
+
+
+        if(!tokenIsAdmin && !targetEntity.getCreatedBy().equalsIgnoreCase(tokenUsername)){
+            return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 
         if(request.menuId==null){
