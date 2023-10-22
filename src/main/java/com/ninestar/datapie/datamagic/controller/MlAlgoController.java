@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSON;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.ninestar.datapie.datamagic.aop.ActionType;
@@ -124,7 +125,7 @@ public class MlAlgoController {
         for(MlAlgoEntity entity: queryEntities){
             AlgorithmListRspType item = new AlgorithmListRspType();
             BeanUtil.copyProperties(entity, item, new String[]{"config"});
-            item.config = new JSONObject(entity.getConfig());
+            item.config = new JSONArray(entity.getConfig());
             rspList.add(item);
         }
 

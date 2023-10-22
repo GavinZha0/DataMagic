@@ -11,7 +11,7 @@ public class AlgorithmListRspType {
     public String name;
     public String desc;
     public String group;
-    public JSONObject config;
+    public JSONArray config;
     public String content;
     public String type;
     public Boolean pubFlag;
