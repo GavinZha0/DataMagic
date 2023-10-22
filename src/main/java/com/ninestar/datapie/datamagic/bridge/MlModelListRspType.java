@@ -1,5 +1,6 @@
 package com.ninestar.datapie.datamagic.bridge;
 
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 
 import java.sql.Timestamp;
@@ -10,7 +11,7 @@ public class MlModelListRspType {
     public String name;
     public String desc;
     public String group;
-    public JSONObject config;
+    public JSONArray config;
     public String content;
     public String type;
     public Boolean pubFlag;

@@ -13,7 +13,7 @@ public class WorkflowListRspType {
     public String desc;
     public String group;
     public String graphVer;
-    public JSONObject graph;
+    public JSONArray graph;
     public JSONObject grid;
     public JSONArray config;
     public Timestamp lastRun;

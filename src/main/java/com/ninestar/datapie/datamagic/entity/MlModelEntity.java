@@ -77,4 +77,9 @@ public class MlModelEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = true)
     private Timestamp updatedAt;
+
+    // foreign key org_id
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "org_id", referencedColumnName = "id")
+    private SysOrgEntity org;
 }

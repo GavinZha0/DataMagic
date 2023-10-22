@@ -120,9 +120,15 @@ public class MlFlowController {
         for(MlFlowEntity entity: queryEntities){
             WorkflowListRspType item = new WorkflowListRspType();
             BeanUtil.copyProperties(entity, item, new String[]{"graph","grid","config"});
-            item.graph = new JSONObject(entity.getGraph()); // convert string to json array
-            item.config = new JSONArray(entity.getConfig());
-            item.grid = new JSONObject(entity.getGrid());
+            if(entity.getGraph()!=null && entity.getGraph()!=""){
+                item.graph = new JSONArray(entity.getGraph()); // convert string to json array
+            }
+            if(entity.getConfig()!=null && entity.getConfig()!="") {
+                item.config = new JSONArray(entity.getConfig());
+            }
+            if(entity.getGrid()!=null && entity.getGrid()!="") {
+                item.grid = new JSONObject(entity.getGrid());
+            }
             rspList.add(item);
         }
 
