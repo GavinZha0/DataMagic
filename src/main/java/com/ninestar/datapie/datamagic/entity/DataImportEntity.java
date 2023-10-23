@@ -78,6 +78,10 @@ public class DataImportEntity {
     private String detail;
 
     @Basic
+    @Column(name = "`public`", nullable = false)
+    private Boolean pubFlag;
+
+    @Basic
     @CreatedBy
     @Column(name = "created_by", nullable = false, length = 64)
     private String createdBy;
@@ -96,4 +100,9 @@ public class DataImportEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = true)
     private Timestamp updatedAt;
+
+    // foreign key org_id
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "org_id", referencedColumnName = "id")
+    private SysOrgEntity org;
 }
