@@ -13,6 +13,7 @@ import com.ninestar.datapie.datamagic.entity.DataImportEntity;
 import com.ninestar.datapie.datamagic.entity.DataSourceEntity;
 import com.ninestar.datapie.datamagic.repository.DataImportRepository;
 import com.ninestar.datapie.datamagic.repository.DataSourceRepository;
+import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.service.AsyncTaskService;
 import com.ninestar.datapie.datamagic.utils.DbUtils;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
@@ -65,6 +66,9 @@ public class DataImportController {
 
     @Resource
     public DataSourceRepository sourceRepository;
+
+    @Resource
+    private SysOrgRepository orgRepository;
 
     @Resource
     private AsyncTaskService asyncService;
@@ -207,6 +211,8 @@ public class DataImportController {
         newEntity.setAttrs((new JSONObject(reqConfig.fileAttrs)).toString());
         newEntity.setFields(JSONUtil.toJsonStr(reqConfig.colFields));
         newEntity.setConfig((new JSONObject(reqConfig.dbConfig)).toString());
+        newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
+        newEntity.setPubFlag(false);
         newEntity.setSourceId(reqConfig.source);
         newEntity.setTableName(reqConfig.table);
         newEntity.setOverwrite(reqConfig.overwrite);

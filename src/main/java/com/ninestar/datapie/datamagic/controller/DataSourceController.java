@@ -30,6 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -128,13 +129,14 @@ public class DataSourceController {
         // build response
         List<SourceListRspType> rspList = new ArrayList<SourceListRspType>();
         for (DataSourceEntity entity : queryEntities) {
-            if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || entity.getPubFlag()){
+            if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || (entity.getOrg().getId() == tokenOrgId && entity.getPubFlag())){
                 // filter by userId and pubFlag
                 // this filter can be moved to specification later. Gavin!!!
                 SourceListRspType item = new SourceListRspType();
                 BeanUtil.copyProperties(entity, item, new String[]{"params"});
                 item.params = new JSONArray(entity.getParams());
                 item.pubFlag = entity.getPubFlag();
+                item.password = "******"; // hide password
 
                 // get related dataset count
                 item.usage = datasetRepository.countBySourceId(entity.getId());
@@ -187,6 +189,7 @@ public class DataSourceController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
+    @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "createSource", httpMethod = "POST")
     public UniformResponse createSource(@RequestBody @ApiParam(name = "source", value = "source info") SourceActionReqType source) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -222,7 +225,8 @@ public class DataSourceController {
                 newSource.setParams(source.params.toString());
             }
             newSource.setUsername(source.username);
-            newSource.setPassword(source.password); // password is encoded by frontend (Base64.encode)
+            // password is encoded by frontend (Base64.encode)
+            newSource.setPassword(source.password);
             newSource.setPubFlag(false);
             if(source.version!=null){
                 newSource.setVersion(source.version); // don't ask user to set it
@@ -252,7 +256,7 @@ public class DataSourceController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if (source.id == 0 || StrUtil.isEmpty(source.name)) {
+        if (source.id == 0 || StrUtil.isEmpty(source.name) || StrUtil.isEmpty(source.password)) {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -265,8 +269,9 @@ public class DataSourceController {
         }
 
         try {
-            if (!StrUtil.isEmpty(source.password) && !source.password.equals("******")) {
-                targetEntity.setPassword(Base64.encode(source.password));
+            if (!Base64.decode(source.password).toString().equals("******")) {
+                // source password is encoded
+                targetEntity.setPassword(source.password);
             }
             targetEntity.setName(source.name);
             targetEntity.setDesc(source.desc);
@@ -315,7 +320,8 @@ public class DataSourceController {
         if (targetEntity == null) {
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
-        } else if(!targetEntity.getOrg().getId().equals(tokenOrgId)){
+            //targetEntity.getOrg().getId().equals(tokenOrgId) - temp disable to avoid exception - Gavin
+        } else if(!targetEntity.getCreatedBy().equals(tokenUsername)){
             // only the user which is in same org has permission to clone it
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
@@ -495,7 +501,7 @@ public class DataSourceController {
         String dbVersion = null;
         try {
             if (targetEntity != null) {
-                dbVersion = testSource(request.id);// via Hikari
+                dbVersion = testSource(request.id, request.password);// via Hikari
             } else {
                 dbVersion = testSource(request.type, request.url, request.params, request.username, request.password);// via Hikari
             }
@@ -683,12 +689,17 @@ public class DataSourceController {
     }
 
 
-    private String testSource(Integer id) {
+    private String testSource(Integer id, String newPassword) {
         String dbVersion = null;
         if(!dbUtils.isSourceExist(id)){
             DataSourceEntity source = sourceRepository.findById(id).get();
             String pwd = new String(Base64.decode(source.getPassword()));
-            dbUtils.add(source.getId(), source.getName(), source.getType(), source.getUrl(), source.getParams(), source.getUsername(), pwd);
+            String newPwd = new String(Base64.decode(newPassword));
+            if(!StrUtil.isEmpty(newPwd) && !newPwd.equals("******")){
+                dbUtils.add(source.getId(), source.getName(), source.getType(), source.getUrl(), source.getParams(), source.getUsername(), newPwd);
+            } else {
+                dbUtils.add(source.getId(), source.getName(), source.getType(), source.getUrl(), source.getParams(), source.getUsername(), pwd);
+            }
         }
 
         try {

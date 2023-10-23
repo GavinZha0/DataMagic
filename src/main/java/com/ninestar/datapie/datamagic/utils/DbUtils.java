@@ -281,10 +281,14 @@ public class DbUtils {
             connection = dsHolder.getConnection(id);
             if (null != connection) {
                 rs = connection.getMetaData().getTables(null, null, tableName, null);
-                if (null != rs && rs.next()) {
-                    result = true;
-                } else {
-                    result = false;
+                if (null != rs) {
+                    while (rs.next()) {
+                        String tName = rs.getString(TABLE_NAME);
+                        if(tName.equalsIgnoreCase(tableName)){
+                            result = true;
+                            break;
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
