@@ -24,10 +24,11 @@ public class AiModelListRspType {
     public JSONArray input;
     public JSONArray output;
     public JSONArray evaluation;
-    public Integer score;
+    public Float rate;
     public String price;
     public JSONObject detail;
     public String weblink;
+    public Integer usage;
     public Boolean pubFlag;
     public String createdBy;
     public Timestamp createdAt;

@@ -37,8 +37,8 @@ public class AiImageEntity {
     @Column(name = "type", nullable = false, length = 32)
     private String type;
 
-    @Column(name = "field", length = 64)
-    private String field;
+    @Column(name = "area", length = 64)
+    private String area;
 
     @Column(name = "platform", length = 32)
     private String platform;
@@ -75,5 +75,10 @@ public class AiImageEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = true)
     private Timestamp updatedAt;
+
+    // foreign key org_id
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "org_id", referencedColumnName = "id")
+    private SysOrgEntity org;
 
 }

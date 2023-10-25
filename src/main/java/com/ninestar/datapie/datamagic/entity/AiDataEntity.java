@@ -11,22 +11,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @EqualsAndHashCode
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "ai_model", schema = "datapie", catalog = "")
-@ApiModel(value="AiModel", description="")
-public class AiModelEntity {
+@Table(name = "ai_data", schema = "datapie", catalog = "")
+@ApiModel(value="AiData", description="")
+public class AiDataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
-
-    @Column(name = "sid")
-    private Integer sid;
 
     @Column(name = "name", nullable = false, length = 64)
     private String name;
@@ -34,56 +30,27 @@ public class AiModelEntity {
     @Column(name = "desc", length = 64)
     private String desc;
 
-    @Column(name = "group", nullable = false, length = 64)
+    @Column(name = "group", length = 64)
     private String group;
 
     @Column(name = "type", nullable = false, length = 32)
     private String type;
 
-    @Column(name = "tags", length = 64)
-    private String tags;
+    @Column(name = "area", length = 64)
+    private String area;
 
-    @Column(name = "version", nullable = false, length = 16)
-    private String version;
+    @Column(name = "platform", length = 32)
+    private String platform;
 
-    @Column(name = "network", length = 16)
-    private String network;
+    @Column(name = "platform_ver", length = 16)
+    private String platformVer;
 
-    @Column(name = "framework", nullable = false, length = 16)
-    private String framework;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "model_id", nullable = false)
+    private AiModelEntity model;
 
-    @Column(name = "frame_ver", length = 16)
-    private String frameVer;
-
-    @Column(name = "trainset", length = 64)
-    private String trainset;
-
-    @Column(name = "files", nullable = false)
-    private String files;
-
-    @Column(name = "input", nullable = false)
-    private String input;
-
-    @Column(name = "output", nullable = false)
-    private String output;
-
-    @Column(name = "eval")
-    private String eval;
-
-    @Column(name = "score")
-    private Integer score;
-
-    @Column(name = "price", length = 16)
-    private String price;
-
-    @Column(name = "detail")
-    private String detail;
-
-    @Column(name = "weblink", length = 64)
-    private String weblink;
-
-    @Column(name = "model_id")
-    private Integer modelId;
+    @Column(name = "content")
+    private String content;
 
     @Column(name = "public", nullable = false)
     private Boolean pubFlag = false;
@@ -112,4 +79,5 @@ public class AiModelEntity {
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "org_id", referencedColumnName = "id")
     private SysOrgEntity org;
+
 }

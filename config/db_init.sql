@@ -487,10 +487,13 @@ CREATE TABLE data_import
 	ftp_path       varchar(255)  NOT NULL comment 'temp path',
 	status         varchar(16)   NULL DEFAULT 'waiting' comment 'success,processing,error,warning or waiting',
 	detail         text          NULL comment 'failure info',
+	`public`       boolean       NOT NULL DEFAULT false,
+	org_id         int           NOT NULL,
     created_by     varchar(64)   NOT NULL,
     created_at     timestamp     DEFAULT CURRENT_TIMESTAMP,
     updated_by     varchar(64)   DEFAULT NULL,
-    updated_at     timestamp     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at     timestamp     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_import_org     foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
 INSERT INTO data_import (id, files, type, attrs, fields, config, source_id, table_name, overwrite, `rows`, records, ftp_path, status, detail, created_by, created_at, updated_by, updated_at)
@@ -518,8 +521,8 @@ CREATE TABLE viz_dataset
     graph          text         DEFAULT NULL comment 'ER graph, json object',
     graph_ver      varchar(8)   DEFAULT NULL,
     source_id      int          NOT NULL,
-    `public`       boolean      NOT NULL DEFAULT false,
 	org_id         int          NOT NULL,
+    `public`       boolean      NOT NULL DEFAULT false,
     created_by  varchar(64)     NOT NULL,
     created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)     DEFAULT NULL,
@@ -529,8 +532,8 @@ CREATE TABLE viz_dataset
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_dataset (id, name, `group`, `desc`, variable, query, field, graph, graph_ver, source_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'employee salary', 'first', 'test of local MariaDB', '[{name:"aaa", type:"number", value:"35"},{name:"bbb", type:"string", value:"hello"},{name:"ccc", type:"timestamp", value:"2021-10-10"}]', 'select * from employee limit 20', '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', null, null, 1, true, 'Admin', null, null, null);
+INSERT INTO viz_dataset (id, name, `group`, `desc`, variable, query, field, graph, graph_ver, source_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'employee salary', 'first', 'test of local MariaDB', '[{name:"aaa", type:"number", value:"35"},{name:"bbb", type:"string", value:"hello"},{name:"ccc", type:"timestamp", value:"2021-10-10"}]', 'select * from employee limit 20', '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', null, null, 1, 1, true, 'Admin', null, null, null);
 
 # ----------------------------
 # 动态sql支持变量，条件，循环等语法（Maybe Velocity, MyBatis）
@@ -566,8 +569,8 @@ CREATE TABLE viz_view
     lib_ver        varchar(16)  NULL comment 'major.minor',
     lib_cfg        text         NULL comment 'json config',
     dataset_id     int          NOT NULL,
-    `public`       boolean      NOT NULL DEFAULT false,
 	org_id         int          NOT NULL,
+    `public`       boolean      NOT NULL DEFAULT false,
     created_by  varchar(64)     NOT NULL,
     created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)     DEFAULT NULL,
@@ -577,8 +580,8 @@ CREATE TABLE viz_view
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_view (id, name, `desc`, `group`, type, dim, metrics, agg, filter, sorter, variable, calculation, model, lib_name, lib_ver, lib_cfg, dataset_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'employee salary', 'test of employee', 'first', 'line_chart', 'aa, bb, cc', 'dd, ee', 'count', null, null, '[{name:"aaa", type:"number", value:"35"},{name:"bbb", type:"string", value:"hello"},{name:"ccc", type:"timestamp", value:"2021-10-10"}]', null, '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', 'antvG2Plot', '2.2', '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', 1, true, 'Admin', null, 'Admin', null);
+INSERT INTO viz_view (id, name, `desc`, `group`, type, dim, metrics, agg, filter, sorter, variable, calculation, model, lib_name, lib_ver, lib_cfg, dataset_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'employee salary', 'test of employee', 'first', 'line_chart', 'aa, bb, cc', 'dd, ee', 'count', null, null, '[{name:"aaa", type:"number", value:"35"},{name:"bbb", type:"string", value:"hello"},{name:"ccc", type:"timestamp", value:"2021-10-10"}]', null, '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', 'antvG2Plot', '2.2', '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', 1, 1, true, 'Admin', null, 'Admin', null);
 
 
 
@@ -595,11 +598,11 @@ CREATE TABLE viz_report
     `group`        varchar(64)  DEFAULT 'UnGrouped',
     type           varchar(64)  NOT NULL comment 'like multiple, story',
     pages          text         NOT NULL comment 'json array of page config',
+	org_id         int          NOT NULL,
     `public`       boolean      NOT NULL DEFAULT false,
     pub_pub        boolean      NOT NULL DEFAULT true comment 'publish public',
     menu_id        int          DEFAULT NULL,
 	view_ids       text         NOT NULL comment 'view id list',
-	org_id         int          NOT NULL,
     created_by  varchar(64)     NOT NULL,
     created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)     DEFAULT NULL,
@@ -609,8 +612,8 @@ CREATE TABLE viz_report
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_report (id, name, `desc`, `group`, type, pages, `public`, pub_pub, menu_id, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Salary Distribution', 'employee salary', 'first', 'single', '[{id: 1, name:"aaa", layout:"2x2", dataviews:[1,2,3,4], filter:{label: "FULL_NAME", value: "Gavin"}}]', true, true, null, 'Superman', null, null, null);
+INSERT INTO viz_report (id, name, `desc`, `group`, type, pages, org_id, `public`, pub_pub, menu_id, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'Salary Distribution', 'employee salary', 'first', 'single', '[{id: 1, name:"aaa", layout:"2x2", dataviews:[1,2,3,4], filter:{label: "FULL_NAME", value: "Gavin"}}]', 1, true, true, null, 'Superman', null, null, null);
 
 
 
@@ -635,14 +638,14 @@ CREATE TABLE sys_notif
 
 # ----------------------------
 # Table: sys_msg
-# someone send msg to another user or a notification to a org
+# someone send msg to another user or a broadcast to a org
 # ----------------------------
 DROP TABLE IF EXISTS sys_msg;
 CREATE TABLE sys_msg
 (
     id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     ts_utc         timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    type           varchar(16)  NOT NULL DEFAULT 'notification' comment 'like notification, inquiry, ad, warning',
+    type           varchar(16)  NOT NULL DEFAULT 'msg' comment 'like msg, broadcast, inquiry, ad, warning',
     from_id        int          NOT NULL comment 'from user id',
     to_id          int          DEFAULT NULL comment 'to user id',
     content        text         NOT NULL,
@@ -757,10 +760,11 @@ CREATE TABLE gis_point
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	pid            int           NULL,
 	name           varchar(64)   NOT NULL,
+	abbr           varchar(32)   DEFAULT NULL comment 'abbreviation',
     type           varchar(64)   NULL comment 'village, city, county, state, province, area, country or region',
     code           int           DEFAULT NULL comment 'house number, street number, zip code or post code',	
-    lng            float         NOT NULL comment 'longitude', 
-    lat            float         NOT NULL comment 'latitude'
+    lat            float         NOT NULL comment 'latitude',
+	lng            float         NOT NULL comment 'longitude' 
 ) ENGINE = InnoDB;
 
 
@@ -907,16 +911,18 @@ CREATE TABLE ml_algo
     lang_ver       varchar(16)   DEFAULT '3.7',
     content        text          DEFAULT NULL,  
     config         text          DEFAULT NULL comment 'json array like [{id: 1, name:"aaa", type:"int[]"}]',
+	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by  varchar(64)      NOT NULL,
     created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)      DEFAULT NULL,
-    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_algo_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_algo (id, pid, name, `desc`, `group`, type, language, lang_ver, content, config, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'svm', 'new svm algorithm', 'first', 'classification', 'python', '3.7', 'svm() return data', '[{id: 1, name:"aaa", type:"int[]"}]', true, 'Superman', null, null, null);
+INSERT INTO ml_algo (id, pid, name, `desc`, `group`, type, language, lang_ver, content, config, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, null, 'svm', 'new svm algorithm', 'first', 'classification', 'python', '3.7', 'svm() return data', '[{id: 1, name:"aaa", type:"int[]"}]', 1, true, 'Superman', null, null, null);
 
 
 
@@ -938,15 +944,17 @@ CREATE TABLE ml_model
     version        varchar(8)    DEFAULT NULL comment 'model version',
     content        text          DEFAULT NULL,  
     config         text          DEFAULT NULL,
+	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by  varchar(64)      NOT NULL,
     created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)      DEFAULT NULL,
-    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_model_org      foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_model (id, pid, name, `desc`, `group`, type, framework, frame_ver, content, config, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'letnet', 'new letnet algorithm', 'DNN', 'classification', 'pytorch', '1.11', 'svm() return data', '[{id: 1, name:"aaa", type:"int[]"}]', true, 'Superman', null, 'Superman', null);
+INSERT INTO ml_model (id, pid, name, `desc`, `group`, type, framework, frame_ver, content, config, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, null, 'letnet', 'new letnet algorithm', 'DNN', 'classification', 'pytorch', '1.11', 'svm() return data', '[{id: 1, name:"aaa", type:"int[]"}]', 1, true, 'GavinZ', null, 'GavinZ', null);
 
 
 
@@ -970,17 +978,19 @@ CREATE TABLE ml_flow
     duration       int           DEFAULT NULL,
     status         varchar(16)   DEFAULT NULL comment 'success, failure, exception, padding, interruption',
     error          text          DEFAULT NULL,
+	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by     varchar(64)   NOT NULL,
     created_at     timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by     varchar(64)   DEFAULT NULL,
-    updated_at     timestamp     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at     timestamp     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_flow_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
 
 
-INSERT INTO ml_flow (id, pid, name, `desc`, `group`, grid, config, graph, graph_ver, version, last_run, duration, status, error, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'svm train', 'new svm train', 'first', null, null, 'antvX6', '1.3', '4', '2021-10-10 05:30:00', 88, 'success', null, true, 'Superman', null, 'Superman', null);
+INSERT INTO ml_flow (id, pid, name, `desc`, `group`, grid, config, graph, graph_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, null, 'Svm train', 'New svm train', 'first', null, null, 'antvX6', '1.3', '4', '2021-10-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
 
 
 
@@ -1011,30 +1021,21 @@ CREATE TABLE ai_model
     detail         text           DEFAULT NULL, 
     weblink        varchar(64)    DEFAULT NULL comment 'demo link or home page',
     model_id       int            DEFAULT NULL comment 'point to a ml model like a foreign key',
+	org_id         int            NOT NULL,
     `public`       boolean        NOT NULL DEFAULT false,
     created_by     varchar(64)    NOT NULL,
     created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by     varchar(64)    DEFAULT NULL,
-    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_aimodel_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, eval, score, price, detail, weblink, model_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'resnet50', 'Detect daily objects', 'image', 'Object detection', '["image", "autopilot"]', '1.0', 'Resnet50', 'DJL', '0.17.0', 'ImageNet', '{model: "null"}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 98}', 9, '0', null, 'www.baidu.com', null, true, 'Superman', null, 'Superman', null);
-
-
-INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, evaluation, score, price, detail, weblink, model_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (2, null, 'resnet18', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'pytorch', '1.11', null, '{file:["resnet18.pt","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, true, 'Superman', null, null, null);
-
-
-INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, evaluation, score, price, detail, weblink, model_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (3, null, 'resnet18_v1', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'mxnet', '0.17.0', null, '{file:["resnet18_v1-0000.params","resnet18_v1-symbol.json","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '5', null, 'www.baidu.com', null, true, 'Superman', null, null, null);
-
-INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, evaluation, score, price, detail, weblink, model_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (4, null, 'hwr_mnist', 'Handwriting numerals recognition', 'image', 'Classification', '["handwriting","number", "image"]', '1.0', 'MPL', 'mxnet', '0.17.0', null, '{file:["hwr_mnist.params"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, true, 'Superman', null, null, null);
-
-
-INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, evaluation, score, price, detail, weblink, model_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (5, null, 'pneumonia', 'Pneumonia recognition', 'image', 'Classification', '["pneumonia", "image"]', '1.0', 'Resnet', 'tensorflow', '0.17.0', null, '{file:["pneumonia.pb"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '0', null, 'www.baidu.com', null, true, 'Superman', null, null, null);
+INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, eval, score, price, detail, weblink, model_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, null, 'resnet50', 'Detect daily objects', 'image', 'Object detection', '["image", "autopilot"]', '1.0', 'Resnet50', 'DJL', '0.17.0', 'ImageNet', '{model: "null"}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 98}', 9, '0', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, 'GavinZ', null),
+(2, null, 'resnet18', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'pytorch', '1.11', null, '{file:["resnet18.pt","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
+(3, null, 'resnet18_v1', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'mxnet', '0.17.0', null, '{file:["resnet18_v1-0000.params","resnet18_v1-symbol.json","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '5', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
+(4, null, 'hwr_mnist', 'Handwriting numerals recognition', 'image', 'Classification', '["handwriting","number", "image"]', '1.0', 'MPL', 'mxnet', '0.17.0', null, '{file:["hwr_mnist.params"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
+(5, null, 'pneumonia', 'Pneumonia recognition', 'image', 'Classification', '["pneumonia", "image"]', '1.0', 'Resnet', 'tensorflow', '0.17.0', null, '{file:["pneumonia.pb"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '0', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null);
 
 
 
@@ -1049,27 +1050,173 @@ CREATE TABLE ai_image
     name           varchar(64)    NOT NULL,
     `desc`         varchar(128)   DEFAULT NULL comment 'description',
     `group`        varchar(64)    DEFAULT 'UnGrouped',
-    field          varchar(64)    DEFAULT NULL comment '[autopilot, medicine]',
+    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
     type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
     model_id       int            NOT NULL,
     platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
     platform_ver   varchar(16)    DEFAULT NULL,
     content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
+	org_id         int            NOT NULL,
     `public`       boolean        NOT NULL DEFAULT false,
     created_by     varchar(64)    NOT NULL,
     created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by     varchar(64)    DEFAULT NULL,
     updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_ai_app_image    foreign key(model_id)  REFERENCES ai_model(id)
+    CONSTRAINT fk_aiimage_model   foreign key(model_id)  REFERENCES ai_model(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ai_image (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', true, 'Superman', null, null, null);
-
-INSERT INTO ai_image (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', true, 'Superman', null, null, null);
+INSERT INTO ai_image (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
+(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
 
 
+# ----------------------------
+# Table: ai_audio
+# ----------------------------
+DROP TABLE IF EXISTS ai_audio;
+CREATE TABLE ai_audio
+(
+    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)    NOT NULL,
+    `desc`         varchar(128)   DEFAULT NULL comment 'description',
+    `group`        varchar(64)    DEFAULT 'UnGrouped',
+    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
+    type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
+    model_id       int            NOT NULL,
+    platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
+    platform_ver   varchar(16)    DEFAULT NULL,
+    content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
+	org_id         int            NOT NULL,
+    `public`       boolean        NOT NULL DEFAULT false,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aiaudio_model   foreign key(model_id)  REFERENCES ai_model(id)
+) ENGINE = InnoDB;
+
+INSERT INTO ai_audio (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
+(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
+
+
+# ----------------------------
+# Table: ai_video
+# ----------------------------
+DROP TABLE IF EXISTS ai_video;
+CREATE TABLE ai_video
+(
+    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)    NOT NULL,
+    `desc`         varchar(128)   DEFAULT NULL comment 'description',
+    `group`        varchar(64)    DEFAULT 'UnGrouped',
+    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
+    type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
+    model_id       int            NOT NULL,
+    platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
+    platform_ver   varchar(16)    DEFAULT NULL,
+    content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
+	org_id         int            NOT NULL,
+    `public`       boolean        NOT NULL DEFAULT false,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aivideo_model   foreign key(model_id)  REFERENCES ai_model(id)
+) ENGINE = InnoDB;
+
+INSERT INTO ai_video (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
+(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
+
+
+# ----------------------------
+# Table: ai_text
+# ----------------------------
+DROP TABLE IF EXISTS ai_text;
+CREATE TABLE ai_text
+(
+    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)    NOT NULL,
+    `desc`         varchar(128)   DEFAULT NULL comment 'description',
+    `group`        varchar(64)    DEFAULT 'UnGrouped',
+    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
+    type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
+    model_id       int            NOT NULL,
+    platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
+    platform_ver   varchar(16)    DEFAULT NULL,
+    content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
+	org_id         int            NOT NULL,
+    `public`       boolean        NOT NULL DEFAULT false,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aitext_model   foreign key(model_id)  REFERENCES ai_model(id)
+) ENGINE = InnoDB;
+
+INSERT INTO ai_text (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
+(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
+
+
+# ----------------------------
+# Table: ai_data
+# ----------------------------
+DROP TABLE IF EXISTS ai_data;
+CREATE TABLE ai_data
+(
+    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)    NOT NULL,
+    `desc`         varchar(128)   DEFAULT NULL comment 'description',
+    `group`        varchar(64)    DEFAULT 'UnGrouped',
+    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
+    type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
+    model_id       int            NOT NULL,
+    platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
+    platform_ver   varchar(16)    DEFAULT NULL,
+    content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
+	org_id         int            NOT NULL,
+    `public`       boolean        NOT NULL DEFAULT false,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aidata_model   foreign key(model_id)  REFERENCES ai_model(id)
+) ENGINE = InnoDB;
+
+INSERT INTO ai_data (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
+(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
+
+# ----------------------------
+# Table: ai_security
+# ----------------------------
+DROP TABLE IF EXISTS ai_security;
+CREATE TABLE ai_security
+(
+    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)    NOT NULL,
+    `desc`         varchar(128)   DEFAULT NULL comment 'description',
+    `group`        varchar(64)    DEFAULT 'UnGrouped',
+    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
+    type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
+    model_id       int            NOT NULL,
+    platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
+    platform_ver   varchar(16)    DEFAULT NULL,
+    content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
+	org_id         int            NOT NULL,
+    `public`       boolean        NOT NULL DEFAULT false,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aisecurity_model   foreign key(model_id)  REFERENCES ai_model(id)
+) ENGINE = InnoDB;
+
+INSERT INTO ai_security (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
+(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
 
 
 
@@ -1114,156 +1261,4 @@ INSERT INTO sys_status_dim (id, `group`, status) VALUES (1, 'user', 'frozen');
 INSERT INTO sys_status_dim (id, `group`, status) VALUES (2, 'user', 'active');
 INSERT INTO sys_status_dim (id, `group`, status) VALUES (3, 'user', 'expired');
 INSERT INTO sys_status_dim (id, `group`, status) VALUES (4, 'user', 'deleted');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-    //var marker = L.marker(new L.latLng([31.5, 104]), { title: 'hello' }).bindPopup(
-    //  'This is Beijing!',
-    //);
-
-    var quadtree = L.quadtree({ maxObjectsPerLevel: 4 });
-    //quadtree.add(marker);
-
-    let markerList: any[] = [];
-    //let cluster = MarkerLayerSupport({ singleAddRemoveBufferDuration: 100 });
-    let markerCluster = MarkerClusterGroup();
-    let shapeCluster = L.featureGroup.subGroup(markerCluster);
-    let colorCluster = L.featureGroup.subGroup(markerCluster);
-
-    for (let i = 1; i < 5; i++) {
-      let m = L.marker(new L.latLng([31.5 + i, 104 + i]), { title: 'hello' + i });
-      markerCluster.addLayer(m);
-      markerList.push(m);
-      shapeCluster.addLayer(m);
-      colorCluster.addLayer(m);
-      quadtree.add(m);
-    }
-    //let group1 = L.layerGroup(markerList);
-    //cluster.addTo(inst);
-    //cluster.checkIn([markerList]);
-    //group1.addTo(inst);
-
-    // button is shown on map but except when click. Gavin !!!
-    var control = GeoNames({
-      position: 'topcenter',
-      username: 'Mr_DataPie',
-      enablePostalCodes: false,
-    });
-    inst.addControl(control);
-
-    //shapeCluster.addTo(inst);
-    //colorCluster.addTo(inst);
-    overLayerConfig[1].layers.push({
-      name: 'hello',
-      icon: '<i class="icon icon-park"></i>',
-      filter: true,
-      layer: shapeCluster,
-    });
-    overLayerConfig[1].layers.push({
-      name: 'byby',
-      icon: '<i class="icon icon-park"></i>',
-      filter: true,
-      layer: colorCluster,
-    });
-
-    let layerPanel1 = new PanelLayers(baseLayerConfig, overLayerConfig, {
-      position: 'topright',
-      title: '',
-      collapsibleGroups: true,
-      collapsed: false,
-      compact: false,
-    }).addTo(inst);
-
-    ZoomBar({ position: 'topleft' }).addTo(inst);
-
-    //can find location but except when draw circle
-    //const locateCtrl = new Locate({ position: 'topleft' });
-    //locateCtrl.addTo(inst);
-
-    /*
-    // used to search a public location (country, city...)
-    const provider = new OpenStreetMapProvider();
-    GeoSearchControl({
-      provider: provider,
-      style: 'bar', // bar or button
-    }).addTo(inst);
-*/
-
-    inst.addControl(new L.Control.Search({ layer: markerCluster }));
-
-    // EasyPrint doesn't work because domtoimage.toPng() failure. Gavin !!!
-    // it works when replace domtoimage with html2canvas
-    EasyPrint({
-      title: 'Export',
-      position: 'topleft',
-      exportOnly: true,
-      hideControlContainer: true,
-    }).addTo(inst);
-
-    //PanelLayers and basemapsSwitcher can not work at the same time. Gavin!!!
-    //switchLayerConfig[0].layer.addTo(inst);// default
-    //L.basemapsSwitcher(switchLayerConfig, { position: 'bottomleft' }).addTo(inst);
-
-    let markers: any[] = [];
-    /*
-    // PruneCluster
-    let pruneCluster = new PruneClusterForLeaflet();
-    for (let i = 0; i < 10; i++) {
-      let pruneMarker = new PruneCluster.Marker(41.5 + i, 124 + i, {
-        name: 'hello' + i,
-        popup: 'hi' + i,
-      });
-      pruneCluster.RegisterMarker(pruneMarker);
-      markers.push(pruneMarker);
-    }
-    pruneCluster.addTo(inst);
-*/
-
-    /*
-    let layerPanel2 = new PanelLayers(null, markerLayerConfig, {
-      position: 'bottomleft',
-      title: '',
-      collapsibleGroups: true,
-      collapsed: false,
-      compact: true,
-    }).addTo(inst);
-*/
-
-    SlideMenu('<p>test</p>', {
-      position: 'topleft',
-      menuposition: 'topleft',
-      height: '20%',
-      width: '100%',
-      direction: 'vertical',
-      icon: 'fa-solid fa-user-secret',
-    }).addTo(inst);
-
-    // get visiable markers on map
-    var bounds = inst.getBounds();
-    var colliders = quadtree.getColliders(bounds);
-
-    const timelineControl = L.timelineSliderControl({
-      formatOutput: function (date) {
-        return new Date(date).toLocaleDateString();
-      },
-    });
-    timelineControl.addTo(inst);
-    const timeline = L.timeline(pointsData);
-    timelineControl.addTimelines(timeline);
-    timeline.addTo(inst);
 

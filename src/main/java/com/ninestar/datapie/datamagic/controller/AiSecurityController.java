@@ -10,10 +10,12 @@ import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
-import com.ninestar.datapie.datamagic.entity.AiImageEntity;
+import com.ninestar.datapie.datamagic.entity.AiSecurityEntity;
 import com.ninestar.datapie.datamagic.entity.AiModelEntity;
 import com.ninestar.datapie.datamagic.repository.AiImageRepository;
 import com.ninestar.datapie.datamagic.repository.AiModelRepository;
+import com.ninestar.datapie.datamagic.repository.AiSecurityRepository;
+import com.ninestar.datapie.datamagic.service.AsyncTaskService;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
@@ -36,7 +38,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -49,21 +54,29 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/aimodel")
-@Api(tags = "Ai_Trained_Model")
+@RequestMapping("/aisecurity")
+@Api(tags = "Ai_Security_app")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
-public class AiModelController {
+public class AiSecurityController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private static final String FILE_SERVER = System.getProperty("user.dir") + "/fileServer";
+
+    private static final String pyServerUrl = "http://localhost:9538/ml/";
+
+    @Resource
+    public AiSecurityRepository securityAppRepository;
 
     @Resource
     public AiModelRepository trainedModelRepository;
 
     @Resource
-    public AiImageRepository imageAppRepository;
+    private AsyncTaskService asyncService;
+
 
     @PostMapping("/list")
-    @ApiOperation(value = "getModels", httpMethod = "POST")
-    public UniformResponse getModels(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
+    @ApiOperation(value = "getImageList", httpMethod = "POST")
+    public UniformResponse getImageList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -73,8 +86,8 @@ public class AiModelController {
         Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         Long totalRecords = 0L;
-        Page<AiModelEntity> pageEntities = null;
-        List<AiModelEntity> queryEntities = null;
+        Page<AiSecurityEntity> pageEntities = null;
+        List<AiSecurityEntity> queryEntities = null;
 
         // put multiple orders into a sort which will be put into a pageable
         List<Sort.Order> orders = new ArrayList<Sort.Order>();
@@ -84,7 +97,7 @@ public class AiModelController {
         // build sort object
         //support multiple orders
         if(req.sorter!=null && req.sorter.orders.length>0){
-            for(int i = 0; i< req.sorter.fields.length; i++){
+            for(int i=0; i< req.sorter.fields.length; i++){
                 Sort.Order order = null;
                 if(req.sorter.orders[i].equalsIgnoreCase("ascend")){
                     order = new Sort.Order(Sort.Direction.ASC, req.sorter.fields[i]);
@@ -109,53 +122,27 @@ public class AiModelController {
         }
 
         // build JPA specification
-        Specification<AiModelEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
+        Specification<AiSecurityEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){
-            pageEntities = trainedModelRepository.findAll(specification, pageable);
+            pageEntities = securityAppRepository.findAll(specification, pageable);
             queryEntities = pageEntities.getContent();
             totalRecords = pageEntities.getTotalElements();
         }
         else{
-            queryEntities = trainedModelRepository.findAll(specification);
+            queryEntities = securityAppRepository.findAll(specification);
             totalRecords = (long) queryEntities.size();
         }
 
         // build response
-        List<AiModelListRspType> rspList = new ArrayList<AiModelListRspType>();
-        for(AiModelEntity entity: queryEntities){
-            AiModelListRspType item = new AiModelListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"tags", "content", "input", "output", "evaluation", "detail"});
-            if(!StrUtil.isEmpty(entity.getTags())) {
-                // convert string to array
-                item.tags = JSONUtil.parseArray(entity.getTags()).toList(String.class);
-            }
-            if(!StrUtil.isEmpty(entity.getFiles())) {
-                // convert string to array
-                item.files = JSONUtil.parseArray(entity.getFiles()).toList(String.class);
-            }
-            if(!StrUtil.isEmpty(entity.getInput())) {
-                item.input = new JSONArray(entity.getInput());
-            }
-            if(!StrUtil.isEmpty(entity.getOutput())) {
-                item.output = new JSONArray(entity.getOutput());
-            }
-            if(!StrUtil.isEmpty(entity.getEval())) {
-                item.evaluation = new JSONArray(entity.getEval());
-            }
-            if(!StrUtil.isEmpty(entity.getDetail())) {
-                item.detail = new JSONObject(entity.getDetail());
-            }
-
-            if(entity.getScore()!=null){
-                item.rate = entity.getScore().floatValue()/2;
-            }
-
-            // get model usage
-            List<AiImageEntity> images = imageAppRepository.findByModelId(entity.getId());
-            item.usage = images.size();
-
+        List<AiImageListRspType> rspList = new ArrayList<AiImageListRspType>();
+        for(AiSecurityEntity entity: queryEntities){
+            AiImageListRspType item = new AiImageListRspType();
+            BeanUtil.copyProperties(entity, item, new String[]{"model", "content"});
+            item.modelId = entity.getModel().getId();
+            item.modelName = entity.getModel().getName();
+            item.content = new JSONArray(entity.getContent());
             rspList.add(item);
         }
 
@@ -169,50 +156,43 @@ public class AiModelController {
     }
 
     @PostMapping("/create")
-    @ApiOperation(value = "createModel", httpMethod = "POST")
-    public UniformResponse createModel(@RequestBody @ApiParam(name = "req", value = "model info") AiModelActionReqType req){
+    @ApiOperation(value = "createImageApp", httpMethod = "POST")
+    public UniformResponse createImageApp(@RequestBody @ApiParam(name = "req", value = "image info") AiImageActionReqType req){
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.category) || StrUtil.isEmpty(req.type) || StrUtil.isEmpty(req.framework)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.platform) || StrUtil.isEmpty(req.platformVer) || req.content==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<AiModelEntity> duplicatedEntities = trainedModelRepository.findByNameAndGroupAndType(req.name, req.category, req.type);
-        if(duplicatedEntities.size()!=0){
+        List<AiSecurityEntity> duplicatedEntities = securityAppRepository.findByNameAndGroup(req.name, req.category);
+        if(duplicatedEntities.size()>0){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
         }
 
+        AiModelEntity modelEntity = trainedModelRepository.findById(req.modelId).get();
+        if(modelEntity==null){
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
+
         try {
-            AiModelEntity newEntity = new AiModelEntity();
+            AiSecurityEntity newEntity = new AiSecurityEntity();
             //don't set ID for create
             newEntity.setName(req.name);
             newEntity.setDesc(req.description);
             newEntity.setGroup(req.category);
             newEntity.setType(req.type);
-            newEntity.setFramework(req.framework);
-            newEntity.setFrameVer(req.frameVer);
-            newEntity.setNetwork(req.network);
-            newEntity.setTrainset(req.trainset);
-            newEntity.setPrice(req.price);
-            //newEntity.setDetail(req.detail.toString());
-            newEntity.setWeblink(req.weblink);
-            newEntity.setVersion(req.version);
-            newEntity.setModelId(req.modelId);
-
-            newEntity.setTags(req.tags.toString());
-            newEntity.setEval(req.eval.toString());
-            newEntity.setInput(req.input.toString());
-            newEntity.setOutput(req.output.toString());
-            newEntity.setFiles(req.files.toString());
-
+            newEntity.setPlatform(req.platform);
+            newEntity.setPlatformVer(req.platformVer);
+            newEntity.setContent(req.content.toString());
+            newEntity.setModel(modelEntity);
             newEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jp
 
-            // save source
-            trainedModelRepository.save(newEntity);
+            // save
+            securityAppRepository.save(newEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -222,46 +202,40 @@ public class AiModelController {
     }
 
     @PostMapping("/update")
-    @ApiOperation(value = "updateModel", httpMethod = "POST")
-    public UniformResponse updateModel(@RequestBody @ApiParam(name = "req", value = "model info") AiModelActionReqType req){
+    @ApiOperation(value = "updateImageApp", httpMethod = "POST")
+    public UniformResponse updateImageApp(@RequestBody @ApiParam(name = "req", value = "Image info") AiImageActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.category) || StrUtil.isEmpty(req.type) || StrUtil.isEmpty(req.framework)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.type) || StrUtil.isEmpty(req.platform) || req.content==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(req.id).get();
+        AiSecurityEntity targetEntity = securityAppRepository.findById(req.id).get();
         if(targetEntity==null){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
+        AiModelEntity modelEntity = trainedModelRepository.findById(req.modelId).get();
+        if(modelEntity==null){
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
+
         try {
+            targetEntity.setId(req.id);
             targetEntity.setName(req.name);
+            targetEntity.setType(req.type);
             targetEntity.setDesc(req.description);
             targetEntity.setGroup(req.category);
-            targetEntity.setType(req.type);
-            targetEntity.setFramework(req.framework);
-            targetEntity.setFrameVer(req.frameVer);
-            targetEntity.setNetwork(req.network);
-            targetEntity.setTrainset(req.trainset);
-            targetEntity.setPrice(req.price);
-            //targetEntity.setDetail(req.detail.toString());
-            targetEntity.setWeblink(req.weblink);
-            targetEntity.setVersion(req.version);
-            targetEntity.setModelId(req.modelId);
-
-            targetEntity.setTags(req.tags.toString());
-            targetEntity.setEval(req.eval.toString());
-            targetEntity.setInput(req.input.toString());
-            targetEntity.setOutput(req.output.toString());
-            targetEntity.setFiles(req.files.toString());
-
+            targetEntity.setPlatform(req.platform);
+            targetEntity.setPlatformVer(req.platformVer);
+            targetEntity.setContent(req.content.toString());
+            targetEntity.setModel(modelEntity);
             targetEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jpa
 
             // update source
-            trainedModelRepository.save(targetEntity);
+            securityAppRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -272,8 +246,8 @@ public class AiModelController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicModel", httpMethod = "POST")
-    public UniformResponse publicModel(@RequestBody @ApiParam(name = "params", value = "model id and pub flag") PublicReqType params){
+    @ApiOperation(value = "publicImageApp", httpMethod = "POST")
+    public UniformResponse publicImageApp(@RequestBody @ApiParam(name = "params", value = "app id and pub flag") PublicReqType params){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -281,7 +255,7 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(params.id).get();
+        AiSecurityEntity targetEntity = securityAppRepository.findById(params.id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
@@ -290,7 +264,7 @@ public class AiModelController {
         try {
             // update public status
             targetEntity.setPubFlag(params.pub);
-            trainedModelRepository.save(targetEntity);
+            securityAppRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -300,8 +274,8 @@ public class AiModelController {
     }
 
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneModel", httpMethod = "POST")
-    public UniformResponse cloneModel(@RequestBody @ApiParam(name = "param", value = "model id") JSONObject param){
+    @ApiOperation(value = "cloneImageApp", httpMethod = "POST")
+    public UniformResponse cloneImageApp(@RequestBody @ApiParam(name = "param", value = "Image app id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -310,14 +284,14 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(id).get();
+        AiSecurityEntity targetEntity = securityAppRepository.findById(id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
         String copyName = targetEntity.getName();
-        List<AiModelEntity> targetCopies = trainedModelRepository.findByNameContainingOrderByIdDesc(copyName+"(");
+        List<AiSecurityEntity> targetCopies = securityAppRepository.findByNameContainingOrderByIdDesc(copyName+"(");
         if(targetCopies.size()>0){
             String tmp = targetCopies.get(0).getName();
             tmp = tmp.substring(tmp.indexOf("(")+1, tmp.indexOf(")"));
@@ -339,7 +313,7 @@ public class AiModelController {
             // update public status
             targetEntity.setId(0);
             targetEntity.setName(copyName);
-            trainedModelRepository.save(targetEntity);
+            securityAppRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -349,8 +323,8 @@ public class AiModelController {
     }
 
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteModel", httpMethod = "DELETE")
-    public UniformResponse deleteModel(@RequestParam @ApiParam(name = "id", value = "model id") Integer id){
+    @ApiOperation(value = "deleteImageApp", httpMethod = "DELETE")
+    public UniformResponse deleteImageApp(@RequestParam @ApiParam(name = "id", value = "Image app id") Integer id){
         //Hibernate: delete from data_source where id=?
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
@@ -359,7 +333,7 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(id).get();
+        AiSecurityEntity targetEntity = securityAppRepository.findById(id).get();
         if(targetEntity==null){
             //target entity doesn't exist
             return UniformResponse.ok();
@@ -367,7 +341,7 @@ public class AiModelController {
 
         try {
             // delete entity
-            trainedModelRepository.deleteById(id);
+            securityAppRepository.deleteById(id);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -377,23 +351,23 @@ public class AiModelController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getModelTree", httpMethod = "POST")
-    public UniformResponse getModelTree(){
+    @ApiOperation(value = "getImageTree", httpMethod = "POST")
+    public UniformResponse getImageTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
         // jpa page is starting with 0
-        List<AiModelEntity> datasetEntities = trainedModelRepository.findAll();
+        List<AiSecurityEntity> datasetEntities = securityAppRepository.findAll();
 
         // convert list to tree by category
-        Map<String, List<AiModelEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getGroup()));
+        Map<String, List<AiSecurityEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getGroup()));
         List<TreeSelect> treeDatasets = new ArrayList<>();
         Integer i = 1000;
         for(String group : datasetMap.keySet()){
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
-            for(AiModelEntity source: datasetMap.get(group)){
+            for(AiSecurityEntity source: datasetMap.get(group)){
                 TreeSelect treeNode = new TreeSelect(source.getId(), source.getType(), source.getName(), source.getName(), true, true);
                 treeGroup.getChildren().add(treeNode);
             }
@@ -404,6 +378,70 @@ public class AiModelController {
         return UniformResponse.ok().data(treeDatasets);
     }
 
+    @PostMapping("/execute")
+    @ApiOperation(value = "execute", httpMethod = "POST")
+    public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "model and target") JSONObject param) throws Exception {
+        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Integer userId = (Integer)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer id = Integer.parseInt(param.get("id").toString());
+        Integer modelId = Integer.parseInt(param.get("modelId").toString());
+        String fileName = param.get("fileName").toString();
+
+        if(modelId==0){
+            return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
+        }
+
+        AiModelEntity marketModel = trainedModelRepository.findById(modelId).get();
+        if(marketModel==null){
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
+
+        String path = FILE_SERVER + "/" + orgId + "/" + userId + "/AI_image/";
+        File targetFile = new File(path + fileName);
+
+        if(!targetFile.exists()){
+            //target doesn't exist
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
+
+
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String formatedTS = sdf.format(ts);
+        String outputDir = FILE_SERVER + "/" + orgId + "/" + userId + "/AI_image/" + id + "/" + formatedTS;
+        String msgTarget = userId + "_image" + id;
+
+
+        String modelPath = FILE_SERVER+"/public/model/" + marketModel.getType() + "/" + marketModel.getName();
+        List<String> fileList = null;
+        if(!StrUtil.isEmpty(marketModel.getFiles())){
+            fileList = JSONUtil.parseArray(marketModel.getFiles()).toList(String.class);
+        }
+
+        // run DL4J/DJL example
+        CompletableFuture<Integer> future = null;
+        logger.info("Start a thread to execute DJL model, inform UI to start progressbar via stomp......");
+        switch (marketModel.getFramework().toLowerCase()){
+            case "djl": {
+                future = asyncService.executeDJL(modelPath, path + fileName, outputDir, msgTarget);
+                break;
+            }
+            default: {
+                future = asyncService.executeDJL(modelPath, fileList, marketModel.getFramework(), path + fileName, outputDir, msgTarget);
+                break;
+            }
+        }
+
+        // callback after the task is finished
+        future.thenAccept((ret)->{
+            logger.info("DJL thread is over with return {}, inform UI to stop progressbar via stomp......", ret);
+        });
+        // non-blocking return
+        return UniformResponse.ok();
+
+    }
 
     @PostMapping("/category")
     @ApiOperation(value = "getCatOptions", httpMethod = "POST")
@@ -413,7 +451,7 @@ public class AiModelController {
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = trainedModelRepository.findDistinctGroup();
+        Set<Object> distinctCategory = securityAppRepository.findDistinctGroup();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;
