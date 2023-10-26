@@ -12,7 +12,7 @@ public class AiModelListRspType {
     public Integer id;
     public String name;
     public String desc;
-    public String group;
+    public String category;
     public String type;
     public List<String> tags = new ArrayList<>();
     public String version;

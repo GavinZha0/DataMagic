@@ -1004,7 +1004,7 @@ CREATE TABLE ai_model
     sid            int            DEFAULT NULL comment 'history version',
     name           varchar(64)    NOT NULL,
     `desc`         varchar(128)   DEFAULT NULL comment 'description',
-    `group`        varchar(64)    NOT NULL comment 'image, video, audio, text, data, security',
+    category       varchar(64)    NOT NULL comment 'image, video, audio, text, data, security',
     type           varchar(32)    NOT NULL comment 'clacification, regression, clustering, reduction',
     tags           varchar(64)    DEFAULT NULL comment 'used to search like ["image", "autopilot", "medicine"]',
     version        varchar(16)    NOT NULL comment 'model version',
@@ -1030,7 +1030,7 @@ CREATE TABLE ai_model
 	CONSTRAINT fk_aimodel_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ai_model (id, sid, name, `desc`, `group`, type, tags, version, network, framework, frame_ver, trainset, files, input, output, eval, score, price, detail, weblink, model_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
+INSERT INTO ai_model (id, sid, name, `desc`, category, type, tags, version, network, framework, frame_ver, trainset, files, input, output, eval, score, price, detail, weblink, model_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
 VALUES (1, null, 'resnet50', 'Detect daily objects', 'image', 'Object detection', '["image", "autopilot"]', '1.0', 'Resnet50', 'DJL', '0.17.0', 'ImageNet', '{model: "null"}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 98}', 9, '0', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, 'GavinZ', null),
 (2, null, 'resnet18', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'pytorch', '1.11', null, '{file:["resnet18.pt","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
 (3, null, 'resnet18_v1', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'mxnet', '0.17.0', null, '{file:["resnet18_v1-0000.params","resnet18_v1-symbol.json","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '5', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),

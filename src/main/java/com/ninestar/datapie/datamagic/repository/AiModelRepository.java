@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface AiModelRepository extends JpaRepository<AiModelEntity, Integer>, JpaSpecificationExecutor<AiModelEntity> {
-    public List<AiModelEntity> findByNameAndGroupAndType(String name, String group, String type);
+    public List<AiModelEntity> findByNameAndCategoryAndType(String name, String category, String type);
     public List<AiModelEntity> findByNameContainingOrderByIdDesc(String name);
 
-    @Query(value = "select distinct group from ai_image",nativeQuery = true)
-    public Set<Object> findDistinctGroup();
+    @Query(value = "select distinct category from ai_image",nativeQuery = true)
+    public Set<Object> findDistinctCategory();
 }

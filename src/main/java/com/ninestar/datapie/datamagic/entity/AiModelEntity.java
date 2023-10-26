@@ -34,8 +34,8 @@ public class AiModelEntity {
     @Column(name = "desc", length = 64)
     private String desc;
 
-    @Column(name = "group", nullable = false, length = 64)
-    private String group;
+    @Column(name = "category", nullable = false, length = 64)
+    private String category;
 
     @Column(name = "type", nullable = false, length = 32)
     private String type;

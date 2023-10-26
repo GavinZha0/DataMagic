@@ -180,7 +180,7 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<AiModelEntity> duplicatedEntities = trainedModelRepository.findByNameAndGroupAndType(req.name, req.category, req.type);
+        List<AiModelEntity> duplicatedEntities = trainedModelRepository.findByNameAndCategoryAndType(req.name, req.category, req.type);
         if(duplicatedEntities.size()!=0){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
         }
@@ -190,7 +190,7 @@ public class AiModelController {
             //don't set ID for create
             newEntity.setName(req.name);
             newEntity.setDesc(req.description);
-            newEntity.setGroup(req.category);
+            newEntity.setCategory(req.category);
             newEntity.setType(req.type);
             newEntity.setFramework(req.framework);
             newEntity.setFrameVer(req.frameVer);
@@ -239,7 +239,7 @@ public class AiModelController {
         try {
             targetEntity.setName(req.name);
             targetEntity.setDesc(req.description);
-            targetEntity.setGroup(req.category);
+            targetEntity.setCategory(req.category);
             targetEntity.setType(req.type);
             targetEntity.setFramework(req.framework);
             targetEntity.setFrameVer(req.frameVer);
@@ -388,7 +388,7 @@ public class AiModelController {
         List<AiModelEntity> datasetEntities = trainedModelRepository.findAll();
 
         // convert list to tree by category
-        Map<String, List<AiModelEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getGroup()));
+        Map<String, List<AiModelEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getCategory()));
         List<TreeSelect> treeDatasets = new ArrayList<>();
         Integer i = 1000;
         for(String group : datasetMap.keySet()){
@@ -413,7 +413,7 @@ public class AiModelController {
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = trainedModelRepository.findDistinctGroup();
+        Set<Object> distinctCategory = trainedModelRepository.findDistinctCategory();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;
