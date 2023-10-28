@@ -10,6 +10,7 @@ import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.ParamActionReqType;
 import com.ninestar.datapie.datamagic.bridge.TableListReqType;
 import com.ninestar.datapie.datamagic.entity.SysParamEntity;
+import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.repository.SysParamRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
@@ -51,6 +52,9 @@ public class SysParamController {
 
     @Resource
     private SysParamRepository configRepository;
+
+    @Resource
+    private SysOrgRepository orgRepository;
 
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
@@ -101,7 +105,7 @@ public class SysParamController {
         }
 
         // build JPA specification
-        Specification<SysParamEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, request.filter, request.search);
+        Specification<SysParamEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenIsAdmin, tokenUsername, request.filter, request.search);
 
         // query data from database
         if(pageable!=null){
@@ -124,13 +128,16 @@ public class SysParamController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('Superuser')")
+    @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "createConfig", httpMethod = "POST")
     public UniformResponse createConfig(@RequestBody @ApiParam(name = "request", value = "config info") ParamActionReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         if(StrUtil.isEmpty(request.name) || StrUtil.isEmpty(request.module) || StrUtil.isEmpty(request.group) || StrUtil.isEmpty(request.value)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -149,6 +156,7 @@ public class SysParamController {
             newParam.setType(request.type);
             newParam.setGroup(request.group);
             newParam.setValue(request.value);
+            newParam.setOrg(orgRepository.findById(tokenOrgId).get());
 
             // save source
             configRepository.save(newParam);
@@ -162,14 +170,16 @@ public class SysParamController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @PreAuthorize("hasAnyRole('Superuser')")
+    @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @ApiOperation(value = "updateConfig", httpMethod = "POST")
     public UniformResponse updateConfig(@RequestBody @ApiParam(name = "source", value = "source info") ParamActionReqType request){
-        //Hibernate: update sys_user set active=?, avatar=?, create_time=?, created_by=?, deleted=?, department=?, email=?, name=?, realname=?, org_id=?, password=?, phone=?, update_time=?, updated_by=? where id=?
-        //Hibernate: delete from sys_user_role where user_id=?
-        //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         if(request.id==0 || StrUtil.isEmpty(request.name)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -205,9 +215,12 @@ public class SysParamController {
     @ApiOperation(value = "getParameter", httpMethod = "POST")
     public UniformResponse getParameter(@RequestBody @ApiParam(name = "request", value = "parameter name") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         String paramName = request.get("name").toString();
 

@@ -40,17 +40,17 @@ CREATE TABLE sys_param
     type        varchar(64)    NOT NULL comment 'integer, float, boolean, string, [string], json',
     value       varchar(255)   NOT NULL comment 'current value',
     previous    varchar(255)   DEFAULT NULL comment 'previous value',
+	org_id      int            DEFAULT 1 comment 'free center by default',
     created_by  varchar(64)    NOT NULL,
     created_at  timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)    DEFAULT NULL,
-    updated_at  timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at  timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_param_org    foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO sys_param (id, name, `desc`, `group`, module, type, value, previous, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'source_type', null, 'datasource', 'dataviz', '[string]', "['CSV', 'JSON', 'MySQL', 'MariaDB', 'Vertica']", '', 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_param (id, name, `desc`, `group`, module, type, value, previous, created_by, created_at, updated_by, updated_at)
-VALUES (2, 'chart_lib', null, 'dataview', 'dataviz', '[json]', "[{name:'G2Plot',ver:['2.4']},{name:'ECharts',ver:['1.0']},{name:'AmCharts',ver:['5.0','4.1']},{name:'ApexCharts',ver:['2.0']},{name:'VegaLite', ver:['5.6']}]", null, 'Superman', null, 'Superman', null);
+INSERT INTO sys_param (id, name, `desc`, `group`, module, type, value, previous, org_id, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'source_type', null, 'datasource', 'dataviz', '[string]', "['CSV', 'JSON', 'MySQL', 'MariaDB', 'Vertica']", '', 2, 'Superman', null, 'Superman', null),
+(2, 'chart_lib', null, 'dataview', 'dataviz', '[json]', "[{name:'G2Plot',ver:['2.4']},{name:'S2',ver:['1.51']},{name:'ECharts',ver:['1.0']},{name:'AmCharts',ver:['5.0','4.1']},{name:'ApexCharts',ver:['2.0']},{name:'VegaLite', ver:['5.6']}]", null, 2, 'Superman', null, 'Superman', null);
 
 
 

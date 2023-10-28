@@ -125,7 +125,7 @@ public class SysUserController {
         }
 
         // build JPA specification
-        Specification<SysUserEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, request.filter, request.search);
+        Specification<SysUserEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenIsAdmin, tokenUsername, request.filter, request.search);
 
         // query data from database
         if(pageable!=null){

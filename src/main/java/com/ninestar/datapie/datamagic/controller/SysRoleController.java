@@ -110,7 +110,7 @@ public class SysRoleController {
         }
 
         // build JPA specification
-        Specification<SysRoleEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
+        Specification<SysRoleEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenIsAdmin, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){

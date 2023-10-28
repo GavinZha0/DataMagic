@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.Bindable;
 import java.lang.reflect.Method;
 import java.text.ParseException;
@@ -19,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Gavin.Zhao
@@ -71,6 +73,10 @@ public class JpaSpecUtil {
         return new JpaSpecImpl().buildSpecification(orgId, isSuperuser, loginUser, filter, search);
     }
 
+    public static  <T> Specification<T> build(Integer orgId, Boolean isSuperuser, Boolean isAdmin, String loginUser, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
+        return new JpaSpecImpl().buildSpecification(orgId, isSuperuser, isAdmin, loginUser, filter, search);
+    }
+
     public static  <T> Specification<T> build(Integer orgId, Integer userId, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
         return new JpaSpecImpl().buildSpecification(orgId, userId, filter, search);
     }
@@ -119,6 +125,113 @@ public class JpaSpecUtil {
                                 cb.equal(root.get("pubFlag"), true),
                                 cb.equal(root.get("createdBy"), loginUser)
                         ));
+                        prePredicate = cb.and(preconditions.toArray(new Predicate[preconditions.size()]));
+                    }
+
+                    // build filter query condition and predicate
+                    if (filter != null && filter.fields !=null && filter.fields.size() > 0 && filter.values.size() > 0) {
+                        // only one filter for now
+                        for (int i = 0; i < filter.fields.size(); i++) {
+                            String fieldName = filter.fields.get(i);
+                            String[] fieldValue = filter.values.get(i);
+                            // convert string to boolean if needed
+                            if (fieldValue[0].equalsIgnoreCase("true") || fieldValue[0].equalsIgnoreCase("false")) {
+                                Boolean[] booleans = new Boolean[fieldValue.length];
+                                for (int j = 0; j < fieldValue.length; j++) {
+                                    booleans[j] = fieldValue[j].equalsIgnoreCase("true") ? true : false;
+                                }
+                                Path<T> ccc = root.get(fieldName);
+                                filterConditions.add(root.get(fieldName).in(booleans));
+                            }
+                            else if(root.get(fieldName).getJavaType().getName().startsWith("java.")){
+                                // regular type like Integer, string
+                                filterConditions.add(root.get(fieldName).in(fieldValue[i]));
+                            } else {
+                                // class like SysOrgEntity
+                                // use fixed field 'id' here, need enhancement, Gavin !!!
+                                filterConditions.add(root.get(fieldName).get("id").in(fieldValue[i]));
+                            }
+                        }
+                        // 'or' for filtering multiple values in one field(column)
+                        filterPredicate = cb.or(filterConditions.toArray(new Predicate[filterConditions.size()]));
+                    }
+
+                    // build search query condition and predicate
+                    if (search != null && search.fields!=null && !StrUtil.isEmpty(search.value)) {
+                        for (int k = 0; k < search.fields.length; k++) {
+                            // fuzzy search
+                            searchConditions.add(cb.like(root.get(search.fields[k]), "%" + search.value + "%"));
+                        }
+                        // 'or' for searching a value in multiple fields(columns)
+                        searchPredicate = cb.or(searchConditions.toArray(new Predicate[searchConditions.size()]));
+                    }
+
+                    // return predicate
+                    if (filterPredicate != null && searchPredicate != null) {
+                        // 'and' is used between filter and search
+                        finalPredicate = cb.and(filterPredicate, searchPredicate);
+                    } else if (filterPredicate != null) {
+                        // filter only
+                        finalPredicate = filterPredicate;
+                    } else if (searchPredicate != null) {
+                        // search only
+                        finalPredicate = searchPredicate;
+                    }
+
+                    if (finalPredicate != null && prePredicate != null) {
+                        // prePredicate will be added with 'and' if not superuser
+                        return cb.and(finalPredicate, prePredicate);
+                    } else if (finalPredicate != null) {
+                        // superuser with filter or search
+                        return finalPredicate;
+                    } else if (prePredicate != null) {
+                        // normal user without any filter/search
+                        return prePredicate;
+                    } else {
+                        // superuser without any predicate
+                        return null;
+                    }
+                }
+            };
+            return specification;
+        }
+
+        public Specification<T> buildSpecification(Integer orgId, Boolean isSuperuser, Boolean isAdmin, String loginUser, TableListReqType.FilterType filter, TableListReqType.SearchType search) {
+            // build query conditions
+            Specification<T> specification = new Specification<T>() {
+                @Override
+                public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                    List<Predicate> preconditions = new ArrayList<>();
+                    List<Predicate> filterConditions = new ArrayList<>();
+                    List<Predicate> searchConditions = new ArrayList<>();
+                    Predicate prePredicate = null;
+                    Predicate filterPredicate = null;
+                    Predicate searchPredicate = null;
+                    Predicate finalPredicate = null;
+
+                    if (!isSuperuser && orgId!=null) {
+                        // only superuser can see users of all orgs
+                        preconditions.add(cb.equal(root.get("org"), orgId));
+                        if(isAdmin){
+                            List<String> attrList = root.getModel().getAttributes().stream().map(attr->attr.toString()).collect(Collectors.toList());
+                            for(String ele: attrList){
+                                if(ele.contains("#pubFlag")){
+                                    // admin of one of orgs
+                                    preconditions.add(cb.equal(root.get("pubFlag"), true));
+                                    break;
+                                } else if(ele.contains("SysUserEntity#active")) {
+                                    // admin of one of orgs
+                                    preconditions.add(cb.equal(root.get("active"), true));
+                                    break;
+                                }
+                            }
+                        } else {
+                            // regular user
+                            preconditions.add(cb.or(
+                                    cb.equal(root.get("pubFlag"), true),
+                                    cb.equal(root.get("createdBy"), loginUser)
+                            ));
+                        }
                         prePredicate = cb.and(preconditions.toArray(new Predicate[preconditions.size()]));
                     }
 
