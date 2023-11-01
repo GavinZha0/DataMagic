@@ -13,6 +13,6 @@ public interface AiImageRepository extends JpaRepository<AiImageEntity, Integer>
     public List<AiImageEntity> findByNameContainingOrderByIdDesc(String name);
 
     public List<AiImageEntity> findByModelId(Integer modelId);
-    @Query(value = "select distinct group from ai_image",nativeQuery = true)
+    @Query(value = "select distinct `group` from ai_image",nativeQuery = true)
     public Set<Object> findDistinctGroup();
 }

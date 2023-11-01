@@ -12,6 +12,9 @@ public interface AiModelRepository extends JpaRepository<AiModelEntity, Integer>
     public List<AiModelEntity> findByNameAndCategoryAndType(String name, String category, String type);
     public List<AiModelEntity> findByNameContainingOrderByIdDesc(String name);
 
-    @Query(value = "select distinct category from ai_image",nativeQuery = true)
+    @Query(value = "select distinct type from ai_model where category ='image'",nativeQuery = true)
+    public Set<Object> findDistinctType();
+
+    @Query(value = "select distinct category from ai_model",nativeQuery = true)
     public Set<Object> findDistinctCategory();
 }

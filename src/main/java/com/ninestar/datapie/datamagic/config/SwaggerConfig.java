@@ -45,8 +45,8 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Interface doc of DataMagic")
-                .description("DataMagic is a platform for big data")
+                .title("Interface of DataMagic")
+                .description("DataMagic is a Java server of DataPie for AI and BI!")
                 .contact(new Contact("NineStar", "https://www.ninestar.com/", "support@ninestar.com"))
                 .version("0.1")
                 .build();

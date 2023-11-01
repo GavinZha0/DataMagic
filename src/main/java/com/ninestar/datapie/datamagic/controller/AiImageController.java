@@ -443,8 +443,8 @@ public class AiImageController {
 
     }
 
-    @PostMapping("/category")
-    @ApiOperation(value = "getCatOptions", httpMethod = "POST")
+    @PostMapping("/groups")
+    @ApiOperation(value = "getGroupOptions", httpMethod = "POST")
     public UniformResponse getCatOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

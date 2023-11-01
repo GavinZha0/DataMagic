@@ -405,6 +405,32 @@ public class AiModelController {
     }
 
 
+    @PostMapping("/types")
+    @ApiOperation(value = "getTypeOptions", httpMethod = "POST")
+    public UniformResponse getTypeOptions() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        //String tokenUser = auth.getCredentials().toString();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+
+        Set<Object> distinctType = trainedModelRepository.findDistinctType();
+        Set<OptionsRspType> catSet = new HashSet<>();
+
+        Integer i = 0;
+        // get distinct category set
+        for(Object item: distinctType){
+            OptionsRspType cat = new OptionsRspType();
+            cat.id = i;
+            cat.name = item.toString();
+            catSet.add(cat);
+            i++;
+        }
+
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.set("records", catSet);
+        return UniformResponse.ok().data(jsonResponse);
+    }
+
     @PostMapping("/category")
     @ApiOperation(value = "getCatOptions", httpMethod = "POST")
     public UniformResponse getCatOptions() {
@@ -430,7 +456,6 @@ public class AiModelController {
         jsonResponse.set("records", catSet);
         return UniformResponse.ok().data(jsonResponse);
     }
-
 
     @PostMapping("/upload")
     @ApiOperation(value = "imageUpload", httpMethod = "POST")
