@@ -304,7 +304,6 @@ public class VizDatasetController {
             targetEntity.setField(req.fields.toString());
             targetEntity.setGraph(req.graph.toString());
             targetEntity.setGraphVer(req.graphVer);
-            targetEntity.setPubFlag(req.pubFlag);
 
             // convert query based on variable, fields
             String err = "";

@@ -44,8 +44,8 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/workflow")
-@Api(tags = "workflow")
+@RequestMapping("/mlworkflow")
+@Api(tags = "MlWorkflow")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlFlowController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -472,20 +472,20 @@ public class MlFlowController {
         return UniformResponse.ok().data(response);
     }
 
-    @PostMapping("/category")
-    @ApiOperation(value = "getCatOptions", httpMethod = "POST")
-    public UniformResponse getCatOptions() {
+    @PostMapping("/groups")
+    @ApiOperation(value = "getMlFlowGroups", httpMethod = "POST")
+    public UniformResponse getMlFlowGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = workflowRepository.findDistinctGroup();
+        Set<Object> distinctGroup = workflowRepository.findDistinctGroup();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;
         // get distinct category set
-        for(Object item: distinctCategory){
+        for(Object item: distinctGroup){
             OptionsRspType cat = new OptionsRspType();
             cat.id = i;
             cat.name = item.toString();

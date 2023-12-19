@@ -393,9 +393,48 @@ public class DbUtils {
 
             // get values
             while (result.next()) {
-                String[] colArray = new String[colSize];
+                Object[] colArray = new Object[colSize];
                 for(int j=0; j<colSize; j++){
-                    colArray[j] = result.getString(j+1);
+                    String dataType = metaData.getColumnClassName(j+1);
+                    switch (dataType){
+                        case "java.lang.Integer":
+                        {
+                            colArray[j] = result.getInt(j+1);
+                            break;
+                        }
+                        case "java.lang.Long":{
+                            colArray[j] = result.getLong(j+1);
+                            break;
+                        }
+                        case "java.lang.Float":{
+                            colArray[j] = result.getFloat(j+1);
+                            break;
+                        }
+                        case "java.lang.Double":{
+                            colArray[j] = result.getDouble(j+1);
+                            break;
+                        }
+                        case "java.lang.Date":{
+                            colArray[j] = result.getDate(j+1);
+                            break;
+                        }
+                        case "java.lang.Time":{
+                            colArray[j] = result.getTime(j+1);
+                            break;
+                        }
+                        case "java.lang.Timestamp":{
+                            colArray[j] = result.getTimestamp(j+1);
+                            break;
+                        }
+                        case "java.lang.Boolean":{
+                            colArray[j] = result.getBoolean(j+1);
+                            break;
+                        }
+                        default:{
+                            colArray[j] = result.getString(j+1);
+                            break;
+                        }
+                    }
                 }
                 resultMap.add(colArray);
 

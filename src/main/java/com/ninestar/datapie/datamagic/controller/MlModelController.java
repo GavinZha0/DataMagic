@@ -51,8 +51,8 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/model")
-@Api(tags = "Model")
+@RequestMapping("/mlmodel")
+@Api(tags = "MlModel")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlModelController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

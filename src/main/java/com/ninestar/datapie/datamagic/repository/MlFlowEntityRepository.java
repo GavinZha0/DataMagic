@@ -13,6 +13,6 @@ public interface MlFlowEntityRepository extends JpaRepository<MlFlowEntity, Inte
     List<MlFlowEntity> findByNameContainingOrderByIdDesc(String name);
     List<MlFlowEntity> findByPidAndVersionStartingWith(Integer pid, String version);
 
-    @Query(value = "select distinct category from ml_workflow",nativeQuery = true)
+    @Query(value = "select distinct `group` from ml_flow",nativeQuery = true)
     Set<Object> findDistinctGroup();
 }

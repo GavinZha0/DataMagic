@@ -5,7 +5,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -13,8 +12,11 @@ import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
-import com.ninestar.datapie.datamagic.entity.MlAlgoEntity;
-import com.ninestar.datapie.datamagic.repository.MlAlgoRepository;
+import com.ninestar.datapie.datamagic.entity.DataSourceEntity;
+import com.ninestar.datapie.datamagic.entity.MlFeatureEntity;
+import com.ninestar.datapie.datamagic.repository.DataSourceRepository;
+import com.ninestar.datapie.datamagic.repository.MlFeatureRepository;
+import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
@@ -48,19 +50,25 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/mlalgo")
-@Api(tags = "MlAlgo")
+@RequestMapping("/mlfeature")
+@Api(tags = "MlFeature")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
-public class MlAlgoController {
+public class MlFeatureController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String pyServerUrl = "http://localhost:9538/ml/";
 
     @Resource
-    public MlAlgoRepository algorithmRepository;
+    public DataSourceRepository sourceRepository;
+
+    @Resource
+    public MlFeatureRepository featureRepository;
+
+    @Resource
+    public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getAlgorithmList", httpMethod = "POST")
+    @ApiOperation(value = "getFeatureList", httpMethod = "POST")
     public UniformResponse getAlgorithmList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -71,8 +79,8 @@ public class MlAlgoController {
         Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         Long totalRecords = 0L;
-        Page<MlAlgoEntity> pageEntities = null;
-        List<MlAlgoEntity> queryEntities = null;
+        Page<MlFeatureEntity> pageEntities = null;
+        List<MlFeatureEntity> queryEntities = null;
 
         // put multiple orders into a sort which will be put into a pageable
         List<Sort.Order> orders = new ArrayList<Sort.Order>();
@@ -107,28 +115,35 @@ public class MlAlgoController {
         }
 
         // build JPA specification
-        Specification<MlAlgoEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
+        Specification<MlFeatureEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){
-            pageEntities = algorithmRepository.findAll(specification, pageable);
+            pageEntities = featureRepository.findAll(specification, pageable);
             queryEntities = pageEntities.getContent();
             totalRecords = pageEntities.getTotalElements();
         }
         else{
-            queryEntities = algorithmRepository.findAll(specification);
+            queryEntities = featureRepository.findAll(specification);
             totalRecords = (long) queryEntities.size();
         }
 
         // build response
-        List<AlgorithmListRspType> rspList = new ArrayList<AlgorithmListRspType>();
-        for(MlAlgoEntity entity: queryEntities){
-            AlgorithmListRspType item = new AlgorithmListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"config"});
-            item.config = new JSONArray(entity.getConfig());
+        List<MlFeatureListRspType> rspList = new ArrayList<MlFeatureListRspType>();
+        for(MlFeatureEntity entity: queryEntities){
+            MlFeatureListRspType item = new MlFeatureListRspType();
+            BeanUtil.copyProperties(entity, item, new String[]{"fields", "relPair"});
+            item.sourceId = entity.getDatasource().getId();
+            item.sourceName = entity.getDatasource().getGroup() + "/" + entity.getDatasource().getName();
+            if(StrUtil.isNotEmpty(entity.getFields())){
+                item.fields = new JSONArray(entity.getFields());
+            }
+            if(StrUtil.isNotEmpty(entity.getRelPair())){
+                item.relPair = new JSONArray(entity.getRelPair());
+            }
+
             rspList.add(item);
         }
-
 
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", rspList);
@@ -140,45 +155,60 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createAlgorithm", httpMethod = "POST")
-    public UniformResponse createAlgorithm(@RequestBody @ApiParam(name = "req", value = "dataset info") AlgorithmActionReqType req){
-        //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+    @ApiOperation(value = "createFeature", httpMethod = "POST")
+    public UniformResponse createFeature(@RequestBody @ApiParam(name = "req", value = "dataset info") MlFeatureActionReqType req){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.language) || StrUtil.isEmpty(req.langVer) || StrUtil.isEmpty(req.content)){
+        if(StrUtil.isEmpty(req.name) || req.fields.isEmpty() || req.sourceId<1){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<MlAlgoEntity> duplicatedEntities = algorithmRepository.findByNameAndGroup(req.name, req.group);
-        if(duplicatedEntities!=null){
-            for(MlAlgoEntity entity: duplicatedEntities){
-                if(entity.getPid() == req.id){
-                    return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
-                }
-            }
+        List<MlFeatureEntity> duplicatedEntities = featureRepository.findByNameAndGroup(req.name, req.group);
+        if(duplicatedEntities.size()>0){
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
+        }
+
+        DataSourceEntity source = sourceRepository.findById(req.sourceId).get();
+        if(source==null){
+            return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
         try {
-            MlAlgoEntity newEntity = new MlAlgoEntity();
+            MlFeatureEntity newEntity = new MlFeatureEntity();
             //don't set ID for create
             newEntity.setName(req.name);
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
-            newEntity.setPid(0);
             newEntity.setType(req.type);
-            newEntity.setLanguage(req.language);
-            newEntity.setLangVer(req.langVer);
-            newEntity.setContent(req.content);
-            if(req.config!=null){
-                newEntity.setConfig(req.config.toString());
+            newEntity.setDatasource(source);
+            newEntity.setDatasetName(req.datasetName);
+            newEntity.setQuery(req.query);
+            newEntity.setTarget(req.target);
+            newEntity.setFeatures(req.features);
+            if(req.fields!=null){
+                newEntity.setFields(req.fields.toString());
             }
-            newEntity.setPubFlag(req.pubFlag);
+            if(req.relPair!=null){
+                newEntity.setRelPair(req.relPair.toString());
+            }
+
+            if(req.pubFlag==null){
+                newEntity.setPubFlag(false);
+            }
+            else{
+                newEntity.setPubFlag(req.pubFlag);
+            }
+
+            newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
             //create_time and update_time are generated automatically by jp
 
             // save source
-            algorithmRepository.save(newEntity);
+            featureRepository.save(newEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -189,18 +219,23 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateAlgorithm", httpMethod = "POST")
-    public UniformResponse updateAlgorithm(@RequestBody @ApiParam(name = "req", value = "Algorithm info") AlgorithmActionReqType req){
+    @ApiOperation(value = "updateFeature", httpMethod = "POST")
+    public UniformResponse updateFeature(@RequestBody @ApiParam(name = "req", value = "Algorithm info") MlFeatureActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.language) || StrUtil.isEmpty(req.langVer) || StrUtil.isEmpty(req.content)){
+        if(StrUtil.isEmpty(req.name) || req.fields.isEmpty() || req.sourceId<1){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlAlgoEntity targetEntity = algorithmRepository.findById(req.id).get();
+        MlFeatureEntity targetEntity = featureRepository.findById(req.id).get();
         if(targetEntity==null){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
+
+        DataSourceEntity source = sourceRepository.findById(req.sourceId).get();
+        if(source==null){
+            return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
         try {
@@ -209,16 +244,27 @@ public class MlAlgoController {
             targetEntity.setType(req.type);
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
-            targetEntity.setPid(req.pid);
-            targetEntity.setLanguage(req.language);
-            targetEntity.setLangVer(req.langVer);
-            targetEntity.setConfig(req.config.toString());
-            targetEntity.setContent(req.content);
+            targetEntity.setDatasource(source);
+            targetEntity.setDatasetName(req.datasetName);
+            targetEntity.setQuery(req.query);
+            targetEntity.setTarget(req.target);
+            targetEntity.setFeatures(req.features);
+            if(req.fields!=null){
+                targetEntity.setFields(req.fields.toString());
+            } else {
+                targetEntity.setFields(null);
+            }
+            if(req.relPair!=null){
+                targetEntity.setRelPair(req.relPair.toString());
+            } else {
+                targetEntity.setRelPair(null);
+            }
+
             targetEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jpa
 
             // update source
-            algorithmRepository.save(targetEntity);
+            featureRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -229,16 +275,20 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicAlgorithm", httpMethod = "POST")
-    public UniformResponse publicAlgorithm(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+    @ApiOperation(value = "publicFeature", httpMethod = "POST")
+    public UniformResponse publicFeature(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         if(params.id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlAlgoEntity targetEntity = algorithmRepository.findById(params.id).get();
+        MlFeatureEntity targetEntity = featureRepository.findById(params.id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
@@ -247,7 +297,7 @@ public class MlAlgoController {
         try {
             // update public status
             targetEntity.setPubFlag(params.pub);
-            algorithmRepository.save(targetEntity);
+            featureRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -258,24 +308,28 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneALgorithm", httpMethod = "POST")
-    public UniformResponse cloneALgorithm(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+    @ApiOperation(value = "cloneFeature", httpMethod = "POST")
+    public UniformResponse cloneFeature(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         Integer id = Integer.parseInt(param.get("id").toString());
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlAlgoEntity targetEntity = algorithmRepository.findById(id).get();
+        MlFeatureEntity targetEntity = featureRepository.findById(id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
         String copyName = targetEntity.getName();
-        List<MlAlgoEntity> targetCopies = algorithmRepository.findByNameContainingOrderByIdDesc(copyName+"(");
+        List<MlFeatureEntity> targetCopies = featureRepository.findByNameContainingOrderByIdDesc(copyName+"(");
         if(targetCopies.size()>0){
             String tmp = targetCopies.get(0).getName();
             tmp = tmp.substring(tmp.indexOf("(")+1, tmp.indexOf(")"));
@@ -297,7 +351,7 @@ public class MlAlgoController {
             // update public status
             targetEntity.setId(0);
             targetEntity.setName(copyName);
-            algorithmRepository.save(targetEntity);
+            featureRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -308,17 +362,20 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteAlgorithm", httpMethod = "DELETE")
-    public UniformResponse deleteAlgorithm(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
-        //Hibernate: delete from data_source where id=?
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+    @ApiOperation(value = "deleteFeature", httpMethod = "DELETE")
+    public UniformResponse deleteFeature(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlAlgoEntity targetEntity = algorithmRepository.findById(id).get();
+        MlFeatureEntity targetEntity = featureRepository.findById(id).get();
         if(targetEntity==null){
             //target entity doesn't exist
             return UniformResponse.ok();
@@ -326,7 +383,7 @@ public class MlAlgoController {
 
         try {
             // delete entity
-            algorithmRepository.deleteById(id);
+            featureRepository.deleteById(id);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -336,23 +393,25 @@ public class MlAlgoController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getAlgorithmTree", httpMethod = "POST")
-    public UniformResponse getAlgorithmTree(){
+    @ApiOperation(value = "getFeatureTree", httpMethod = "POST")
+    public UniformResponse getFeatureTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         // jpa page is starting with 0
-        List<MlAlgoEntity> datasetEntities = algorithmRepository.findAll();
+        List<MlFeatureEntity> datasetEntities = featureRepository.findAll();
 
         // convert list to tree by category
-        Map<String, List<MlAlgoEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getGroup()));
+        Map<String, List<MlFeatureEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getGroup()));
         List<TreeSelect> treeDatasets = new ArrayList<>();
         Integer i = 1000;
         for(String group : datasetMap.keySet()){
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
-            for(MlAlgoEntity source: datasetMap.get(group)){
+            for(MlFeatureEntity source: datasetMap.get(group)){
                 TreeSelect treeNode = new TreeSelect(source.getId(), source.getType(), source.getName(), source.getName(), true, true);
                 treeGroup.getChildren().add(treeNode);
             }
@@ -364,10 +423,14 @@ public class MlAlgoController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getAlgorithm", httpMethod = "POST")
-    public UniformResponse getAlgorithm(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+    @ApiOperation(value = "getFeature", httpMethod = "POST")
+    public UniformResponse getFeature(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         Integer id = Integer.parseInt(param.get("id").toString());
 
@@ -375,7 +438,7 @@ public class MlAlgoController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlAlgoEntity targetEntity = algorithmRepository.findById(id).get();
+        MlFeatureEntity targetEntity = featureRepository.findById(id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
@@ -389,9 +452,12 @@ public class MlAlgoController {
     @PostMapping("/execute")
     @ApiOperation(value = "execute", httpMethod = "POST")
     public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "algorithm id") JSONObject param) throws Exception {
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
-        Integer userId = (Integer)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
         Integer id = Integer.parseInt(param.get("id").toString());
 
@@ -399,8 +465,8 @@ public class MlAlgoController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlAlgoEntity targetEntity = algorithmRepository.findById(id).get();
-        if(targetEntity==null || targetEntity.getContent()==null){
+        MlFeatureEntity targetEntity = featureRepository.findById(id).get();
+        if(targetEntity==null || targetEntity.getFields()==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
@@ -409,7 +475,7 @@ public class MlAlgoController {
         // forward command to python server for user x and algorithm y
         HttpResponse response = null;
         try{
-            String uniqueId = userId.toString() + "_alg"+targetEntity.getId();
+            String uniqueId = tokenUserId.toString() + "_ml_feature_"+targetEntity.getId();
             response = HttpRequest.post(pyServerUrl + "execute")
                     .header("uid", uniqueId)
                     .body(JSONUtil.parseObj(targetEntity).toString()) // need to do toJsonString. Gavin!!!
@@ -429,46 +495,15 @@ public class MlAlgoController {
         }
     }
 
-    @PostMapping("/execute_script")
-    @ApiOperation(value = "executeScript", httpMethod = "POST")
-    public UniformResponse executeScript(@RequestBody @ApiParam(name = "request", value = "request info") AlgorithmActionReqType request) throws Exception {
-        //Hibernate: update sys_user set active=?, avatar=?, create_time=?, created_by=?, deleted=?, department=?, email=?, name=?, realname=?, org_id=?, password=?, phone=?, update_time=?, updated_by=? where id=?
-        //Hibernate: delete from sys_user_role where user_id=?
-        //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
-
-        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
-        //Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
-
-        if(request==null || request.id==null || StrUtil.isEmpty(request.content) || StrUtil.isEmpty(request.language)){
-            return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
-        }
-
-        String pythonServerUrl = "http://localhost:9538/ml/execute_script";
-        HttpResponse response = HttpRequest.post(pythonServerUrl)
-                .body(JSONUtil.parseObj(request).toString())
-                .execute();
-        JSONObject result = new JSONObject(response.body());
-
-        return result.toBean(UniformResponse.class);
-        //return UniformResponse.ok().data(result);
-    }
-
-
-
-
-
-
-    @PostMapping("/category")
-    @ApiOperation(value = "getCatOptions", httpMethod = "POST")
-    public UniformResponse getCatOptions() {
+    @PostMapping("/groups")
+    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = algorithmRepository.findDistinctGroup();
+        Set<Object> distinctCategory = featureRepository.findDistinctGroup();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;

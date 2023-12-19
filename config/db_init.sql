@@ -891,7 +891,33 @@ VALUES (35, 'Stamen.TopOSMFeatures', 'tileLayer', 'overlayer', 'https://stamen-t
 
 
 
-
+# ----------------------------
+# Table: ml_feature
+# ----------------------------
+DROP TABLE IF EXISTS ml_feature;
+CREATE TABLE ml_feature
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)   NOT NULL,
+    `desc`         varchar(128)  DEFAULT NULL comment 'description',
+    `group`        varchar(64)   DEFAULT 'UnGrouped',
+    type           varchar(16)   DEFAULT NULL comment 'classification, regression, clustering, reduction',
+    fields         text          NOT NULL comment 'json array like [{name:"aa",category:"continuous",type:"number"}]',
+	features       int           DEFAULT NULL,
+	target         varchar(16)   DEFAULT NULL comment 'target name',
+    source_id      int          NOT NULL,
+	dataset_name   varchar(32)  DEFAULT NULL comment 'table name',
+	query          text         DEFAULT NULL comment 'sql query',
+	rel_pair       text          DEFAULT NULL comment 'json array like [{id:1,field:["aa","bb"]}]',
+	org_id         int           NOT NULL,
+    `public`       boolean       NOT NULL DEFAULT false,
+    created_by  varchar(64)      NOT NULL,
+    created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by  varchar(64)      DEFAULT NULL,
+    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_mlfeature_src   foreign key(source_id)  REFERENCES data_source(id),
+	CONSTRAINT fk_mlfeature_org       foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
 
 
 
