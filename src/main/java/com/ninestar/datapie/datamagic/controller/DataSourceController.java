@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/datasource")
+@RequestMapping("/src/datasource")
 @Api(tags = "Datasource")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class DataSourceController {

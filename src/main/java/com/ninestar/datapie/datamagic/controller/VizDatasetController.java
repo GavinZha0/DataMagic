@@ -6,10 +6,12 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import cn.hutool.json.ObjectMapper;
 import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
+import com.ninestar.datapie.datamagic.config.RedisConfig;
 import com.ninestar.datapie.datamagic.entity.*;
 import com.ninestar.datapie.datamagic.repository.DataSourceRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
@@ -32,6 +34,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamRecords;
+import org.springframework.data.redis.connection.stream.StringRecord;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +76,12 @@ public class VizDatasetController {
 
     @Resource
     public SysOrgRepository orgRepository;
+
+    @Resource
+    private RedisConfig redisConfig;
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Resource
     private DbUtils dbUtils;
@@ -149,6 +163,16 @@ public class VizDatasetController {
                 // get related dataset count
                 item.usage = dataviewRepository.countByDatasetId(entity.getId());
                 rspList.add(item);
+
+                // verify redis temporally - Gavin!!!
+                Map<String, Object> taskMap = BeanUtil.beanToMap(entity);
+                taskMap.put("userId", tokenUserId);
+                taskMap.put("code", entity.getId());
+
+                // send msg to python server via stream of redis
+                MapRecord stringRecord = StreamRecords.newRecord().ofMap(taskMap).withStreamKey(redisConfig.getReqStream());
+                RecordId msgId = redisTemplate.opsForStream().add(stringRecord);
+                System.out.println("Send msg: " + msgId.getValue());
             }
         }
 

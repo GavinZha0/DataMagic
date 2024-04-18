@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -85,19 +86,18 @@ public class authController {
 
     @PostMapping("/permit")
     @ApiOperation(value = "getUserPermit", httpMethod = "POST")
-    public UniformResponse getUserPermit(@RequestBody @ApiParam(name = "id", value = "user id") JSONObject request) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+    public UniformResponse getUserPermit() throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
-        //String tokenUser = auth.getCredentials().toString();
-        //Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
-
-        //Collection<? extends GrantedAuthority> roleNames = auth.getAuthorities();
-
-        Integer id = Integer.parseInt(request.get("id").toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
         List<SysMenuEntity> activeMenus = menuRepository.findByActiveAndDeleted(true, false);
         List<SysMenuEntity> treeMenus = TreeUtils.buildTree(activeMenus, "id", "pid", "children");
-        List<Map> menuPermit = rolePermitRepository.findPermitByUserId(id);
+        List<Map> menuPermit = rolePermitRepository.findPermitByUserId(tokenUserId);
         filterPermitMenus(treeMenus, menuPermit);
 
 

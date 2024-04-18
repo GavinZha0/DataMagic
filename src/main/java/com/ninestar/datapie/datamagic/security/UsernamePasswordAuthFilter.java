@@ -1,7 +1,6 @@
 package com.ninestar.datapie.datamagic.security;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.ninestar.datapie.datamagic.bridge.AuthLoginReqType;
 import com.ninestar.datapie.datamagic.bridge.AuthLoginRspType;
@@ -20,9 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.List;
 
 import static com.ninestar.datapie.framework.consts.UniformResponseCode.*;
 
@@ -98,8 +94,8 @@ public class UsernamePasswordAuthFilter extends UsernamePasswordAuthenticationFi
         // Add token to response header
         // shadow token is used to expand valid time after auth token expires.
         // in front end the shadow token will be saved into local storage. it can be used when page is refreshed.
-        response.addHeader(JwtConfig.authField,  token);
-        response.addHeader(JwtConfig.shadowField,  shadowToken);
+        response.addHeader(JwtConfig.accessTokenField,  token);
+        response.addHeader(JwtConfig.shadowTokenField,  shadowToken);
 
         // Add json payload into response body
         PrintWriter writer = response.getWriter();

@@ -1,5 +1,6 @@
 package com.ninestar.datapie.datamagic.security;
 
+import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -41,12 +42,14 @@ public class JwtAuthenticationTokenFilter extends BasicAuthenticationFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // Get jwt token from request header
-        String token = request.getHeader(JwtConfig.authField);
-        String shadowToken = request.getHeader(JwtConfig.shadowField);
-        String swaggerToken = request.getHeader("Authorization");
+        String token = request.getHeader(JwtConfig.authTokenField);
+        String shadowToken = request.getHeader(JwtConfig.shadowTokenField);
 
-        if (!StrUtil.isEmpty(swaggerToken) && swaggerToken.equals("Basic YWRtaW46MTIzNDU2")) {
+        if (!StrUtil.isEmpty(token) && token.startsWith("Basic ")) {
             // Let it go if it is in white list, like swagger
+            // "Basic " + bas64_encode(clientID + ":" + clientSecret)
+            String clientStr = Base64.decode(token.substring(6)).toString();
+            String clientInfo[] = clientStr.split(":");
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,13 +61,14 @@ public class JwtAuthenticationTokenFilter extends BasicAuthenticationFilter {
             return;
         }
 
+        String pureToken = token.substring(JwtConfig.tokenPrefix.length()+1);
         try {
             // has jwt token then verify if it expires
             // if so, an exception will be thrown
-            JwtTokenUtil.isTokenExpired(token);
+            JwtTokenUtil.isTokenExpired(pureToken);
 
             // get user info and role from jwt token
-            AuthLoginRspType userInfo = JwtTokenUtil.getUserInfo(token);
+            AuthLoginRspType userInfo = JwtTokenUtil.getUserInfo(pureToken);
             Set<GrantedAuthority> authorities = new HashSet<>();
             for(String role: userInfo.roleName){
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
@@ -91,10 +95,10 @@ public class JwtAuthenticationTokenFilter extends BasicAuthenticationFilter {
 
             // get new shadow token if current token is equal shadow token
             // it happens when you refresh browser with CTRL+F5 （SHIFT+COMMAND+R）
-            if(token.equals(shadowToken)){
+            if(pureToken.equals(shadowToken)){
                 String newShadowToken = JwtTokenUtil.createToken(userInfo, "shadow"); // refresh token
-                response.addHeader(JwtConfig.authField,  token);
-                response.addHeader(JwtConfig.shadowField,  newShadowToken);
+                response.addHeader(JwtConfig.accessTokenField,  pureToken);
+                response.addHeader(JwtConfig.shadowTokenField,  newShadowToken);
             }
         } catch (ExpiredJwtException e){
             try {
@@ -113,8 +117,8 @@ public class JwtAuthenticationTokenFilter extends BasicAuthenticationFilter {
             // front end should update tokens and save them when receive this response
             AuthLoginRspType userInfo = JwtTokenUtil.getUserInfo(shadowToken);
             String newShadowToken = JwtTokenUtil.createToken(userInfo, "shadow"); // refresh token
-            response.addHeader(JwtConfig.authField,  shadowToken);
-            response.addHeader(JwtConfig.shadowField,  newShadowToken);
+            response.addHeader(JwtConfig.accessTokenField,  shadowToken);
+            response.addHeader(JwtConfig.shadowTokenField,  newShadowToken);
         } catch (MissingClaimException e) {
             logger.error("Claim is missed from token!");
             PrintWriter writer = response.getWriter();

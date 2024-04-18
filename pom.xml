@@ -21,7 +21,7 @@
 		<jwt.version>0.11.2</jwt.version>
 		<druid.version>1.2.16</druid.version>
 		<knife4j.version>3.0.3</knife4j.version>
-		<hutool.version>5.8.14</hutool.version>
+		<hutool.version>5.8.25</hutool.version>
 		<aviator.version>5.3.3</aviator.version>
 		<tablesaw.version>0.43.1</tablesaw.version>
 		<log4j.version>2.20.0</log4j.version>
@@ -276,6 +276,15 @@
 			<groupId>tech.tablesaw</groupId>
 			<artifactId>tablesaw-json</artifactId>
 			<version>${tablesaw.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>2.7.14</version>
 		</dependency>
 		<!-- minio, file server -->
 		<!--dependency>

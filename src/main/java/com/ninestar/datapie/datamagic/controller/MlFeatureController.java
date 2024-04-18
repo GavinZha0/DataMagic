@@ -12,8 +12,10 @@ import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
+import com.ninestar.datapie.datamagic.config.RedisConfig;
 import com.ninestar.datapie.datamagic.entity.DataSourceEntity;
 import com.ninestar.datapie.datamagic.entity.MlFeatureEntity;
+import com.ninestar.datapie.datamagic.entity.VizDatasetEntity;
 import com.ninestar.datapie.datamagic.repository.DataSourceRepository;
 import com.ninestar.datapie.datamagic.repository.MlFeatureRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
@@ -31,6 +33,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamRecords;
+import org.springframework.data.redis.connection.stream.StringRecord;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +63,11 @@ public class MlFeatureController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String pyServerUrl = "http://localhost:9538/ml/";
+
+    @Resource
+    private RedisConfig redisConfig;
+    @Resource
+    private StringRedisTemplate redisTpl;
 
     @Resource
     public DataSourceRepository sourceRepository;
@@ -458,6 +469,7 @@ public class MlFeatureController {
         String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        String taskId;
 
         Integer id = Integer.parseInt(param.get("id").toString());
 
@@ -473,26 +485,26 @@ public class MlFeatureController {
 
         // control plane
         // forward command to python server for user x and algorithm y
-        HttpResponse response = null;
         try{
             String uniqueId = tokenUserId.toString() + "_ml_feature_"+targetEntity.getId();
-            response = HttpRequest.post(pyServerUrl + "execute")
-                    .header("uid", uniqueId)
-                    .body(JSONUtil.parseObj(targetEntity).toString()) // need to do toJsonString. Gavin!!!
-                    .execute();
+            // save to parameters to redis
+            redisTpl.opsForValue().set(uniqueId, targetEntity.toString());
+            // send req to channel
+            redisTpl.convertAndSend("reqQ", targetEntity);
+
+            StringRecord stringRecord = StreamRecords.string(Collections.singletonMap("data", targetEntity.toString())).withStreamKey(redisConfig.getReqStream());
+            RecordId rId = redisTpl.opsForStream().add(stringRecord);
+            taskId = rId.toString();
+            System.out.println("Send task: " + taskId);
+
         }catch (Exception e){
             logger.error(e.getMessage());
             return UniformResponse.error(e.getMessage());
         }
 
-        if(response!=null){
-            // forward response of python server to front end
-            JSONObject result = new JSONObject(response.body());
-            return result.toBean(UniformResponse.class);
-        }
-        else{
-            return UniformResponse.error();
-        }
+        JSONObject rspObj = new JSONObject();
+        rspObj.set("taskId", taskId);
+        return UniformResponse.ok().data(rspObj);
     }
 
     @PostMapping("/groups")

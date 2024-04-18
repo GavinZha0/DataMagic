@@ -15,8 +15,9 @@ import org.springframework.stereotype.Component;
 public class JwtConfig {
 
     public static String secretKey;
-    public static String authField;
-    public static String shadowField;
+    public static String authTokenField;
+    public static String accessTokenField;
+    public static String shadowTokenField;
     public static String tokenPrefix;
     public static Integer expiration; //ms
 
@@ -24,12 +25,16 @@ public class JwtConfig {
         this.secretKey = secretKey;
     }
 
-    public void setAuthField(String authField) {
-        this.authField = authField;
+    public void setAuthTokenField(String authTokenField) {
+        this.authTokenField = authTokenField;
     }
 
-    public void setShadowField(String shadowField) {
-        this.shadowField = shadowField;
+    public void setAccessTokenField(String accessTokenField) {
+        this.accessTokenField = accessTokenField;
+    }
+
+    public void setShadowTokenField(String shadowTokenField) {
+        this.shadowTokenField = shadowTokenField;
     }
 
     public void setTokenPrefix(String tokenPrefix) {

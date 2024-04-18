@@ -27,7 +27,7 @@ public class NettyUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
     private static NettyUdpHandler nettyUdpHandler;
 
     @Resource
-    private WebStompService stompService;
+    public WebStompService stompService;
 
     private JSONObject msgChat = new JSONObject();
     private Map<String, String> targetMap = new HashMap<>();

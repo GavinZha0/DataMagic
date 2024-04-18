@@ -53,17 +53,17 @@ public class WebStompService {
 
         if(accessor!=null){
             //logger.info("WS-" + accessor.getUser().getName() + "->" + target + ": " + message.length());
-            //System.out.println("WS-" + accessor.getUser().getName() + "->" + target + ": " + message.length());
+            System.out.println("WS-" + accessor.getUser().getName() + "->" + target + ": " + message.length());
         }
         else{
             //logger.info("WS-" + dest[0] + "->" + target + ": " + message.length());
-            //System.out.println("WS-" + dest[0] + "->" + target + ": " + message.length());
+            System.out.println("WS-" + dest[0] + "->" + target + ": " + message.length());
         }
 
         // forward message to target user if it is online
         SimpUser simpUser = userRegistry.getUser(dest[0]);
         if(simpUser!=null){
-            template.convertAndSendToUser(dest[0], "/queue/chat/" + dest[1], message);
+            template.convertAndSendToUser(dest[0], "/feedback", message);
         }
         else{
             System.out.println("WS-target user " + target + " is not online!");

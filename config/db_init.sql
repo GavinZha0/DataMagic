@@ -106,7 +106,7 @@ CREATE TABLE sys_user
     avatar        varchar(255)  DEFAULT 'default.jpg',
     social        varchar(255)  DEFAULT NULL comment "json like {wechat:'Gavin', teams:'Alice'}",
     active        boolean       NOT NULL DEFAULT false,
-	sms_code      boolean       DEFAULT false comment 'true:receive auth code by phone. false: email code'
+	sms_code      boolean       DEFAULT false comment 'true:receive auth code by phone. false: email code',
     exp_date      date          NULL,
     deleted       boolean       DEFAULT false comment 'true: it was deleted', 
     created_by  varchar(64)     NOT NULL,
@@ -119,7 +119,7 @@ CREATE TABLE sys_user
 INSERT INTO sys_user (id, name, password, realname, `desc`, email, phone, org_id, avatar, social, active, sms_code, exp_date, deleted, created_by, created_at, updated_by, updated_at)
 VALUES (1, 'Superman', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Gavin.Zhao', '', 'jichun.zhao@outlook.com', '18611815495', 2, null, null, true, false, null, false, 'Superman', null, 'Superman', null);
 
-INSERT INTO sys_user (id, name, password, realname, `desc`, email, phone, org_id, avatar, social, active, exp_date, deleted, created_by, created_at, updated_by, updated_at)
+INSERT INTO sys_user (id, name, password, realname, `desc`, email, phone, org_id, avatar, social, active, sms_code, exp_date, deleted, created_by, created_at, updated_by, updated_at)
 VALUES (2, 'Admin', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Mr.Zhao', '', 'jichun.zhao@gmail.com', '7328902296', 2, 'cat.jpg', null, true, false, null, false, 'Superman', null, 'Superman', null);
 
 # ----------------------------
@@ -236,7 +236,7 @@ VALUES (6, 3, 'Dataset', '数据集', 'ant-design:database-outlined', 2, false, 
 
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (7, null, 'Data', '数据管理', 'ant-design:money-collect-outlined', 3, false, 'BlankLayout', '/datamgr', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (7, null, 'Source Mgr', '数据管理', 'ant-design:money-collect-outlined', 3, false, 'BlankLayout', '/datamgr', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
 VALUES (8, 7, 'Source', '数据源', 'ant-design:database-outlined', 3, false, '/datamgr/datasource/index', '/datamgr/datasource', null, true, false, 'Superman', null, 'Superman', null);
@@ -261,93 +261,99 @@ INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, pat
 VALUES (14, null, 'ML Dev', '机器学习', 'ant-design:car-outlined', 4, false, 'BlankLayout', '/ml', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (15, 14, 'Algorithm', '算法', 'control', 0, false, '/ml/algorithm/index', '/ml/algorithm', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (15, 14, 'Dataset', '数据集', 'ant-design:database-outlined', 2, false, '/ml/dataset/index', '/ml/dataset', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (16, 14, 'Model', '模型', 'control', 1, false, '/ml/model/index', '/ml/model', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (16, 14, 'EDA', '数据探索', 'control', 3, false, '/ml/eda/index', '/ml/eda', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (17, 14, 'Workflow', '工作流', 'control', 3, false, '/ml/workflow/index', '/ml/workflow', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (17, 14, 'Algorithm', '算法', 'control', 0, false, '/ml/algorithm/index', '/ml/algorithm', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (18, 14, 'Vis', '可视化', 'control', 3, false, '/ml/vis/index', '/ml/vis', null, true, false, 'Superman', null, 'Superman', null);
-
-
+VALUES (18, 14, 'Model', '模型', 'control', 1, false, '/ml/model/index', '/ml/model', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (19, null, 'AI App', '人工智能', 'ant-design:coffee-outlined', 5, false, 'BlankLayout', '/ai', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (19, 14, 'Workflow', '工作流', 'control', 3, false, '/ml/workflow/index', '/ml/workflow', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (20, 19, 'Market', '模型市场', 'control', 0, false, '/ai/market/index', '/ai/market', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (20, 14, 'Vis', '可视化', 'control', 3, false, '/ml/vis/index', '/ml/vis', null, true, false, 'Superman', null, 'Superman', null);
 
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (21, 19, 'Image', '图像处理', 'control', 1, false, '/ai/image/index', '/ai/image', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (22, 19, 'Video', '视频分析', 'control', 2, false, '/ai/video/index', '/ai/video', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (23, 19, 'Audio', '语音处理', 'control', 3, false, '/ai/audio/index', '/ai/audio', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (24, 19, 'Text', '文本分心', 'control', 4, false, '/ai/text/index', '/ai/text', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (25, 19, 'DM', '数据挖掘', 'control', 5, false, '/ai/dm/index', '/ai/dm', null, true, false, 'Superman', null, 'Superman', null);
 
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (26, null, 'Admin', '控制面板', 'ant-design:setting-outlined', 6, false, 'BlankLayout', '/admin', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (21, null, 'AI App', '人工智能', 'ant-design:coffee-outlined', 5, false, 'BlankLayout', '/ai', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (27, 26, 'User', '用户管理', 'control', 0, false, '/admin/user/index', '/admin/user', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (22, 21, 'Market', '模型市场', 'control', 0, false, '/ai/market/index', '/ai/market', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (28, 26, 'Role', '角色管理', 'control', 1, false, '/admin/role/index', '/admin/role', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (23, 21, 'Image', '图像处理', 'control', 1, false, '/ai/image/index', '/ai/image', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (29, 26, 'Menu', '菜单管理', 'control', 2, false, '/admin/menu/index', '/admin/menu', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (24, 21, 'Video', '视频分析', 'control', 2, false, '/ai/video/index', '/ai/video', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (30, 26, 'Parameter', '参数管理', 'control', 3, false, '/admin/param/index', '/admin/config', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (25, 21, 'Audio', '语音处理', 'control', 3, false, '/ai/audio/index', '/ai/audio', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (31, 26, 'Organization', '组织管理', 'control', 0, false, '/admin/org/index', '/admin/org', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (26, 21, 'Text', '文本分心', 'control', 4, false, '/ai/text/index', '/ai/text', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (32, 26, 'Scheduler', '调度计划', 'control', 4, false, '/admin/scheduler/index', '/admin/scheduler', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (33, 26, 'My Center', '个人中心', 'control', 4, false, '/admin/mycenter/index', '/admin/mycenter', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (27, 21, 'DM', '数据挖掘', 'control', 5, false, '/ai/dm/index', '/ai/dm', null, true, false, 'Superman', null, 'Superman', null);
 
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (34, null, 'Monitor', '系统监控', 'ant-design:fund-projection-screen-outlined', 7, false, 'BlankLayout', '/monitor', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (28, null, 'Admin', '控制面板', 'ant-design:setting-outlined', 6, false, 'BlankLayout', '/admin', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (35, 34, 'Druid', 'Druid', 'control', 0, false, '/monitor/druid/index', '/monitor/druid', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (29, 28, 'User', '用户管理', 'control', 0, false, '/admin/user/index', '/admin/user', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (36, 34, 'Knife4j', 'Knife4j', 'control', 1, false, '/monitor/knife4j/index', '/monitor/knife4j', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (30, 28, 'Role', '角色管理', 'control', 1, false, '/admin/role/index', '/admin/role', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (37, 34, 'Gateway', '网关代理', 'control', 2, false, '/monitor/gateway/index', '/monitor/gateway', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (31, 28, 'Menu', '菜单管理', 'control', 2, false, '/admin/menu/index', '/admin/menu', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (38, 34, 'Network', '网络', 'control', 3, false, '/monitor/network/index', '/monitor/network', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (32, 28, 'Parameter', '参数管理', 'control', 3, false, '/admin/param/index', '/admin/config', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (33, 28, 'Organization', '组织管理', 'control', 0, false, '/admin/org/index', '/admin/org', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (34, 28, 'Scheduler', '调度计划', 'control', 4, false, '/admin/scheduler/index', '/admin/scheduler', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (35, 28, 'My Center', '个人中心', 'control', 4, false, '/admin/mycenter/index', '/admin/mycenter', null, true, false, 'Superman', null, 'Superman', null);
 
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (39, null, 'System', '系统管理', 'ant-design:apple-outlined', 8, false, 'BlankLayout', '/system', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (36, null, 'Monitor', '系统监控', 'ant-design:fund-projection-screen-outlined', 7, false, 'BlankLayout', '/monitor', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (40, 39, 'Log', '日志管理', 'control', 0, false, 'BlankLayout', '/system/log', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (37, 36, 'Druid', 'Druid', 'control', 0, false, '/monitor/druid/index', '/monitor/druid', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (41, 40, 'Access', '登录日志', 'control', 0, false, '/system/log/access/index', '/system/log/access', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (38, 36, 'Knife4j', 'Knife4j', 'control', 1, false, '/monitor/knife4j/index', '/monitor/knife4j', null, true, false, 'Superman', null, 'Superman', null);
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (42, 40, 'Action', '操作日志', 'control', 1, false, '/system/log/action/index', '/system/log/action', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (39, 36, 'Gateway', '网关代理', 'control', 2, false, '/monitor/gateway/index', '/monitor/gateway', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (40, 36, 'Network', '网络', 'control', 3, false, '/monitor/network/index', '/monitor/network', null, true, false, 'Superman', null, 'Superman', null);
+
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (41, null, 'System', '系统管理', 'ant-design:apple-outlined', 8, false, 'BlankLayout', '/system', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (42, 41, 'Log', '日志管理', 'control', 0, false, 'BlankLayout', '/system/log', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (43, 41, 'Access', '登录日志', 'control', 0, false, '/system/log/access/index', '/system/log/access', null, true, false, 'Superman', null, 'Superman', null);
+
+INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
+VALUES (44, 41, 'Action', '操作日志', 'control', 1, false, '/system/log/action/index', '/system/log/action', null, true, false, 'Superman', null, 'Superman', null);
 
 
 
@@ -463,7 +469,7 @@ CREATE TABLE data_source
 
 
 INSERT INTO data_source (id, name, `group`, `desc`, type, url, params, username, password, version, `public`, org_id, locked_table, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'AWS Maria', 'AWS', 'test of aws MariaDB', 'MySQL', 'datapie.c34q1kuwepfw.us-east-1.rds.amazonaws.com:3306/foodmart2', '[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]', 'admin', 'cm9vdDEyMw==', '10.6.3', true, 2, null, 'Admin', null, null, null);
+VALUES (1, 'AWS Maria', 'AWS', 'test of aws MariaDB', 'MySQL', 'datapie.c34q1kuwepfw.us-east-1.rds.amazonaws.com:3306/foodmart2', '[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]', 'admin', 'cm9vdDEyMw==', '10.6.3', true, 2, null, 'Admin', null, 'Admin', null);
 
 
 # ----------------------------
@@ -496,8 +502,8 @@ CREATE TABLE data_import
 	CONSTRAINT fk_import_org     foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO data_import (id, files, type, attrs, fields, config, source_id, table_name, overwrite, `rows`, records, ftp_path, status, detail, created_by, created_at, updated_by, updated_at)
-VALUES (1, '["abc.csv"]', 'CSV', '{"header":true}', '[{"name":"cat","type":"string"}]', '{"ts":"UTC"}', 1, 'abc', false, null, null, '20230222173548', 'success', null, 'Superman', null, 'Superman', null);
+INSERT INTO data_import (id, files, `type`, attrs, fields, config, source_id, table_name, overwrite, `rows`, records, ftp_path, status, detail, `public`, org_id, created_by, created_at, updated_by, updated_at)
+VALUES (1, '["abc.csv"]', 'CSV', '{"header":true}', '[{"name":"cat","type":"string"}]', '{"ts":"UTC"}', 1, 'abc', false, null, null, '20230222173548', 'success', null, false, 1, 'Superman', null, 'Superman', null);
 
 
 
@@ -889,6 +895,64 @@ VALUES (34, 'Stamen.TonerLabels', 'tileLayer', 'overlayer', 'https://stamen-tile
 INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
 VALUES (35, 'Stamen.TopOSMFeatures', 'tileLayer', 'overlayer', 'https://stamen-tiles-c.a.ssl.fastly.net/toposm-features/6/16/25.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toposm-features/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
 
+
+# ----------------------------
+# Table: dataset
+# ----------------------------
+DROP TABLE IF EXISTS ml_dataset;
+CREATE TABLE ml_dataset
+(
+    id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)  NOT NULL,
+    `desc`         varchar(128) DEFAULT NULL,
+    `group`        varchar(64)  DEFAULT 'default',
+    variable       text         DEFAULT NULL comment 'json array', 
+    query          text         DEFAULT NULL comment 'sql query',
+	final_query    text         DEFAULT NULL comment 'final query',
+    fields         text         NOT NULL comment 'json array like [{name:"age", type:"number", cat:"conti", weight:92, target:false, omit: false}]',
+	target		   text         DEFAULT NULL comment 'target array',
+	transform	   text         DEFAULT NULL comment 'json array like [{field:"age", scale:"minmax", na:"mean"}]',
+	f_count        int          DEFAULT NULL comment'feature count',
+    source_id      int          NOT NULL,
+	org_id         int          NOT NULL,
+    `public`       boolean      NOT NULL DEFAULT false,
+    created_by  varchar(64)     NOT NULL,
+    created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by  varchar(64)     DEFAULT NULL,
+    updated_at  timestamp       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_mldataset_src   foreign key(source_id)  REFERENCES data_source(id),
+	CONSTRAINT fk_mldataset_org    foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
+
+
+INSERT INTO ml_dataset (id, name, `group`, `desc`, variable, query, final_query, features, target, transform, f_count, source_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'Iris', 'first', 'test', '[{name:"aaa", type:"number", value:"35"}]', 'select * from iris', null, '[{name:"sepal_length", type:"number"}, {name:"sepal_width", type:"number"}, {name:"petal_length", type:"number"},{name:"petal_width", type:"number"},{name:"uid", hidden:true}]', '{name:"variety", type:"string", unique:["v1", "v2", "v3"]}', '[{field:"age", scale:"minmax", na:"mean"}]', 4, 1, 1, true, 'Admin', null, 'Admin', null);
+
+
+# ----------------------------
+# Table: eda
+# ----------------------------
+DROP TABLE IF EXISTS ml_eda;
+CREATE TABLE ml_eda
+(
+    id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)  NOT NULL,
+    `desc`         varchar(128) DEFAULT NULL,
+    `group`        varchar(64)  DEFAULT 'default',
+    config         text         DEFAULT NULL comment 'single variable distribution',
+    dataset_id     int          NOT NULL,
+	org_id         int          NOT NULL,
+    `public`       boolean      NOT NULL DEFAULT false,
+    created_by  varchar(64)     NOT NULL,
+    created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by  varchar(64)     DEFAULT NULL,
+    updated_at  timestamp       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_eda_set      foreign key(dataset_id)        REFERENCES ml_dataset(id),
+	CONSTRAINT fk_eda_org      foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
+
+INSERT INTO ml_eda (id, name, `group`, `desc`, config, dataset_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'Iris_eda', 'eda', 'test', '[{type:"hist", kde:true}]', 1, 1, true, 'Admin', null, 'Admin', null);
 
 
 # ----------------------------
@@ -1288,3 +1352,54 @@ INSERT INTO sys_status_dim (id, `group`, status) VALUES (2, 'user', 'active');
 INSERT INTO sys_status_dim (id, `group`, status) VALUES (3, 'user', 'expired');
 INSERT INTO sys_status_dim (id, `group`, status) VALUES (4, 'user', 'deleted');
 
+
+
+# ----------------------------
+# Table: sys_task
+# user 
+# ----------------------------
+DROP TABLE IF EXISTS sys_task;
+CREATE TABLE sys_task
+(
+    id            int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name           varchar(64)    NOT NULL,
+    `group`      varchar(16),
+	job_class	 varchar(255) NOT NULL,
+	exec_strategy	 varchar(16) NOT NULL,
+	expression	 varchar(64) NOT NULL,
+	remark	 varchar(16),
+	start_date	 timestamp      default NULL,
+	end_date	 timestamp      default NULL,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+INSERT INTO sys_task (id, name, `group`, job_class, exec_strategy, expression, remark, start_date, end_date, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'daily report', 'abc', '{job: 15}', 'once', '5 4 * * *', 'test', '2024-02-02 18:50:00', '2024-02-02 18:55:00', 'Admin', null, 'Admin', null);
+
+# ----------------------------
+# Table: sys_task_group
+# user 
+# ----------------------------
+DROP TABLE IF EXISTS sys_task_group;
+CREATE TABLE sys_task_group
+(
+    id            int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name           varchar(64)    NOT NULL,
+    `group`      varchar(16),
+	job_class	 varchar(255) NOT NULL,
+	exec_strategy	 varchar(16) NOT NULL,
+	expression	 varchar(64) NOT NULL,
+	remark	 varchar(16),
+	start_date	 timestamp      default NULL,
+	end_date	 timestamp      default NULL,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      DEFAULT CURRENT_TIMESTAMP,
+	updated_by     varchar(64)    DEFAULT NULL,
+    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+INSERT INTO sys_task (id, name, `group`, job_class, exec_strategy, expression, remark, start_date, end_date, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'daily report', 'abc', '{job: 15}', 'once', '5 4 * * *', 'test', '2024-02-02 18:50:00', '2024-02-02 18:55:00', 'Admin', null, 'Admin', null);
