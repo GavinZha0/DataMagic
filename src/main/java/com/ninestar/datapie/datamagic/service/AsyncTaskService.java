@@ -364,10 +364,7 @@ public class AsyncTaskService {
                         }
                     }
                 } else if(field.type.equalsIgnoreCase("TIME")){
-                    String tsFormat = config.fileAttrs.timeFormat;
-                    if(StrUtil.isEmpty(config.fileAttrs.timeFormat)){
-                        tsFormat = DateUtils.tsFormatDetect(value);
-                    }
+                    String tsFormat = DateUtils.tsFormatDetect(value, config.fileAttrs.tsFormat);
                     LocalTime localTime = LocalTime.parse(value, DateTimeFormatter.ofPattern(tsFormat));
                     // convert to standard date format
 
@@ -375,10 +372,7 @@ public class AsyncTaskService {
                     DateTimeFormatter standardFormat = DateTimeFormatter.ofPattern(DatePattern.NORM_TIME_PATTERN);
                     value = standardFormat.format(localTime);
                 } else if(field.type.equalsIgnoreCase("DATE")){
-                    String tsFormat = config.fileAttrs.dateFormat;
-                    if(StrUtil.isEmpty(config.fileAttrs.dateFormat)){
-                        tsFormat = DateUtils.tsFormatDetect(value);
-                    }
+                    String tsFormat = DateUtils.tsFormatDetect(value, config.fileAttrs.tsFormat);
                     LocalDate localDate = LocalDate.parse(value, DateTimeFormatter.ofPattern(tsFormat));
                     // convert to standard date format
 
@@ -386,10 +380,7 @@ public class AsyncTaskService {
                     DateTimeFormatter standardFormat = DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN);
                     value = standardFormat.format(localDate);
                 } else if(field.type.equalsIgnoreCase("DATETIME") || field.type.equalsIgnoreCase("TIMESTAMP")){
-                    String tsFormat = config.fileAttrs.tsFormat;
-                    if(StrUtil.isEmpty(config.fileAttrs.tsFormat)){
-                        tsFormat = DateUtils.tsFormatDetect(value);
-                    }
+                    String tsFormat = DateUtils.tsFormatDetect(value, config.fileAttrs.tsFormat);
 
                     // "03/03/2023 10:00:00" is regarded as UTC time. Hutool CAN'T parse with specific time zone
                     // Hutool, detect common ts format automatically
@@ -521,6 +512,7 @@ public class AsyncTaskService {
                             Boolean succ = dbUtils.executeBatch(config.source, finalSqlTemplate, dbColFields, csvRowList);
                             if(succ){
                                 inportedRecords.updateAndGet(v -> v + csvRowList.size());
+                                logger.info("importCsvToDb: " + inportedRecords.get() + " records have been uploaded");
                             }
                         } catch (Exception e) {
                             logger.error(e.getMessage());

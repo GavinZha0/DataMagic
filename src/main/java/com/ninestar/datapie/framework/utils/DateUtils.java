@@ -334,7 +334,11 @@ public class DateUtils {
         return cal.getTime();
     }
 
-    public static String tsFormatDetect(String ts){
+    public static String tsFormatDetect(String ts, String format){
+        if(StrUtil.isNotEmpty(format)){
+            return format;
+        }
+
         String tsFormat = "";
         String dateFormat = "";
         String timeFormat = "";
