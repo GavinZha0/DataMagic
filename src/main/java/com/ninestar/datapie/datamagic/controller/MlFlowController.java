@@ -10,6 +10,7 @@ import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
 import com.ninestar.datapie.datamagic.entity.MlFlowEntity;
 import com.ninestar.datapie.datamagic.repository.MlFlowEntityRepository;
+import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
@@ -53,6 +54,9 @@ public class MlFlowController {
     @Resource
     public MlFlowEntityRepository workflowRepository;
 
+    @Resource
+    public SysOrgRepository orgRepository;
+
     @PostMapping("/list")
     @ApiOperation(value = "getWorkflowList", httpMethod = "POST")
     public UniformResponse getWorkflowList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws IOException, InterruptedException {
@@ -62,7 +66,6 @@ public class MlFlowController {
         String tokenUsername = auth.getCredentials().toString();
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
-        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
 
         Long totalRecords = 0L;
@@ -119,15 +122,16 @@ public class MlFlowController {
         List<WorkflowListRspType> rspList = new ArrayList<WorkflowListRspType>();
         for(MlFlowEntity entity: queryEntities){
             WorkflowListRspType item = new WorkflowListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"graph","grid","config"});
-            if(entity.getGraph()!=null && entity.getGraph()!=""){
-                item.graph = new JSONArray(entity.getGraph()); // convert string to json array
+            BeanUtil.copyProperties(entity, item, new String[]{"config","workflow","canvas"});
+            if(StrUtil.isNotEmpty(entity.getConfig())) {
+                // convert string to json object
+                item.config = new JSONObject(entity.getConfig());
             }
-            if(entity.getConfig()!=null && entity.getConfig()!="") {
-                item.config = new JSONArray(entity.getConfig());
+            if(StrUtil.isNotEmpty(entity.getWorkflow())){
+                item.workflow = new JSONObject(entity.getWorkflow());
             }
-            if(entity.getGrid()!=null && entity.getGrid()!="") {
-                item.grid = new JSONObject(entity.getGrid());
+            if(StrUtil.isNotEmpty(entity.getCanvas())) {
+                item.canvas = new JSONObject(entity.getCanvas());
             }
             rspList.add(item);
         }
@@ -144,16 +148,18 @@ public class MlFlowController {
     @PostMapping("/create")
     @ApiOperation(value = "createWorkflow", httpMethod = "POST")
     public UniformResponse createWorkflow(@RequestBody @ApiParam(name = "req", value = "dataset info") WorkflowActionReqType req){
-        //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || req.graph==null){
+        if(StrUtil.isEmpty(req.name) || req.workflow==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<MlFlowEntity> duplicatedEntities = workflowRepository.findByNameAndGroup(req.name, req.category);
+        List<MlFlowEntity> duplicatedEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
         if(duplicatedEntities!=null){
             for(MlFlowEntity entity: duplicatedEntities){
                 if(entity.getId() == req.id){
@@ -165,26 +171,22 @@ public class MlFlowController {
         try {
             MlFlowEntity newEntity = new MlFlowEntity();
             //don't set ID for creating
-            newEntity.setPid(0);
             newEntity.setName(req.name);
-            newEntity.setDesc(req.description);
-            newEntity.setGroup(req.category);
-            newEntity.setGraph(req.graph.toString());
-            newEntity.setGraphVer(req.graphVer);
+            newEntity.setDesc(req.desc);
+            newEntity.setGroup(req.group);
+            newEntity.setWorkflow(req.workflow.toString());
+            newEntity.setFlowVer(req.flowVer);
             newEntity.setVersion("0");
-            newEntity.setGrid(req.grid.toString());
+            newEntity.setCanvas(req.canvas.toString());
             newEntity.setConfig(req.config.toString());
-            newEntity.setLastRun(req.lastRun);
-            newEntity.setDuration(req.duration);
-            newEntity.setStatus(req.status);
-            newEntity.setError(req.error);
-            newEntity.setPubFlag(req.pubFlag);
+            newEntity.setPubFlag(false);
+            newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
             //create_time and update_time are generated automatically by jp
 
             // save new entity
             workflowRepository.save(newEntity);
 
-            List<MlFlowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.category);
+            List<MlFlowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
             for(MlFlowEntity item: targetEntities){
                 if(item==newEntity){
                     // the main entity has same pid and id
@@ -209,7 +211,7 @@ public class MlFlowController {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
-        if(req.id==0 || StrUtil.isEmpty(req.name) || req.graph==null){
+        if(req.id==0 || StrUtil.isEmpty(req.name) || req.workflow==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -220,16 +222,12 @@ public class MlFlowController {
 
         try {
             targetEntity.setName(req.name);
-            targetEntity.setDesc(req.description);
-            targetEntity.setGroup(req.category);
-            targetEntity.setGraphVer(req.graphVer);
-            targetEntity.setGraph(req.graph.toString());
-            targetEntity.setGrid(req.grid.toString());
+            targetEntity.setDesc(req.desc);
+            targetEntity.setGroup(req.group);
+            targetEntity.setFlowVer(req.flowVer);
+            targetEntity.setWorkflow(req.workflow.toString());
+            targetEntity.setCanvas(req.canvas.toString());
             targetEntity.setConfig(req.config.toString());
-            targetEntity.setLastRun(req.lastRun);
-            targetEntity.setDuration(req.duration);
-            targetEntity.setStatus(req.status);
-            targetEntity.setError(req.error);
             targetEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jpa
 
@@ -252,7 +250,7 @@ public class MlFlowController {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
-        if(StrUtil.isEmpty(req.name) || req.graph==null){
+        if(StrUtil.isEmpty(req.name) || req.workflow==null){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -280,24 +278,20 @@ public class MlFlowController {
             //don't set ID for creating
             newEntity.setPid(req.pid);
             newEntity.setName(req.name);
-            newEntity.setDesc(req.description);
-            newEntity.setGroup(req.category);
-            newEntity.setGraph(req.graph.toString());
-            newEntity.setGraphVer(req.graphVer);
+            newEntity.setDesc(req.desc);
+            newEntity.setGroup(req.group);
+            newEntity.setWorkflow(req.workflow.toString());
+            newEntity.setFlowVer(req.flowVer);
             newEntity.setVersion(newSubVersion);
-            newEntity.setGrid(req.grid.toString());
+            newEntity.setCanvas(req.canvas.toString());
             newEntity.setConfig(req.config.toString());
-            newEntity.setLastRun(req.lastRun);
-            newEntity.setDuration(req.duration);
-            newEntity.setStatus(req.status);
-            newEntity.setError(req.error);
             newEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jp
 
             // save new entity
             workflowRepository.save(newEntity);
 
-            List<MlFlowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.category);
+            List<MlFlowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
             for(MlFlowEntity item: targetEntities){
                 if(item==newEntity){
                     // the main entity has same pid and id
@@ -480,21 +474,9 @@ public class MlFlowController {
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctGroup = workflowRepository.findDistinctGroup();
-        Set<OptionsRspType> catSet = new HashSet<>();
-
-        Integer i = 0;
-        // get distinct category set
-        for(Object item: distinctGroup){
-            OptionsRspType cat = new OptionsRspType();
-            cat.id = i;
-            cat.name = item.toString();
-            catSet.add(cat);
-            i++;
-        }
-
+        List<Object> distinctGroups = workflowRepository.findDistinctGroup();
         JSONObject jsonResponse = new JSONObject();
-        jsonResponse.set("records", catSet);
+        jsonResponse.set("records", distinctGroups);
         return UniformResponse.ok().data(jsonResponse);
     }
 }

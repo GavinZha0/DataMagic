@@ -30,26 +30,26 @@ public class MlFlowEntity {
     @Column(name = "name", nullable = false, length = 64)
     private String name;
 
-    @Column(name = "desc", length = 128)
+    @Column(name = "`desc`", length = 128)
     private String desc;
 
-    @Column(name = "group", length = 64)
+    @Column(name = "`group`", length = 64)
     private String group;
-
-    @Column(name = "graph_ver", length = 8)
-    private String graphVer;
-
-    @Column(name = "version", length = 8)
-    private String version;
-
-    @Column(name = "graph")
-    private String graph;
-
-    @Column(name = "grid")
-    private String grid;
 
     @Column(name = "config")
     private String config;
+
+    @Column(name = "workflow")
+    private String workflow;
+
+    @Column(name = "canvas")
+    private String canvas;
+
+    @Column(name = "flow_ver", length = 8)
+    private String flowVer;
+
+    @Column(name = "version", length = 8)
+    private String version;
 
     @Column(name = "last_run")
     private Timestamp lastRun;

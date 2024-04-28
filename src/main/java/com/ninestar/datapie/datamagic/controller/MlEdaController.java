@@ -490,21 +490,9 @@ public class MlEdaController {
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = edaRepository.findDistinctGroup();
-        Set<OptionsRspType> catSet = new HashSet<>();
-
-        Integer i = 0;
-        // get distinct category set
-        for(Object item: distinctCategory){
-            OptionsRspType cat = new OptionsRspType();
-            cat.id = i;
-            cat.name = item.toString();
-            catSet.add(cat);
-            i++;
-        }
-
+        List<Object> distinctGroups = edaRepository.findDistinctGroup();
         JSONObject jsonResponse = new JSONObject();
-        jsonResponse.set("records", catSet);
+        jsonResponse.set("records", distinctGroups);
         return UniformResponse.ok().data(jsonResponse);
     }
 }

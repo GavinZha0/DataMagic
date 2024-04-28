@@ -12,11 +12,12 @@ public class WorkflowListRspType {
     public String name;
     public String desc;
     public String group;
-    public String graphVer;
-    public JSONArray graph;
-    public JSONObject grid;
-    public JSONArray config;
+    public String flowVer;
+    public JSONObject workflow;
+    public JSONObject canvas;
+    public JSONObject config;
     public Timestamp lastRun;
+    // unit min
     public Integer duration;
     public String status;
     public String error;

@@ -1079,8 +1079,8 @@ CREATE TABLE ml_flow
 
 
 
-INSERT INTO ml_flow (id, pid, name, `desc`, `group`, grid, config, graph, graph_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'Svm train', 'New svm train', 'first', null, null, 'antvX6', '1.3', '4', '2021-10-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
+INSERT INTO ml_flow (id, pid, name, `desc`, `group`, config, workflow, canvas, flow_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, null, 'Svm train', 'New svm train', 'first', '{timeout: 10}', '{nodes:[{id:"node1", shape:"rect", width: 20, height: 10}], edges:[]}', '{gbColor:"#123456"}', '2.0', '0', '2024-04-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
 
 
 
