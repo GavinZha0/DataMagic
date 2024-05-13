@@ -184,7 +184,7 @@ public class MlDatasetController {
 
     @PostMapping("/tree")
     @ApiOperation(value = "getDatasetTree", httpMethod = "POST")
-    public UniformResponse getDatasetTree(){
+    public UniformResponse getDatasetTree(@RequestBody @ApiParam(name = "param", value = "pub") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -192,8 +192,10 @@ public class MlDatasetController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
+        Boolean allPublic = Boolean.parseBoolean(param.get("pub").toString());
+
         // jpa page is starting with 0
-        List<MlDatasetEntity> datasetEntities = datasetRepository.findAll();
+        List<MlDatasetEntity> datasetEntities = datasetRepository.findByOrgId(tokenOrgId);
 
         // convert list to tree by category
         Map<String, List<MlDatasetEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getGroup()));
@@ -202,7 +204,8 @@ public class MlDatasetController {
         for(String group : datasetMap.keySet()){
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
             for(MlDatasetEntity source: datasetMap.get(group)){
-                if(tokenIsSuperuser || source.getOrg().getId().equals(tokenOrgId)){
+                if((allPublic && !source.getCreatedBy().equals(tokenUsername)) ||
+                        (!allPublic && source.getCreatedBy().equals(tokenUsername))){
                     TreeSelect treeNode = new TreeSelect(source.getId(), source.getDatasource().getType(), source.getName(), source.getName(), true, true);
                     treeGroup.getChildren().add(treeNode);
                 }
@@ -529,6 +532,35 @@ public class MlDatasetController {
         List<Object> distinctGroups = datasetRepository.findDistinctGroup();
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", distinctGroups);
+        return UniformResponse.ok().data(jsonResponse);
+    }
+
+    @PostMapping("/subset")
+    @ApiOperation(value = "getSubset", httpMethod = "POST")
+    public UniformResponse getSubset(@RequestBody @ApiParam(name = "param", value = "dataset group") JSONObject param){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+
+        String group = param.get("group").toString();
+        Boolean allset = Boolean.parseBoolean(param.get("allset").toString());
+
+        if(StrUtil.isEmpty(group)){
+            return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
+        }
+
+        List<Object> distinctDataset = null;
+        if(allset){
+            distinctDataset = datasetRepository.findPublicDatasetInGroup(tokenOrgId, group, tokenUsername);
+        } else {
+            distinctDataset = datasetRepository.findCreatedMeInGroup(tokenUsername, group);
+        }
+
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.set("records", distinctDataset);
         return UniformResponse.ok().data(jsonResponse);
     }
 
