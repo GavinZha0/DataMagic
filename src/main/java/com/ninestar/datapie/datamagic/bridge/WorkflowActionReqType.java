@@ -13,7 +13,7 @@ public class WorkflowActionReqType {
     public String desc;
     public String group;
     public JSONObject workflow;
-    public String flowVer;
+    public String x6Ver;
     public String version;
     public JSONObject canvas;
     public JSONObject config;

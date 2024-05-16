@@ -2,14 +2,13 @@ package com.ninestar.datapie.datamagic.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
 import com.ninestar.datapie.datamagic.entity.MlFlowEntity;
-import com.ninestar.datapie.datamagic.repository.MlFlowEntityRepository;
+import com.ninestar.datapie.datamagic.repository.MlFlowRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
@@ -52,7 +51,7 @@ public class MlFlowController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
-    public MlFlowEntityRepository workflowRepository;
+    public MlFlowRepository workflowRepository;
 
     @Resource
     public SysOrgRepository orgRepository;
@@ -175,7 +174,7 @@ public class MlFlowController {
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
             newEntity.setWorkflow(req.workflow.toString());
-            newEntity.setFlowVer(req.flowVer);
+            newEntity.setX6Ver(req.x6Ver);
             newEntity.setVersion("0");
             newEntity.setCanvas(req.canvas.toString());
             newEntity.setConfig(req.config.toString());
@@ -224,7 +223,7 @@ public class MlFlowController {
             targetEntity.setName(req.name);
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
-            targetEntity.setFlowVer(req.flowVer);
+            targetEntity.setX6Ver(req.x6Ver);
             targetEntity.setWorkflow(req.workflow.toString());
             targetEntity.setCanvas(req.canvas.toString());
             targetEntity.setConfig(req.config.toString());
@@ -281,7 +280,7 @@ public class MlFlowController {
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
             newEntity.setWorkflow(req.workflow.toString());
-            newEntity.setFlowVer(req.flowVer);
+            newEntity.setX6Ver(req.x6Ver);
             newEntity.setVersion(newSubVersion);
             newEntity.setCanvas(req.canvas.toString());
             newEntity.setConfig(req.config.toString());

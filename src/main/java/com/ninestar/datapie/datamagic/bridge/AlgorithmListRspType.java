@@ -11,12 +11,13 @@ public class AlgorithmListRspType {
     public String name;
     public String desc;
     public String group;
-    public JSONArray config;
+    public JSONObject config;
     public String content;
     public String type;
     public Boolean pubFlag;
-    public String language;
-    public String langVer;
+    public String framework;
+    public String frameVer;
+    public String version;
     public String createdBy;
     public Timestamp createdAt;
     public String updatedBy;

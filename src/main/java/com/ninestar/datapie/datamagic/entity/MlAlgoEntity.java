@@ -33,11 +33,11 @@ public class MlAlgoEntity {
     private String name;
 
     @Basic
-    @Column(name = "desc", length = 128)
+    @Column(name = "`desc`", length = 128)
     private String desc;
 
     @Basic
-    @Column(name = "group", length = 64)
+    @Column(name = "`group`", length = 64)
     private String group;
 
     @Basic
@@ -45,12 +45,12 @@ public class MlAlgoEntity {
     private String type;
 
     @Basic
-    @Column(name = "language", length = 16)
-    private String language;
+    @Column(name = "framework", length = 16)
+    private String framework;
 
     @Basic
-    @Column(name = "lang_ver", length = 16)
-    private String langVer;
+    @Column(name = "frame_ver", length = 8)
+    private String frameVer;
 
     @Basic
     @Column(name = "content")
@@ -59,6 +59,10 @@ public class MlAlgoEntity {
     @Basic
     @Column(name = "config")
     private String config;
+
+    @Basic
+    @Column(name = "version", length = 8)
+    private String version;
 
     @Basic
     @Column(name = "public", nullable = false)

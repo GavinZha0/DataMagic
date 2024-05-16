@@ -45,8 +45,8 @@ public class MlFlowEntity {
     @Column(name = "canvas")
     private String canvas;
 
-    @Column(name = "flow_ver", length = 8)
-    private String flowVer;
+    @Column(name = "x6_ver", length = 8)
+    private String x6Ver;
 
     @Column(name = "version", length = 8)
     private String version;

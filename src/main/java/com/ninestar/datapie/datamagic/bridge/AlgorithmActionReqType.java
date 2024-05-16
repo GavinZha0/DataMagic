@@ -11,8 +11,8 @@ public class AlgorithmActionReqType {
     public String type;
     public String desc;
     public String group;
-    public String language;
-    public String langVer;
+    public String framework;
+    public String frameVer;
     public JSONObject config;
     public String content;
     public Boolean pubFlag;

@@ -986,7 +986,7 @@ CREATE TABLE ml_feature
 
 
 # ----------------------------
-# Table: ml_algorithm
+# Table: ml_algo
 # ----------------------------
 DROP TABLE IF EXISTS ml_algo;
 CREATE TABLE ml_algo
@@ -995,12 +995,14 @@ CREATE TABLE ml_algo
     pid            int           DEFAULT NULL, -- latest version
     name           varchar(64)   NOT NULL,
     `desc`         varchar(128)  DEFAULT NULL comment 'description',
-    `group`        varchar(64)   DEFAULT 'UnGrouped',
+    `group`        varchar(64)   DEFAULT 'default',
     type           varchar(16)   NOT NULL comment 'classification, regression, clustering, reduction',
-    language       varchar(16)   DEFAULT 'python' comment 'python, java, js',
-    lang_ver       varchar(16)   DEFAULT '3.7',
-    content        text          DEFAULT NULL,  
-    config         text          DEFAULT NULL comment 'json array like [{id: 1, name:"aaa", type:"int[]"}]',
+    framework      varchar(16)   DEFAULT 'python' comment 'python, pytorch, tensorflow, paddle, dl4j, JDL, keras, auto-sklearn',
+    frame_ver      varchar(8)   DEFAULT '3.11',
+    content        text          DEFAULT NULL comment 'code',  
+	attr           text          DEFAULT NULL comment 'json attribute',
+    config         text          DEFAULT NULL comment 'json config',
+	version        varchar(8)    DEFAULT NULL comment 'algo version',
 	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by  varchar(64)      NOT NULL,
@@ -1011,40 +1013,34 @@ CREATE TABLE ml_algo
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_algo (id, pid, name, `desc`, `group`, type, language, lang_ver, content, config, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'svm', 'new svm algorithm', 'first', 'classification', 'python', '3.7', 'svm() return data', '[{id: 1, name:"aaa", type:"int[]"}]', 1, true, 'Superman', null, null, null);
-
-
+INSERT INTO ml_algo (id, pid, name, `desc`, `group`, type, framework, frame_ver, content, config, version, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, null, 'svm', 'new svm algorithm', 'first', 'classification', 'python', '3.10', 'svm() return data', '{id: 1, name:"aaa", type:"int[]"}', '1.0', 1, true, 'Superman', null, null, null);
 
 
 # ----------------------------
-# Table: ml_model
+# Table: ml_algo_history
 # ----------------------------
-DROP TABLE IF EXISTS ml_model;
-CREATE TABLE ml_model
+DROP TABLE IF EXISTS ml_algo_history;
+CREATE TABLE ml_algo_history
 (
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    pid            int           DEFAULT NULL,
-    name           varchar(64)   NOT NULL,
-    `desc`         varchar(64)   DEFAULT NULL comment 'description',
-    `group`       varchar(64)    DEFAULT 'UnGrouped',
-    type           varchar(16)   NOT NULL comment 'clacification, regression, clustering, reduction',
-    framework      varchar(16)   DEFAULT 'pytorch' comment 'pytorch, tensorflow, paddle, dl4j, JDL, keras, auto-sklearn',
-    frame_ver      varchar(16)   DEFAULT '1.11',
-    version        varchar(8)    DEFAULT NULL comment 'model version',
-    content        text          DEFAULT NULL,  
-    config         text          DEFAULT NULL,
+    algo_id        int           NOT NULL,
+	framework      varchar(16)   DEFAULT 'python' comment 'python, pytorch, tensorflow, paddle, dl4j, JDL, keras, auto-sklearn',
+    frame_ver      varchar(8)    DEFAULT '3.11',
+    content        text          DEFAULT NULL comment 'code',  
+    config         text          DEFAULT NULL comment 'json config',
+    duration       int           DEFAULT NULL comment 'unit minute',
+	status         int           DEFAULT 5 comment '0:succ, 1:failure, 3:interruption, 4:timeout, 5:exception',
+    result         text          DEFAULT NULL comment 'json result, {acu: 0.95}',
 	org_id         int           NOT NULL,
-    `public`       boolean       NOT NULL DEFAULT false,
     created_by  varchar(64)      NOT NULL,
     created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_by  varchar(64)      DEFAULT NULL,
-    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT fk_model_org      foreign key(org_id)     REFERENCES sys_org(id)
+	CONSTRAINT fk_algo_h_algo       foreign key(algo_id)     REFERENCES ml_algo(id),
+	CONSTRAINT fk_algo_h_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_model (id, pid, name, `desc`, `group`, type, framework, frame_ver, content, config, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'letnet', 'new letnet algorithm', 'DNN', 'classification', 'pytorch', '1.11', 'svm() return data', '[{id: 1, name:"aaa", type:"int[]"}]', 1, true, 'GavinZ', null, 'GavinZ', null);
+INSERT INTO ml_algo_history (id, algo_id, framework, frame_ver, content, config, duration, status, result, org_id, created_by, created_at)
+VALUES (1, 2, 'python', '3.11', 'asdfasdfasdfasf', '{a:1, b: 3}', 100, 0, '{auc: 99}', 1,'GavinZ', null);
 
 
 
@@ -1062,12 +1058,8 @@ CREATE TABLE ml_flow
 	config         text          DEFAULT NULL comment 'ML training config', 
 	workflow       text          DEFAULT NULL comment 'flow config with json', 
     canvas         text          DEFAULT NULL comment 'background and grid config',
-    flow_ver       varchar(8)    DEFAULT NULL comment 'antvX6 version',
+    x6_ver         varchar(8)    DEFAULT NULL comment 'antvX6 version',
     version        varchar(8)    DEFAULT NULL comment 'workflow version',
-    last_run       timestamp     NULL,
-    duration       int           DEFAULT NULL comment 'unit min',
-    status         varchar(16)   DEFAULT NULL comment 'success, failure, exception, padding, interruption',
-    error          text          DEFAULT NULL,
 	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by     varchar(64)   NOT NULL,
@@ -1077,11 +1069,29 @@ CREATE TABLE ml_flow
 	CONSTRAINT fk_flow_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-
-
 INSERT INTO ml_flow (id, pid, name, `desc`, `group`, config, workflow, canvas, flow_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
 VALUES (1, null, 'Svm train', 'New svm train', 'first', '{timeout: 10}', '{nodes:[{id:"node1", shape:"rect", width: 20, height: 10}], edges:[]}', '{gbColor:"#123456"}', '2.0', '0', '2024-04-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
 
+# ----------------------------
+# Table: ml_flow_history
+# ----------------------------
+DROP TABLE IF EXISTS ml_flow_history;
+CREATE TABLE ml_flow_history
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    flow_id        int           NOT NULL,
+	config         text          DEFAULT NULL comment 'ML training config', 
+	workflow       text          DEFAULT NULL comment 'flow config with json', 
+    x6_ver         varchar(8)    DEFAULT NULL comment 'antvX6 version',
+    duration       int           DEFAULT NULL comment 'unit minute',
+	status         int           DEFAULT 5 comment '0:succ, 1:failure, 3:interruption, 4:timeout, 5:exception',
+    result         text          DEFAULT NULL comment 'json result, {acu: 0.95}',
+	org_id         int           NOT NULL,
+    created_by  varchar(64)      NOT NULL,
+    created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_flow_h_flow       foreign key(flow_id)     REFERENCES ml_flow(id),
+	CONSTRAINT fk_flow_h_org       foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
 
 
 # ----------------------------
