@@ -12,6 +12,7 @@ public class ImporterUploadReqType {
     public String type;
     public Integer source;
     public String table;
+    public String bucket;
     public Integer rows; // total records
     public Boolean overwrite;
     public List<FileNameType> fileNames = new ArrayList<>();

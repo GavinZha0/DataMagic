@@ -48,6 +48,7 @@ import com.ninestar.datapie.datamagic.entity.*;
 import com.ninestar.datapie.datamagic.repository.*;
 import com.ninestar.datapie.datamagic.utils.DbUtils;
 import com.ninestar.datapie.datamagic.utils.IpUtils;
+import com.ninestar.datapie.datamagic.utils.MinioUtil;
 import com.ninestar.datapie.framework.consts.MysqlColumnType;
 import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.framework.utils.DateUtils;
@@ -123,6 +124,9 @@ public class AsyncTaskService {
     private DataImportRepository importRepository;
 
     @Resource
+    private MinioUtil minioUtil;
+
+    @Resource
     private DbUtils dbUtils;
 
     private Integer numEpoch = 1;
@@ -163,10 +167,28 @@ public class AsyncTaskService {
 
     @Async
     public void importFileTask(Map<String, InputStream> fileMap, String fileDir, ImporterUploadReqType config, DataImportEntity record) throws Exception {
-        // upload files to ftp and get status
-        Map<String, String> fileStatus =  uploadFilesToFtp(fileMap, fileDir, config);
-        record.setStatus("waiting"); // wait for ETL
-        importRepository.save(record);
+        Map<String, String> fileStatus = new HashMap<>();
+        if(!fileDir.equals("MINIO")){
+            // upload files to ftp and get status
+            fileStatus =  uploadFilesToFtp(fileMap, fileDir, config);
+            record.setStatus("waiting"); // wait for ETL
+            importRepository.save(record);
+        } else {
+            record.setStatus("success");
+            for(String fullName : fileMap.keySet()){
+                try {
+                    minioUtil.createBucket(config.bucket);
+                    minioUtil.uploadFile(fileMap.get(fullName), config.bucket, fullName);
+                } catch (Exception e){
+                    fileStatus.put(fullName, "failure");
+                    logger.error(e.getMessage());
+                } finally {
+                    //do nothing
+                }
+            }
+            importRepository.save(record);
+            return;
+        }
 
         // check datasource
         if (!dbUtils.isSourceExist(config.source)) {

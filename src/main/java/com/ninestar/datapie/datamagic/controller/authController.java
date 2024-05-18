@@ -32,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -83,6 +84,19 @@ public class authController {
 
     @Resource
     private PasswordEncoder pswEncoder;
+
+
+    @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
+    @PostMapping("/login")
+    @ApiOperation(value = "login", httpMethod = "POST")
+    public UniformResponse login(@RequestParam("username") String username, @RequestParam("password") String password) {
+        // This is not reachable
+        // This api is just for Knife4j to get token for interface test
+        // use your username and password to LOGIN and get TOKEN from response
+        // then put TOKEN into DocumentHelper/GlobalParams.
+        // Authorization = 'Bearer ' + TOKEN
+        return UniformResponse.ok();
+    }
 
     @PostMapping("/permit")
     @ApiOperation(value = "getUserPermit", httpMethod = "POST")
