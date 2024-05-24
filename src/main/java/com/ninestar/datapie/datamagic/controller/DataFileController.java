@@ -89,7 +89,8 @@ public class DataFileController {
 
     @PostMapping("/list")
     @ApiOperation(value = "getFileList", httpMethod = "POST", consumes = "application/json")
-    public UniformResponse getFileList(@SingleReqParam @ApiParam(name = "bucket", value = "bucket") String bucket) throws Exception {
+    //public UniformResponse getFileList(@SingleReqParam @ApiParam(name = "bucket", value = "bucket") String bucket) throws Exception {
+    public UniformResponse getFileList() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -98,9 +99,16 @@ public class DataFileController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
         Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
-        JSONObject jsonResponse = new JSONObject();
-        jsonResponse.set("records", minioUtil.listFiles(bucket));
-        return UniformResponse.ok().data(jsonResponse);
+        String bucket_prefix = "pie-org-";
+        String bucket_name = "pie-org-" + String.valueOf(tokenOrgId);
+
+        if(minioUtil.existsBucket(bucket_name)){
+            JSONObject jsonResponse = new JSONObject();
+            jsonResponse.set("records", minioUtil.listFiles(bucket_name));
+            return UniformResponse.ok().data(jsonResponse);
+        } else {
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        }
     }
 
     @PostMapping("/buckets")
