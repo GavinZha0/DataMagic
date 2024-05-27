@@ -49,6 +49,9 @@ public class NettyUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+        System.out.println("Async-Task msg: " + msg.toString().length());
+        // enable it when it is needed
+        /*
         try {
             String strMsg = msg.content().toString(CharsetUtil.UTF_8);
             if(strMsg.startsWith("Async-Task") && strMsg.contains("TARGET>>>")){
@@ -101,5 +104,6 @@ public class NettyUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        */
     }
 }

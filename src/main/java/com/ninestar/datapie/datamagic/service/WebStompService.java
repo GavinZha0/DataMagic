@@ -1,17 +1,16 @@
 package com.ninestar.datapie.datamagic.service;
 
-import com.ninestar.datapie.datamagic.socket.LoggerQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.user.SimpUser;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-
 import javax.annotation.Resource;
 import javax.websocket.server.ServerEndpoint;
 import java.security.Principal;
@@ -20,27 +19,27 @@ import java.security.Principal;
 @Controller
 @ServerEndpoint("/ws")
 public class WebStompService {
-
     @Resource
     private SimpMessagingTemplate template;
 
     @Resource
     private SimpUserRegistry userRegistry;
 
-    private LoggerQueue loggerQueue = LoggerQueue.getInstance();
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     // broadcast
     @MessageMapping("/cast")
     public void broadcast(Principal principal, StompHeaderAccessor accessor, @Payload String message) {
+        // receive broadcast from front end
         String uid = principal.getName();
-        //logger.info("WS-" + accessor.getUser().getName() + "-cast: "+ message.length());
-        System.out.println("WS-" + accessor.getUser().getName() + "-cast: "+ message.length());
+        logger.info("WS-" + accessor.getUser().getName() + "-cast: "+ message.length());
+        //System.out.println("WS-" + accessor.getUser().getName() + "-cast: "+ message.length());
     }
 
     // group message
     @MessageMapping("/msg/{target}")
-    @SendTo("/topic/msg")
     public void multicast(@DestinationVariable(value = "target") String target, StompHeaderAccessor accessor, @Payload String message) {
+        // receive multicast from front end
         //logger.info("WS-" + accessor.getUser().getName() + "-msg: "+ message.length());
         System.out.println("WS-" + accessor.getUser().getName() + "-msg: "+ message.length());
     }
@@ -48,22 +47,25 @@ public class WebStompService {
     // peer to peer chat
     @MessageMapping("/chat/{target}")
     public void p2pMessage(@DestinationVariable(value = "target") String target, StompHeaderAccessor accessor, @Payload String message) {
+        // receive p2p message from source user and send it to target user
+        // source user is accessor.getUser().getName()
         // target is like "1_alg3". it means user id 1 and algorithm id 3.
         String dest[] = target.split("_");
+        String targetUser = dest[0];
 
         if(accessor!=null){
             //logger.info("WS-" + accessor.getUser().getName() + "->" + target + ": " + message.length());
             System.out.println("WS-" + accessor.getUser().getName() + "->" + target + ": " + message.length());
         }
         else{
-            //logger.info("WS-" + dest[0] + "->" + target + ": " + message.length());
-            System.out.println("WS-" + dest[0] + "->" + target + ": " + message.length());
+            //logger.info("WS-" + targetUser + "->" + target + ": " + message.length());
+            System.out.println("WS-" + targetUser + "->" + target + ": " + message.length());
         }
 
         // forward message to target user if it is online
-        SimpUser simpUser = userRegistry.getUser(dest[0]);
+        SimpUser simpUser = userRegistry.getUser(targetUser);
         if(simpUser!=null){
-            template.convertAndSendToUser(dest[0], "/feedback", message);
+            template.convertAndSendToUser(targetUser, "/user", message);
         }
         else{
             System.out.println("WS-target user " + target + " is not online!");

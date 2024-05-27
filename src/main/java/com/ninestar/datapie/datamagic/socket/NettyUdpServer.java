@@ -70,6 +70,6 @@ public class NettyUdpServer implements ApplicationRunner{
 
 
         // don't start it if we don't use it
-        new NettyUdpServer().start();
+        //new NettyUdpServer().start();
     }
 }

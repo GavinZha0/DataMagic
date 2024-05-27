@@ -5,7 +5,9 @@ import com.ninestar.datapie.datamagic.bridge.AuthLoginRspType;
 import com.ninestar.datapie.datamagic.config.JwtConfig;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,14 +34,21 @@ public class JwtTokenUtil {
             times = 2;
         }
 
-        byte[] secretByte = Decoders.BASE64.decode(JwtConfig.secretKey);
-        Key signKey = Keys.hmacShaKeyFor(secretByte);
+        String base64Key = Base64.getEncoder().encodeToString(JwtConfig.secretKey.getBytes());
+        //String kk = "1234567890qwertyuiopasdfghjklzxcvbnmkiuyqazxderfvbki76543erfbnhghthethrtgwergavdfhjtuil6578i4y24t23asdfafr";
+        //byte[] secretByte = Decoders.BASE64.decode(kk);
+        //Key signKey = Keys.hmacShaKeyFor(secretByte);
+
+        Map<String, Object> header = new HashedMap();
+        header.put("typ", "JWT");
+        header.put("alg", "HS265");
 
         // must set claims first, otherwise all pre-defined fields(subject, issuer...) will disappear
         // all fields(claims) can be parsed by public method, like https://jwt.io/
         // so don't put sensitive info into token, like password
         // encrypt it then put into token once you really want to do so
         JwtBuilder builder = Jwts.builder()
+                .setHeader(header)
                 .claim(CLAIM_KEY_ROLE_ID, userDetails.roleId)
                 .claim(CLAIM_KEY_ROLE_NAME, userDetails.roleName)
                 .setId(userDetails.id.toString())
@@ -47,9 +56,9 @@ public class JwtTokenUtil {
                 .setIssuer(userDetails.orgId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JwtConfig.expiration * times))
-                .signWith(signKey, SignatureAlgorithm.HS256);
+                .signWith(SignatureAlgorithm.HS256, base64Key);
 
-        return JwtConfig.tokenPrefix + builder.compact();
+        return builder.compact();
     }
 
     /**
@@ -58,11 +67,12 @@ public class JwtTokenUtil {
      */
     public String refreshToken(String token) {
         Claims claims = getClaimsFromToken(token);
-        return JwtConfig.tokenPrefix + Jwts.builder()
+        String base64Key = Base64.getEncoder().encodeToString(JwtConfig.secretKey.getBytes());
+        return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JwtConfig.expiration))
-                .signWith(SignatureAlgorithm.HS512, JwtConfig.secretKey)
+                .signWith(SignatureAlgorithm.HS256, base64Key)
                 .compact();
     }
 
@@ -165,11 +175,12 @@ public class JwtTokenUtil {
      */
     private static Claims getClaimsFromToken(String token) {
         Claims claims = null;
+        String base64Key = Base64.getEncoder().encodeToString(JwtConfig.secretKey.getBytes());
         String realToken = token.replace(JwtConfig.tokenPrefix, "");
         {
             claims = Jwts.parserBuilder()
                     .setAllowedClockSkewSeconds(30L)
-                    .setSigningKey(Decoders.BASE64.decode(JwtConfig.secretKey))
+                    .setSigningKey(base64Key)
                     .build()
                     .parseClaimsJws(realToken)
                     .getBody();

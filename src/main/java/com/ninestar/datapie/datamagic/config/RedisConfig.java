@@ -41,11 +41,11 @@ public class RedisConfig {
     @Value("${spring.redis.consumer.name}")
     private String consumerName;
 
-    @Value("${spring.redis.channel.feedback}")
-    private String channelFeedback;
+    @Value("${spring.redis.channel.report}")
+    private String reportChannel;
 
-    @Value("${stomp.channel.feedback}")
-    private String stompFeedback;
+    @Value("${stomp.channel.report}")
+    private String wsChannel;
 
     @Resource
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -74,7 +74,7 @@ public class RedisConfig {
             // listen on msg channel
             RedisMessageListenerContainer container = new RedisMessageListenerContainer();
             container.setConnectionFactory(connectionFactory);
-            container.addMessageListener(new RedisChannelListener(simpMessagingTemplate), ChannelTopic.of(channelFeedback));
+            container.addMessageListener(new RedisChannelListener(simpMessagingTemplate), ChannelTopic.of(reportChannel));
             return container;
         } else {
             return null;

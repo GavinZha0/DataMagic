@@ -31,6 +31,7 @@
 		<jnl.version>5.8.0</jnl.version>
 		<dl4j.version>1.0.0-beta7</dl4j.version>
 		<xxl-job.version>2.3.1</xxl-job.version>
+		<ray.version>2.23.0</ray.version>
 
 		<lib-path>lib</lib-path>
 		<jar-path>jar</jar-path>
@@ -193,6 +194,23 @@
 			<artifactId>jython-standalone</artifactId>
 			<version>2.7.3</version>
 		</dependency>
+		<!-- Ray for remote task and ML-->
+		<!--dependency>
+			<groupId>io.ray</groupId>
+			<artifactId>ray-api</artifactId>
+			<version>${ray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.ray</groupId>
+			<artifactId>ray-runtime</artifactId>
+			<version>${ray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.ray</groupId>
+			<artifactId>ray-serve</artifactId>
+			<version>${ray.version}</version>
+			<scope>provided</scope>
+		</dependency-->
 		<!-- AWS DJL Mxnet-->
 		<dependency>
 			<groupId>ai.djl</groupId>

@@ -16,10 +16,10 @@
             <PatternLayout pattern="%highlight{%d %-5level}{ERROR=Bright RED, WARN=Bright Yellow, INFO=Bright Green, DEBUG=Bright Cyan, TRACE=Bright White} %style{[%t]}{bright,magenta} %style{%c{1.}.%M(%L)}{cyan}: %highlight{%msg}{ERROR=Bright RED, WARN=Bright Yellow, INFO=Bright Green, DEBUG=Bright Cyan, TRACE=Bright White}%n"/>
         </Console>
         <!--输出到UDP-->
-        <Socket name="Socket" host="localhost" port="9514" protocol="UDP" appName="DataMagic">
+        <!--Socket name="Socket" host="localhost" port="9514" protocol="UDP" appName="DataMagic">
             <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="%t| %d{yyyy-MM-dd HH:mm:ss} %-5level -> %msg%n" />
-        </Socket>
+        </Socket-->
 
         <!--*********************WebSocket日志***********************-->
         <WebSocketAppender name="stompAppender">

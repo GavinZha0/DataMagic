@@ -58,7 +58,7 @@ public class WebSocketAppender extends AbstractAppender {
         // ideally send message to UI here by stomp service
         // but stompService is null here ?????
         // so put message to a Q then get it send to UI periodically by task
-        loggerQueue.push(new String(getLayout().toByteArray(event)));
+        //loggerQueue.push(new String(getLayout().toByteArray(event)));
     }
 }
 

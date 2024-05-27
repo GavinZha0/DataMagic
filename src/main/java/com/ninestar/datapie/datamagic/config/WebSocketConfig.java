@@ -33,19 +33,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //url of front end(ws://localhost:9527/ws)
-        registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*");
-                //don't use SockJs but original websocket
-                //.withSockJS();
+        registry.addEndpoint("/ws").setAllowedOriginPatterns("*");
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // two brokers
+        // two brokers (one for app, one for users)
         registry.enableSimpleBroker("/topic", "/user");
 
         // prefix for all websocket message
-        // all '/app/xxx' will be transferred to  controller function which is marked by @MessageMapping
+        // all '/app/xxx' will be transferred to controller function which is marked by @MessageMapping
         //registry.setApplicationDestinationPrefixes("/app");
 
         //prefix for peer to peer message
@@ -106,8 +103,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             logger.info("WS-user " + uid + " connected!");
                             return message;
                         }
+                    } else {
+                        return null;
                     }
-                    return null;
                 }
                 else if(accessor != null && StompCommand.DISCONNECT.equals(accessor.getCommand())){
                     if(accessor.getUser()!=null){
