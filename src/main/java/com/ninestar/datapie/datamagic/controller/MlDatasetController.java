@@ -23,9 +23,11 @@ import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -63,7 +65,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/ml/dataset")
-@Api(tags = "MlDataset")
+@Tag(name = "MlDataset")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlDatasetController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -87,8 +89,8 @@ public class MlDatasetController {
     private DbUtils dbUtils;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getDatasetList", httpMethod = "POST")
-    public UniformResponse getDatasetList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) {
+    @Operation(description = "getDatasetList")
+    public UniformResponse getDatasetList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -183,8 +185,8 @@ public class MlDatasetController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getDatasetTree", httpMethod = "POST")
-    public UniformResponse getDatasetTree(@RequestBody @ApiParam(name = "param", value = "pub") JSONObject param){
+    @Operation(description = "getDatasetTree")
+    public UniformResponse getDatasetTree(@RequestBody @Parameter(name = "param", description = "pub") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -221,8 +223,8 @@ public class MlDatasetController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createDataset", httpMethod = "POST")
-    public UniformResponse createDataset(@RequestBody @ApiParam(name = "req", value = "dataset info") MlDatasetActionReqType req){
+    @Operation(description = "createDataset")
+    public UniformResponse createDataset(@RequestBody @Parameter(name = "req", description = "dataset info") MlDatasetActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -297,8 +299,8 @@ public class MlDatasetController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateDataset", httpMethod = "POST")
-    public UniformResponse updateDataset(@RequestBody @ApiParam(name = "req", value = "dataset info") MlDatasetActionReqType req){
+    @Operation(description = "updateDataset")
+    public UniformResponse updateDataset(@RequestBody @Parameter(name = "req", description = "dataset info") MlDatasetActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -350,8 +352,8 @@ public class MlDatasetController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicDataset", httpMethod = "POST")
-    public UniformResponse publicDataset(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
+    @Operation(description = "publicDataset")
+    public UniformResponse publicDataset(@RequestBody @Parameter(name = "params", description = "dataset id and pub flag") PublicReqType params){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -387,8 +389,8 @@ public class MlDatasetController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneDataset", httpMethod = "POST")
-    public UniformResponse cloneDataset(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "cloneDataset")
+    public UniformResponse cloneDataset(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -442,8 +444,8 @@ public class MlDatasetController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteDataset", httpMethod = "DELETE")
-    public UniformResponse deleteDataset(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
+    @Operation(description = "deleteDataset")
+    public UniformResponse deleteDataset(@RequestParam @Parameter(name = "id", description = "dataset id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -478,8 +480,8 @@ public class MlDatasetController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "dataset id") DatasetExeReqType request) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "param", description = "dataset id") DatasetExeReqType request) throws Exception {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -493,8 +495,8 @@ public class MlDatasetController {
     }
 
     @PostMapping("/get")
-    @ApiOperation(value = "getDataset", httpMethod = "POST")
-    public UniformResponse getDataset(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "getDataset")
+    public UniformResponse getDataset(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -522,7 +524,7 @@ public class MlDatasetController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -536,8 +538,8 @@ public class MlDatasetController {
     }
 
     @PostMapping("/subset")
-    @ApiOperation(value = "getSubset", httpMethod = "POST")
-    public UniformResponse getSubset(@RequestBody @ApiParam(name = "param", value = "dataset group") JSONObject param){
+    @Operation(description = "getSubset")
+    public UniformResponse getSubset(@RequestBody @Parameter(name = "param", description = "dataset group") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

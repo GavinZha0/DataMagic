@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,7 +11,7 @@ import javax.persistence.*;
 @EqualsAndHashCode
 @Entity
 @Table(name = "gis_layer", schema = "datapie", catalog = "")
-@ApiModel(value="GisLayer", description="")
+@Schema(description="GisLayer")
 public class GisLayerEntity {
     @Id
     @Column(name = "id", nullable = false)

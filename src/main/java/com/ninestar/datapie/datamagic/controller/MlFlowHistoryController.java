@@ -11,9 +11,11 @@ import com.ninestar.datapie.datamagic.entity.MlFlowHistoryEntity;
 import com.ninestar.datapie.datamagic.repository.*;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -34,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/ml/flow/history")
-@Api(tags = "MlFlowHistory")
+@Tag(name = "MlFlowHistory")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlFlowHistoryController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -51,8 +53,8 @@ public class MlFlowHistoryController {
     public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getFlowHistoryList", httpMethod = "POST")
-    public UniformResponse getFlowHistoryList(@RequestBody @ApiParam(name = "param", value = "param") JSONObject param) {
+    @Operation(description = "getFlowHistoryList")
+    public UniformResponse getFlowHistoryList(@RequestBody @Parameter(name = "param", description = "param") JSONObject param) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -77,8 +79,8 @@ public class MlFlowHistoryController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createFlowHistory", httpMethod = "POST")
-    public UniformResponse createFlowHistory(@RequestBody @ApiParam(name = "req", value = "dataset info") WorkflowActionReqType req){
+    @Operation(description = "createFlowHistory")
+    public UniformResponse createFlowHistory(@RequestBody @Parameter(name = "req", description = "dataset info") WorkflowActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -136,8 +138,8 @@ public class MlFlowHistoryController {
     }
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteFlowHistory", httpMethod = "DELETE")
-    public UniformResponse deleteFlowHistory(@RequestParam @ApiParam(name = "id", value = "history id") Integer id){
+    @Operation(description = "deleteFlowHistory")
+    public UniformResponse deleteFlowHistory(@RequestParam @Parameter(name = "id", description = "history id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -168,8 +170,8 @@ public class MlFlowHistoryController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getFlowHistory", httpMethod = "POST")
-    public UniformResponse getFlowHistory(@RequestBody @ApiParam(name = "param", value = "history id") JSONObject param){
+    @Operation(description = "getFlowHistory")
+    public UniformResponse getFlowHistory(@RequestBody @Parameter(name = "param", description = "history id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

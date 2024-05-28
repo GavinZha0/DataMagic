@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,7 +11,7 @@ import java.util.Objects;
 @EqualsAndHashCode
 @Entity
 @Table(name = "sys_status_dim", schema = "datapie", catalog = "")
-@ApiModel(value="SysStatusDim Object", description="")
+@Schema(description="SysStatusDim Object")
 public class SysStatusDimEntity {
     @Id
     @Column(name = "id", nullable = false)

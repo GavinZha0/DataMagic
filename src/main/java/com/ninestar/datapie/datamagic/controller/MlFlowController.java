@@ -14,9 +14,11 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -45,7 +47,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/mlworkflow")
-@Api(tags = "MlWorkflow")
+@Tag(name = "MlWorkflow")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlFlowController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -57,8 +59,8 @@ public class MlFlowController {
     public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getWorkflowList", httpMethod = "POST")
-    public UniformResponse getWorkflowList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws IOException, InterruptedException {
+    @Operation(description = "getWorkflowList")
+    public UniformResponse getWorkflowList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws IOException, InterruptedException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -145,8 +147,8 @@ public class MlFlowController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createWorkflow", httpMethod = "POST")
-    public UniformResponse createWorkflow(@RequestBody @ApiParam(name = "req", value = "dataset info") WorkflowActionReqType req){
+    @Operation(description = "createWorkflow")
+    public UniformResponse createWorkflow(@RequestBody @Parameter(name = "req", description = "dataset info") WorkflowActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -205,8 +207,8 @@ public class MlFlowController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateWorkflow", httpMethod = "POST")
-    public UniformResponse updateWorkflow(@RequestBody @ApiParam(name = "req", value = "dataset info") WorkflowActionReqType req){
+    @Operation(description = "updateWorkflow")
+    public UniformResponse updateWorkflow(@RequestBody @Parameter(name = "req", description = "dataset info") WorkflowActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -242,8 +244,8 @@ public class MlFlowController {
 
 
     @PostMapping("/branch")
-    @ApiOperation(value = "branchWorkflow", httpMethod = "POST")
-    public UniformResponse branchWorkflow(@RequestBody @ApiParam(name = "req", value = "dataset info") WorkflowActionReqType req){
+    @Operation(description = "branchWorkflow")
+    public UniformResponse branchWorkflow(@RequestBody @Parameter(name = "req", description = "dataset info") WorkflowActionReqType req){
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
@@ -312,8 +314,8 @@ public class MlFlowController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicWorkflow", httpMethod = "POST")
-    public UniformResponse publicWorkflow(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
+    @Operation(description = "publicWorkflow")
+    public UniformResponse publicWorkflow(@RequestBody @Parameter(name = "params", description = "dataset id and pub flag") PublicReqType params){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -341,8 +343,8 @@ public class MlFlowController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneWorkflow", httpMethod = "POST")
-    public UniformResponse cloneWorkflow(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "cloneWorkflow")
+    public UniformResponse cloneWorkflow(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -391,8 +393,8 @@ public class MlFlowController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteWorkflow", httpMethod = "DELETE")
-    public UniformResponse deleteWorkflow(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
+    @Operation(description = "deleteWorkflow")
+    public UniformResponse deleteWorkflow(@RequestParam @Parameter(name = "id", description = "dataset id") Integer id){
         //Hibernate: delete from data_source where id=?
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
@@ -419,7 +421,7 @@ public class MlFlowController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getWorkflowTree", httpMethod = "POST")
+    @Operation(description = "getWorkflowTree")
     public UniformResponse getWorkflowTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -443,8 +445,8 @@ public class MlFlowController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getWorkflow", httpMethod = "POST")
-    public UniformResponse getWorkflow(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "getWorkflow")
+    public UniformResponse getWorkflow(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -466,7 +468,7 @@ public class MlFlowController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getMlFlowGroups", httpMethod = "POST")
+    @Operation(description = "getMlFlowGroups")
     public UniformResponse getMlFlowGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

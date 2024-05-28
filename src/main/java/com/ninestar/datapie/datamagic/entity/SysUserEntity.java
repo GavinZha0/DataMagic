@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -22,7 +22,7 @@ import java.util.Set;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "sys_user", schema = "datapie", catalog = "")
-@ApiModel(value="SysUser", description="")
+@Schema(description="SysUser")
 public class SysUserEntity {
 
     @Id // primary key

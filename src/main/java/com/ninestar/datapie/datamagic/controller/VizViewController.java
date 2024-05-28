@@ -24,9 +24,11 @@ import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.datamagic.utils.DbUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +64,7 @@ import static tech.tablesaw.aggregate.AggregateFunctions.*;
  */
 @RestController
 @RequestMapping("/dataview")
-@Api(tags = "Dataview")
+@Tag(name = "VizDataview")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class VizViewController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -83,8 +85,8 @@ public class VizViewController {
     private DbUtils dbUtils;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getDataviewList", httpMethod = "POST")
-    public UniformResponse getDataviewList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) {
+    @Operation(description = "getDataviewList")
+    public UniformResponse getDataviewList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -195,8 +197,8 @@ public class VizViewController {
     }
 
     @PostMapping("/cat_views")
-    @ApiOperation(value = "getViewsByGroup", httpMethod = "POST")
-    public UniformResponse getViewsByGroup(@RequestBody @ApiParam(name = "request", value = "group") JSONObject request) {
+    @Operation(description = "getViewsByGroup")
+    public UniformResponse getViewsByGroup(@RequestBody @Parameter(name = "request", description = "group") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -256,8 +258,8 @@ public class VizViewController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createDataview", httpMethod = "POST")
-    public UniformResponse createDataview(@RequestBody @ApiParam(name = "req", value = "dataview info") DataviewActionReqType req){
+    @Operation(description = "createDataview")
+    public UniformResponse createDataview(@RequestBody @Parameter(name = "req", description = "dataview info") DataviewActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -338,8 +340,8 @@ public class VizViewController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateDataview", httpMethod = "POST")
-    public UniformResponse updateDataview(@RequestBody @ApiParam(name = "req", value = "dataview info") DataviewActionReqType req){
+    @Operation(description = "updateDataview")
+    public UniformResponse updateDataview(@RequestBody @Parameter(name = "req", description = "dataview info") DataviewActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -402,8 +404,8 @@ public class VizViewController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicDataview", httpMethod = "POST")
-    public UniformResponse publicDataview(@RequestBody @ApiParam(name = "request", value = "dataview id and pub flag") PublicReqType request){
+    @Operation(description = "publicDataview")
+    public UniformResponse publicDataview(@RequestBody @Parameter(name = "request", description = "dataview id and pub flag") PublicReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -439,8 +441,8 @@ public class VizViewController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.GRANT)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneDataview", httpMethod = "POST")
-    public UniformResponse cloneDataview(@RequestBody @ApiParam(name = "request", value = "dataview id") JSONObject request){
+    @Operation(description = "cloneDataview")
+    public UniformResponse cloneDataview(@RequestBody @Parameter(name = "request", description = "dataview id") JSONObject request){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -489,8 +491,8 @@ public class VizViewController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteDataview", httpMethod = "DELETE")
-    public UniformResponse deleteDataview(@RequestParam @ApiParam(name = "id", value = "dataview id") Integer id){
+    @Operation(description = "deleteDataview")
+    public UniformResponse deleteDataview(@RequestParam @Parameter(name = "id", description = "dataview id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -529,7 +531,7 @@ public class VizViewController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -556,8 +558,8 @@ public class VizViewController {
     }
 
     @PostMapping("/execute1")
-    @ApiOperation(value = "execute1", httpMethod = "POST")
-    public UniformResponse execute1(@RequestBody @ApiParam(name = "param", value = "dataset id and limit") DataviewExeReqType request) throws Exception {
+    @Operation(description = "execute1")
+    public UniformResponse execute1(@RequestBody @Parameter(name = "param", description = "dataset id and limit") DataviewExeReqType request) throws Exception {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -689,8 +691,8 @@ public class VizViewController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "request", value = "id") JSONObject request) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "request", description = "id") JSONObject request) throws Exception {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 

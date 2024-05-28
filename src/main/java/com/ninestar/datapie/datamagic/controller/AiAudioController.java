@@ -19,9 +19,9 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -31,9 +31,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/aiaudio")
-@Api(tags = "Ai_Audio_app")
+@Tag(name="AiAudioApp")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class AiAudioController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -74,8 +74,8 @@ public class AiAudioController {
 
 
     @PostMapping("/list")
-    @ApiOperation(value = "getAudioList", httpMethod = "POST")
-    public UniformResponse getImageList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
+    @Operation(summary="getAudioList")
+    public UniformResponse getImageList(@RequestBody @Validated TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -155,8 +155,8 @@ public class AiAudioController {
     }
 
     @PostMapping("/create")
-    @ApiOperation(value = "createImageApp", httpMethod = "POST")
-    public UniformResponse createImageApp(@RequestBody @ApiParam(name = "req", value = "image info") AiImageActionReqType req){
+    @Operation(summary="createImageApp")
+    public UniformResponse createImageApp(@RequestBody @Validated AiImageActionReqType req){
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
@@ -201,8 +201,8 @@ public class AiAudioController {
     }
 
     @PostMapping("/update")
-    @ApiOperation(value = "updateImageApp", httpMethod = "POST")
-    public UniformResponse updateImageApp(@RequestBody @ApiParam(name = "req", value = "Image info") AiImageActionReqType req){
+    @Operation(description = "updateImageApp")
+    public UniformResponse updateImageApp(@RequestBody @Parameter(name = "req", description = "Image info") AiImageActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -245,8 +245,8 @@ public class AiAudioController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicImageApp", httpMethod = "POST")
-    public UniformResponse publicImageApp(@RequestBody @ApiParam(name = "params", value = "app id and pub flag") PublicReqType params){
+    @Operation(description = "publicImageApp")
+    public UniformResponse publicImageApp(@RequestBody @Parameter(name = "params", description = "app id and pub flag") PublicReqType params){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -273,8 +273,8 @@ public class AiAudioController {
     }
 
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneImageApp", httpMethod = "POST")
-    public UniformResponse cloneImageApp(@RequestBody @ApiParam(name = "param", value = "Image app id") JSONObject param){
+    @Operation(description = "cloneImageApp")
+    public UniformResponse cloneImageApp(@RequestBody @Parameter(name = "param", description = "Image app id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -322,8 +322,8 @@ public class AiAudioController {
     }
 
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteImageApp", httpMethod = "DELETE")
-    public UniformResponse deleteImageApp(@RequestParam @ApiParam(name = "id", value = "Image app id") Integer id){
+    @Operation(description = "deleteImageApp")
+    public UniformResponse deleteImageApp(@RequestParam @Parameter(name = "id", description = "Image app id") Integer id){
         //Hibernate: delete from data_source where id=?
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
@@ -350,7 +350,7 @@ public class AiAudioController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getImageTree", httpMethod = "POST")
+    @Operation(description = "getImageTree")
     public UniformResponse getImageTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -378,8 +378,8 @@ public class AiAudioController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "model and target") JSONObject param) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "param", description = "model and target") JSONObject param) throws Exception {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
         Integer userId = (Integer)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -443,7 +443,7 @@ public class AiAudioController {
     }
 
     @PostMapping("/category")
-    @ApiOperation(value = "getCatOptions", httpMethod = "POST")
+    @Operation(description = "getCatOptions")
     public UniformResponse getCatOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -470,7 +470,7 @@ public class AiAudioController {
 
 
     @PostMapping("/upload")
-    @ApiOperation(value = "imageUpload", httpMethod = "POST")
+    @Operation(description = "imageUpload")
     public UniformResponse imageUpload(@RequestParam("files") MultipartFile[] files) throws Exception {
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)

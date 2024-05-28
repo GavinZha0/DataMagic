@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -21,7 +21,7 @@ import java.util.Set;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "sys_role", schema = "datapie", catalog = "")
-@ApiModel(value="SysRole", description="")
+@Schema(description="SysRole")
 public class SysRoleEntity {
 
     @Id

@@ -23,17 +23,15 @@ import com.ninestar.datapie.datamagic.repository.*;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -55,7 +53,7 @@ import java.util.stream.Collectors;
 // @RestController = @Controller + @ResponseBody
 @RestController // return json or xml data (@Controller is used to return html or jsp)
 @RequestMapping("/auth")
-@Api(tags = "Auth") // Swagger 3
+@Tag(name = "SysAuth") // Swagger 3
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT})
 public class authController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -88,7 +86,7 @@ public class authController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/login")
-    @ApiOperation(value = "login", httpMethod = "POST")
+    @Operation(summary = "login")
     public UniformResponse login(@RequestParam("username") String username, @RequestParam("password") String password) {
         // This is not reachable
         // This api is just for Knife4j to get token for interface test
@@ -99,7 +97,7 @@ public class authController {
     }
 
     @PostMapping("/permit")
-    @ApiOperation(value = "getUserPermit", httpMethod = "POST")
+    @Operation(summary = "getUserPermit")
     public UniformResponse getUserPermit() throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -179,7 +177,7 @@ public class authController {
     }
 
     @PostMapping("/info")
-    @ApiOperation(value = "getUserInfo", httpMethod = "POST")
+    @Operation(summary = "getUserInfo")
     public UniformResponse getUserInfo() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -209,7 +207,7 @@ public class authController {
     }
 
     @GetMapping("/captcha")
-    @ApiOperation(value = "getCaptcha", httpMethod = "GET")
+    @Operation(summary = "getCaptcha")
     public void getCaptcha(HttpServletResponse response) throws IOException {
         // set response header
         response.setHeader("Pragma", "No-cache");
@@ -247,8 +245,8 @@ public class authController {
     }
 
     @PostMapping("/code")
-    @ApiOperation(value = "getAuthCode", httpMethod = "POST")
-    public UniformResponse getAuthCode(@RequestBody @ApiParam(name = "username", value = "username, mobile or email") JSONObject identity) {
+    @Operation(summary = "getAuthCode")
+    public UniformResponse getAuthCode(@RequestBody @Validated JSONObject identity) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // username, phone or email
@@ -289,8 +287,8 @@ public class authController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/register")
-    @ApiOperation(value = "register", httpMethod = "POST")
-    public UniformResponse register(@RequestBody @ApiParam(name = "user", value = "user info") AuthRegisterReqType user){
+    @Operation(summary = "register")
+    public UniformResponse register(@RequestBody @Validated AuthRegisterReqType user){
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
 
@@ -345,8 +343,8 @@ public class authController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/language")
-    @ApiOperation(value = "switchLanguage", httpMethod = "POST")
-    public UniformResponse switchLanguage(@RequestBody @ApiParam(name = "request", value = "language") JSONObject request){
+    @Operation(summary = "switchLanguage")
+    public UniformResponse switchLanguage(@RequestBody @Validated JSONObject request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         String tokenUser = auth.getCredentials().toString();
@@ -363,7 +361,7 @@ public class authController {
 
     @LogAnn(logType = LogType.ACCESS)
     @PostMapping("/logout")
-    @ApiOperation(value = "logout", httpMethod = "POST")
+    @Operation(summary = "logout")
     public UniformResponse logout(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

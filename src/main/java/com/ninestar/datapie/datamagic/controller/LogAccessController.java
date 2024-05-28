@@ -10,9 +10,11 @@ import com.ninestar.datapie.datamagic.repository.*;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -40,7 +42,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/logaccess")
-@Api(tags = "LogAccess")
+@Tag(name = "LogAccess")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class LogAccessController {
 
@@ -50,9 +52,9 @@ public class LogAccessController {
     private LogAccessRepository accRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "listAccLog", httpMethod = "POST")
+    @Operation(description = "listAccLog")
     @PreAuthorize("hasAnyRole('Superuser')")
-    public UniformResponse listAccLog(@RequestBody @ApiParam(name = "request", value = "request") TableListReqType request){
+    public UniformResponse listAccLog(@RequestBody @Parameter(name = "request", description = "request") TableListReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -136,8 +138,8 @@ public class LogAccessController {
     }
 
     @PostMapping("/latest")
-    @ApiOperation(value = "getLatestAccLog", httpMethod = "POST")
-    public UniformResponse getLatestAccLog(@RequestBody @ApiParam(name = "request", value = "user id") JSONObject request) {
+    @Operation(description = "getLatestAccLog")
+    public UniformResponse getLatestAccLog(@RequestBody @Parameter(name = "request", description = "user id") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -156,9 +158,9 @@ public class LogAccessController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteAccLog", httpMethod = "DELETE")
+    @Operation(description = "deleteAccLog")
     @PreAuthorize("hasAnyRole('Superuser')")
-    public UniformResponse deleteUser(@RequestParam @ApiParam(name = "id", value = "user id") Integer id){
+    public UniformResponse deleteUser(@RequestParam @Parameter(name = "id", description = "user id") Integer id){
         //set deleted to true
         //Hibernate: update sys_user set active=?, avatar=?, create_time=?, created_by=?, deleted=?, department=?, email=?, name=?, realname=?, org_id=?, password=?, phone=?, update_time=?, updated_by=? where id=?
 

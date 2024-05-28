@@ -20,7 +20,7 @@
 		<mybatis-plus.version>3.5.3</mybatis-plus.version>
 		<jwt.version>0.11.2</jwt.version>
 		<druid.version>1.2.16</druid.version>
-		<knife4j.version>3.0.3</knife4j.version>
+		<knife4j.version>4.5.0</knife4j.version>
 		<hutool.version>5.8.25</hutool.version>
 		<aviator.version>5.3.3</aviator.version>
 		<tablesaw.version>0.43.1</tablesaw.version>
@@ -155,7 +155,7 @@
 		<!-- knife4j, swagger wrap for doc and restful api debugging-->
 		<dependency>
 			<groupId>com.github.xiaoymin</groupId>
-			<artifactId>knife4j-spring-boot-starter</artifactId>
+			<artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
 			<version>${knife4j.version}</version>
 		</dependency>
 		<!-- hutool, a powerful basic util tool, include DatetimeUtil, jsonUtil... -->

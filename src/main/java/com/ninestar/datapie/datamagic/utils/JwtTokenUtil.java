@@ -176,7 +176,7 @@ public class JwtTokenUtil {
     private static Claims getClaimsFromToken(String token) {
         Claims claims = null;
         String base64Key = Base64.getEncoder().encodeToString(JwtConfig.secretKey.getBytes());
-        String realToken = token.replace(JwtConfig.tokenPrefix, "");
+        String realToken = token.replace(JwtConfig.tokenPrefix, "").trim();
         {
             claims = Jwts.parserBuilder()
                     .setAllowedClockSkewSeconds(30L)

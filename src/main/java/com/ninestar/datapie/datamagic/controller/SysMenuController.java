@@ -9,22 +9,21 @@ import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
 import com.ninestar.datapie.datamagic.entity.SysMenuEntity;
-import com.ninestar.datapie.datamagic.entity.SysOrgEntity;
 import com.ninestar.datapie.datamagic.entity.VizReportEntity;
 import com.ninestar.datapie.datamagic.repository.SysMenuRepository;
 import com.ninestar.datapie.datamagic.repository.VizDatareportRepository;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/menu")
-@Api(tags = "Menu")
+@Tag(name = "SysMenu")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysMenuController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -55,7 +54,7 @@ public class SysMenuController {
 
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getMenuList", httpMethod = "POST")
+    @Operation(summary="getMenuList")
     public UniformResponse getMenuList() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -107,8 +106,8 @@ public class SysMenuController {
 
     @PostMapping("/tree")
     //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getMenuTree", httpMethod = "POST")
-    public UniformResponse getMenuTree(@RequestBody @ApiParam(name = "request", value = "menu name") JSONObject request) {
+    @Operation(summary = "getMenuTree")
+    public UniformResponse getMenuTree(@RequestBody @Validated JSONObject request) {
         List<Sort.Order> orders = new ArrayList<Sort.Order>();
         Sort.Order order = new Sort.Order(Sort.Direction.ASC, "pos");
         orders.add(order);
@@ -153,8 +152,8 @@ public class SysMenuController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "createMenu", httpMethod = "POST")
-    public UniformResponse createMenu(@RequestBody @ApiParam(name = "menu", value = "menu info") MenuActionReqType menu){
+    @Operation(summary = "createMenu")
+    public UniformResponse createMenu(@RequestBody @Validated MenuActionReqType menu){
         if(StrUtil.isEmpty(menu.name) || StrUtil.isEmpty(menu.title)
                 || StrUtil.isEmpty(menu.path) || StrUtil.isEmpty(menu.component)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -205,8 +204,8 @@ public class SysMenuController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "updateMenu", httpMethod = "POST")
-    public UniformResponse updateMenu(@RequestBody @ApiParam(name = "menu", value = "menu info") MenuActionReqType menu){
+    @Operation(summary = "updateMenu")
+    public UniformResponse updateMenu(@RequestBody @Validated MenuActionReqType menu){
         if(menu.id==0 || StrUtil.isEmpty(menu.name) || StrUtil.isEmpty(menu.title)
                 || StrUtil.isEmpty(menu.path) || StrUtil.isEmpty(menu.component)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -244,8 +243,8 @@ public class SysMenuController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ACTIVE)
     @PostMapping("/active")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "activeMenu", httpMethod = "POST")
-    public UniformResponse activeMenu(@RequestBody @ApiParam(name = "request", value = "menu id and active flag") ActiveReqType request){
+    @Operation(summary = "activeMenu")
+    public UniformResponse activeMenu(@RequestBody @Validated ActiveReqType request){
         if(request.id==0){
             return UniformResponse.error(UniformResponseCode.API_EXCEPTION);
         }
@@ -271,8 +270,8 @@ public class SysMenuController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "deleteMenu", httpMethod = "DELETE")
-    public UniformResponse deleteMenu(@RequestParam @ApiParam(name = "id", value = "menu id") Integer id){
+    @Operation(summary = "deleteMenu")
+    public UniformResponse deleteMenu(@RequestParam @Validated Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -321,8 +320,8 @@ public class SysMenuController {
 
     @PostMapping("dashboard")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getDashboard", httpMethod = "POST")
-    public UniformResponse getDashboard(@RequestBody @ApiParam(name = "request", value = "menu id") JSONObject request) {
+    @Operation(summary = "getDashboard")
+    public UniformResponse getDashboard(@RequestBody @Validated JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();

@@ -4,7 +4,7 @@ package ${package.Entity};
 import ${pkg};
 </#list>
 <#if swagger2>
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.annotations.ApiModelProperty;
 </#if>
 <#if entityLombokModel>
@@ -38,7 +38,7 @@ import lombok.experimental.Accessors;
 @TableName("${table.name}")
 </#if>
 <#if swagger2>
-@ApiModel(value="${entity} Object", description="${table.comment!}")
+@Schema(value="${entity} Object", description="${table.comment!}")
 </#if>
 <#if superEntityClass??>
 public class ${entity} extends ${superEntityClass}<#if activeRecord><${entity}></#if> {
@@ -59,7 +59,7 @@ public class ${entity} implements Serializable {
 
     <#if field.comment!?length gt 0>
         <#if swagger2>
-    @ApiModelProperty(value = "${field.comment}")
+    @SchemaProperty(value = "${field.comment}")
         <#else>
     /**
      * ${field.comment}

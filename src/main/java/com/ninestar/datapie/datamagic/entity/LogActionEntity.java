@@ -1,9 +1,8 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -11,7 +10,7 @@ import java.sql.Timestamp;
 @EqualsAndHashCode
 @Entity
 @Table(name = "log_action", schema = "datapie", catalog = "")
-@ApiModel(value="LogAction", description="")
+@Schema(description="LogAction")
 public class LogActionEntity {
 
     @Id

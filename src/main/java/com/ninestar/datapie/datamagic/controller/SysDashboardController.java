@@ -8,8 +8,9 @@ import com.ninestar.datapie.datamagic.entity.SysMenuEntity;
 import com.ninestar.datapie.datamagic.entity.VizReportEntity;
 import com.ninestar.datapie.datamagic.repository.SysMenuRepository;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/dashboard")
-@Api(tags = "Dashboard")
+@Tag(name = "SysDashboard")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysDashboardController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -40,7 +41,7 @@ public class SysDashboardController {
     private SysMenuRepository menuRepository;
 
     @PostMapping(value="{id}")
-    @ApiOperation(value = "getReports", httpMethod = "POST")
+    @Operation(description = "getReports")
     public UniformResponse getReports(@PathVariable("id") Integer id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

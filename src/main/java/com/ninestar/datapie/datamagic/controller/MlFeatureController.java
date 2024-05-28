@@ -23,9 +23,11 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -57,7 +59,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/mlfeature")
-@Api(tags = "MlFeature")
+@Tag(name = "MlFeature")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlFeatureController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -79,8 +81,8 @@ public class MlFeatureController {
     public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getFeatureList", httpMethod = "POST")
-    public UniformResponse getAlgorithmList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
+    @Operation(description = "getFeatureList")
+    public UniformResponse getAlgorithmList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -166,8 +168,8 @@ public class MlFeatureController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createFeature", httpMethod = "POST")
-    public UniformResponse createFeature(@RequestBody @ApiParam(name = "req", value = "dataset info") MlFeatureActionReqType req){
+    @Operation(description = "createFeature")
+    public UniformResponse createFeature(@RequestBody @Parameter(name = "req", description = "dataset info") MlFeatureActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -230,8 +232,8 @@ public class MlFeatureController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateFeature", httpMethod = "POST")
-    public UniformResponse updateFeature(@RequestBody @ApiParam(name = "req", value = "Algorithm info") MlFeatureActionReqType req){
+    @Operation(description = "updateFeature")
+    public UniformResponse updateFeature(@RequestBody @Parameter(name = "req", description = "Algorithm info") MlFeatureActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -286,8 +288,8 @@ public class MlFeatureController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicFeature", httpMethod = "POST")
-    public UniformResponse publicFeature(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
+    @Operation(description = "publicFeature")
+    public UniformResponse publicFeature(@RequestBody @Parameter(name = "params", description = "dataset id and pub flag") PublicReqType params){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -319,8 +321,8 @@ public class MlFeatureController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneFeature", httpMethod = "POST")
-    public UniformResponse cloneFeature(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "cloneFeature")
+    public UniformResponse cloneFeature(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -373,8 +375,8 @@ public class MlFeatureController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteFeature", httpMethod = "DELETE")
-    public UniformResponse deleteFeature(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
+    @Operation(description = "deleteFeature")
+    public UniformResponse deleteFeature(@RequestParam @Parameter(name = "id", description = "dataset id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -404,7 +406,7 @@ public class MlFeatureController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getFeatureTree", httpMethod = "POST")
+    @Operation(description = "getFeatureTree")
     public UniformResponse getFeatureTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -434,8 +436,8 @@ public class MlFeatureController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getFeature", httpMethod = "POST")
-    public UniformResponse getFeature(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "getFeature")
+    public UniformResponse getFeature(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -461,8 +463,8 @@ public class MlFeatureController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "algorithm id") JSONObject param) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "param", description = "algorithm id") JSONObject param) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -508,7 +510,7 @@ public class MlFeatureController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

@@ -1,18 +1,16 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-
 @Data
 @EqualsAndHashCode
 @Entity
 @Table(name = "log_access", schema = "datapie", catalog = "")
-@ApiModel(value="LogAccess", description="")
+@Schema(description="LogAccess")
 public class LogAccessEntity {
 
     @Id

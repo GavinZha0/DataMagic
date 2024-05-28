@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,60 +20,72 @@ import java.util.List;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "sys_org", schema = "datapie", catalog = "")
-@ApiModel(value="SysOrg", description="")
+@Schema(description="SysOrg")
 public class SysOrgEntity {
 
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Schema(description = "org unique id")
     private Integer id;
 
     @Basic
     @Column(name = "pid", nullable = true)
+    @Schema(description = "parent id")
     private Integer pid;
 
     @Basic
     @Column(name = "name", nullable = false, length = 64)
+    @Schema(description = "org name")
     private String name;
 
     @Basic
     @Column(name = "`desc`", nullable = true, length = 128)
+    @Schema(description = "description")
     private String desc;
 
     @Basic
     @Column(name = "logo", nullable = true, length = 255)
+    @Schema(description = "org logo")
     private String logo;
 
     @Basic
     @Column(name = "active", nullable = false)
+    @Schema(description = "active or disabled")
     private Boolean active;
 
     @Basic
     @Column(name = "exp_date", nullable = true)
+    @Schema(description = "expiration date")
     private Date expDate;
 
     @Basic
     @Column(name = "deleted", nullable = false)
+    @Schema(description = "org is deleted")
     private Boolean deleted;
 
     @Basic
     @CreatedBy
     @Column(name = "created_by", nullable = false, length = 64)
+    @Schema(description = "created by")
     private String createdBy;
 
     @Basic
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
+    @Schema(description = "created at")
     private Timestamp createdAt;
 
     @Basic
     @LastModifiedBy
     @Column(name = "updated_by", nullable = true, length = 64)
+    @Schema(description = "updated by")
     private String updatedBy;
 
     @Basic
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = true)
+    @Schema(description = "updated at")
     private Timestamp updatedAt;
 
     //comment these out because I don't want to maintain users in org

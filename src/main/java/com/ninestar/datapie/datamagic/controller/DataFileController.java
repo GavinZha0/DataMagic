@@ -24,9 +24,11 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.datamagic.utils.MinioUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +60,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/file")
-@Api(tags = "File")
+@Tag(name = "DataFile")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class DataFileController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -88,8 +90,8 @@ public class DataFileController {
 
 
     @PostMapping("/list")
-    @ApiOperation(value = "getFileList", httpMethod = "POST", consumes = "application/json")
-    //public UniformResponse getFileList(@SingleReqParam @ApiParam(name = "bucket", value = "bucket") String bucket) throws Exception {
+    @Operation(description = "getFileList")
+    //public UniformResponse getFileList(@SingleReqParam @Parameter(name = "bucket", description = "bucket") String bucket) throws Exception {
     public UniformResponse getFileList() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -112,7 +114,7 @@ public class DataFileController {
     }
 
     @PostMapping("/buckets")
-    @ApiOperation(value = "getFileBuckets", httpMethod = "POST")
+    @Operation(description = "getFileBuckets")
     public UniformResponse getFileBuckets() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -128,7 +130,7 @@ public class DataFileController {
     }
 
     @PostMapping("/upload")
-    @ApiOperation(value = "fileUpload", httpMethod = "POST")
+    @Operation(description = "fileUpload")
     public UniformResponse fileUpload(@RequestParam("config") String config, @RequestParam("files") MultipartFile[] files) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -186,8 +188,8 @@ public class DataFileController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteImportRec", httpMethod = "DELETE")
-    public UniformResponse deleteImportRec(@RequestParam @ApiParam(name = "id", value = "importer id") Integer id){
+    @Operation(description = "deleteImportRec")
+    public UniformResponse deleteImportRec(@RequestParam @Parameter(name = "id", description = "importer id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -220,7 +222,7 @@ public class DataFileController {
     }
 
     @PostMapping("/progress")
-    @ApiOperation(value = "getImportProgress", httpMethod = "POST")
+    @Operation(description = "getImportProgress")
     public UniformResponse getImportProgress() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

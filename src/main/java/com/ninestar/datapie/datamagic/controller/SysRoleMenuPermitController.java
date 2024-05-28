@@ -4,13 +4,12 @@ import cn.hutool.json.JSONObject;
 import com.ninestar.datapie.datamagic.entity.SysRoleMenuPermitEntity;
 import com.ninestar.datapie.datamagic.repository.SysRoleMenuPermitRepository;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.util.Set;
 
@@ -24,7 +23,7 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping("/permit")
-@Api(tags = "Permit")
+@Tag(name = "SysRolePermit")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysRoleMenuPermitController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -34,8 +33,8 @@ public class SysRoleMenuPermitController {
 
 
     @PostMapping("/list")
-    @ApiOperation(value = "getPermits", httpMethod = "POST")
-    public UniformResponse gePermits(@RequestBody @ApiParam(name = "request", value = "role id")JSONObject request) {
+    @Operation(summary = "getPermits")
+    public UniformResponse gePermits(@RequestBody @Parameter(description = "role id")JSONObject request) {
         //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();

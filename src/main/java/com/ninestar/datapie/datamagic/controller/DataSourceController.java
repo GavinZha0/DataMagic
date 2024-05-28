@@ -20,9 +20,11 @@ import com.ninestar.datapie.datamagic.utils.SqlUtils;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.*;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -51,7 +53,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/src/datasource")
-@Api(tags = "Datasource")
+@Tag(name = "Datasource")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class DataSourceController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -69,8 +71,8 @@ public class DataSourceController {
     private DbUtils dbUtils;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getSourceList", httpMethod = "POST")
-    public UniformResponse getSourceList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws IOException {
+    @Operation(description = "getSourceList")
+    public UniformResponse getSourceList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -153,7 +155,7 @@ public class DataSourceController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getSourceTree", httpMethod = "POST")
+    @Operation(description = "getSourceTree")
     public UniformResponse getSourceTree() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -190,8 +192,8 @@ public class DataSourceController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "createSource", httpMethod = "POST")
-    public UniformResponse createSource(@RequestBody @ApiParam(name = "source", value = "source info") SourceActionReqType source) {
+    @Operation(description = "createSource")
+    public UniformResponse createSource(@RequestBody @Parameter(name = "source", description = "source info") SourceActionReqType source) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -247,8 +249,8 @@ public class DataSourceController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateSource", httpMethod = "POST")
-    public UniformResponse updateSource(@RequestBody @ApiParam(name = "source", value = "source info") SourceActionReqType source) {
+    @Operation(description = "updateSource")
+    public UniformResponse updateSource(@RequestBody @Parameter(name = "source", description = "source info") SourceActionReqType source) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -302,8 +304,8 @@ public class DataSourceController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneDatasource", httpMethod = "POST")
-    public UniformResponse cloneDatasource(@RequestBody @ApiParam(name = "param", value = "datasource id") cn.hutool.json.JSONObject param) {
+    @Operation(description = "cloneDatasource")
+    public UniformResponse cloneDatasource(@RequestBody @Parameter(name = "param", description = "datasource id") cn.hutool.json.JSONObject param) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -357,8 +359,8 @@ public class DataSourceController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicSource", httpMethod = "POST")
-    public UniformResponse publicSource(@RequestBody @ApiParam(name = "params", value = "source id and pub flag") PublicReqType request) {
+    @Operation(description = "publicSource")
+    public UniformResponse publicSource(@RequestBody @Parameter(name = "params", description = "source id and pub flag") PublicReqType request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -393,8 +395,8 @@ public class DataSourceController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.GRANT)
     @PostMapping("/lock")
-    @ApiOperation(value = "lockTables", httpMethod = "POST")
-    public UniformResponse lockTables(@RequestBody @ApiParam(name = "params", value = "source id and tables") LockTableReqType request) {
+    @Operation(description = "lockTables")
+    public UniformResponse lockTables(@RequestBody @Parameter(name = "params", description = "source id and tables") LockTableReqType request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -430,8 +432,8 @@ public class DataSourceController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteSource", httpMethod = "DELETE")
-    public UniformResponse deleteSource(@RequestParam @ApiParam(name = "id", value = "source id") Integer id) {
+    @Operation(description = "deleteSource")
+    public UniformResponse deleteSource(@RequestParam @Parameter(name = "id", description = "source id") Integer id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -469,7 +471,7 @@ public class DataSourceController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -486,8 +488,8 @@ public class DataSourceController {
 
 
     @PostMapping("/test")
-    @ApiOperation(value = "testSource", httpMethod = "POST")
-    public UniformResponse testSource(@RequestBody @ApiParam(name = "request", value = "source info") SourceActionReqType request) throws Exception {
+    @Operation(description = "testSource")
+    public UniformResponse testSource(@RequestBody @Parameter(name = "request", description = "source info") SourceActionReqType request) throws Exception {
         if (StrUtil.isEmpty(request.type) || StrUtil.isEmpty(request.url) || StrUtil.isEmpty(request.username) || StrUtil.isEmpty(request.password)) {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
@@ -517,8 +519,8 @@ public class DataSourceController {
     }
 
     @PostMapping("/databases")
-    @ApiOperation(value = "getSourceDbs", httpMethod = "POST")
-    public UniformResponse getSourceDbs(@RequestBody @ApiParam(name = "param", value = "source id") JSONObject param) throws Exception {
+    @Operation(description = "getSourceDbs")
+    public UniformResponse getSourceDbs(@RequestBody @Parameter(name = "param", description = "source id") JSONObject param) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -545,8 +547,8 @@ public class DataSourceController {
     }
 
     @PostMapping("/tables")
-    @ApiOperation(value = "getSourceTables", httpMethod = "POST")
-    public UniformResponse getSourceTables(@RequestBody @ApiParam(name = "param", value = "source id") JSONObject param) throws Exception {
+    @Operation(description = "getSourceTables")
+    public UniformResponse getSourceTables(@RequestBody @Parameter(name = "param", description = "source id") JSONObject param) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -588,8 +590,8 @@ public class DataSourceController {
     }
 
     @PostMapping("/fields")
-    @ApiOperation(value = "getSourceFields", httpMethod = "POST")
-    public UniformResponse getSourceFields(@RequestBody @ApiParam(name = "params", value = "source id and table name") FieldReqType params) throws Exception {
+    @Operation(description = "getSourceFields")
+    public UniformResponse getSourceFields(@RequestBody @Parameter(name = "params", description = "source id and table name") FieldReqType params) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -606,8 +608,8 @@ public class DataSourceController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "request", value = "sql info") DatasourceExeReqType request) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "request", description = "sql info") DatasourceExeReqType request) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

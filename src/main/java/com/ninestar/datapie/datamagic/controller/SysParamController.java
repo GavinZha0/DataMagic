@@ -15,9 +15,9 @@ import com.ninestar.datapie.datamagic.repository.SysParamRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,7 +29,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/param")
-@Api(tags = "Config")
+@Tag(name = "SysParam")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysParamController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -58,8 +57,8 @@ public class SysParamController {
 
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getConfigList", httpMethod = "POST")
-    public UniformResponse getConfigList(@RequestBody @ApiParam(name = "request", value = "request") TableListReqType request) {
+    @Operation(summary = "getConfigList")
+    public UniformResponse getConfigList(@RequestBody @Parameter(description = "request") TableListReqType request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -129,8 +128,8 @@ public class SysParamController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "createConfig", httpMethod = "POST")
-    public UniformResponse createConfig(@RequestBody @ApiParam(name = "request", value = "config info") ParamActionReqType request){
+    @Operation(summary = "createConfig")
+    public UniformResponse createConfig(@RequestBody @Parameter(description = "config info") ParamActionReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -171,8 +170,8 @@ public class SysParamController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "updateConfig", httpMethod = "POST")
-    public UniformResponse updateConfig(@RequestBody @ApiParam(name = "source", value = "source info") ParamActionReqType request){
+    @Operation(summary = "updateConfig")
+    public UniformResponse updateConfig(@RequestBody @Parameter(name = "source", description = "source info") ParamActionReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -212,8 +211,8 @@ public class SysParamController {
     }
 
     @PostMapping("/get")
-    @ApiOperation(value = "getParameter", httpMethod = "POST")
-    public UniformResponse getParameter(@RequestBody @ApiParam(name = "request", value = "parameter name") JSONObject request) {
+    @Operation(summary = "getParameter")
+    public UniformResponse getParameter(@RequestBody @Parameter(description = "parameter name") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

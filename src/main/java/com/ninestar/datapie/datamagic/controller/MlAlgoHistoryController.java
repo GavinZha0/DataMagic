@@ -14,9 +14,11 @@ import com.ninestar.datapie.datamagic.repository.MlAlgoRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/ml/algo/history")
-@Api(tags = "MlAlgoHistory")
+@Tag(name = "MlAlgoHistory")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlAlgoHistoryController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -54,8 +56,8 @@ public class MlAlgoHistoryController {
     public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getAlgoHistoryList", httpMethod = "POST")
-    public UniformResponse getAlgoHistoryList(@RequestBody @ApiParam(name = "param", value = "param") JSONObject param) {
+    @Operation(description = "getAlgoHistoryList")
+    public UniformResponse getAlgoHistoryList(@RequestBody @Parameter(name = "param", description = "param") JSONObject param) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -80,8 +82,8 @@ public class MlAlgoHistoryController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createAlgoHistory", httpMethod = "POST")
-    public UniformResponse createAlgoHistory(@RequestBody @ApiParam(name = "req", value = "history info") AlgorithmActionReqType req){
+    @Operation(description = "createAlgoHistory")
+    public UniformResponse createAlgoHistory(@RequestBody @Parameter(name = "req", description = "history info") AlgorithmActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -132,8 +134,8 @@ public class MlAlgoHistoryController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteAlgoHistory", httpMethod = "DELETE")
-    public UniformResponse deleteAlgoHistory(@RequestParam @ApiParam(name = "id", value = "history id") Integer id){
+    @Operation(description = "deleteAlgoHistory")
+    public UniformResponse deleteAlgoHistory(@RequestParam @Parameter(name = "id", description = "history id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -164,8 +166,8 @@ public class MlAlgoHistoryController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getAlgoHistory", httpMethod = "POST")
-    public UniformResponse getAlgoHistory(@RequestBody @ApiParam(name = "param", value = "history id") JSONObject param){
+    @Operation(description = "getAlgoHistory")
+    public UniformResponse getAlgoHistory(@RequestBody @Parameter(name = "param", description = "history id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

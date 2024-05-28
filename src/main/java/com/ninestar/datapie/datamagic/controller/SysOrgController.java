@@ -11,9 +11,9 @@ import com.ninestar.datapie.datamagic.repository.SysUserRepository;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -21,7 +21,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/org")
-@Api(tags = "Org")
+@Tag(name = "SysOrg")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysOrgController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -51,7 +50,7 @@ public class SysOrgController {
 
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getOrgList", httpMethod = "POST")
+    @Operation(summary = "getOrgList")
     public UniformResponse getOrgList() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -114,8 +113,8 @@ public class SysOrgController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "createOrg", httpMethod = "POST")
-    public UniformResponse createOrg(@RequestBody @ApiParam(name = "request", value = "config info") OrgActionReqType request){
+    @Operation(summary = "createOrg")
+    public UniformResponse createOrg(@RequestBody @Parameter(name = "request") OrgActionReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
@@ -176,8 +175,8 @@ public class SysOrgController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "updateOrg", httpMethod = "POST")
-    public UniformResponse updateConfig(@RequestBody @ApiParam(name = "source", value = "source info") OrgActionReqType request){
+    @Operation(summary = "updateOrg")
+    public UniformResponse updateConfig(@RequestBody @Parameter(name = "source") OrgActionReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
@@ -236,8 +235,8 @@ public class SysOrgController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ACTIVE)
     @PostMapping("/active")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "activateOrg", httpMethod = "POST")
-    public UniformResponse activateUser(@RequestBody @ApiParam(name = "request", value = "org id and active") ActiveReqType request){
+    @Operation(summary = "activateOrg")
+    public UniformResponse activateUser(@RequestBody @Parameter(name = "request") ActiveReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
@@ -289,8 +288,8 @@ public class SysOrgController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "deleteOrg", httpMethod = "DELETE")
-    public UniformResponse deleteUser(@RequestParam @ApiParam(name = "id", value = "org id") Integer id){
+    @Operation(summary = "deleteOrg")
+    public UniformResponse deleteUser(@RequestParam @Parameter(name = "id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
@@ -342,7 +341,7 @@ public class SysOrgController {
     }
 
     @PostMapping("/options")
-    @ApiOperation(value = "getOrgOptions", httpMethod = "POST")
+    @Operation(summary = "getOrgOptions")
     public UniformResponse getOrgOptions() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "data_source", schema = "datapie", catalog = "")
-@ApiModel(value="DataSource", description="")
+@Schema(description="DataSource")
 public class DataSourceEntity {
 
     @Id // primary key

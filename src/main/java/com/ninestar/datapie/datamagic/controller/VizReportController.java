@@ -20,9 +20,11 @@ import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.datamagic.utils.DbUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -52,7 +54,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/datareport")
-@Api(tags = "Datareport")
+@Tag(name = "VizDatareport")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class VizReportController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -76,8 +78,8 @@ public class VizReportController {
     private DbUtils dbUtils;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getReportList", httpMethod = "POST")
-    public UniformResponse getReportList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) {
+    @Operation(description = "getReportList")
+    public UniformResponse getReportList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -167,7 +169,7 @@ public class VizReportController {
 
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getReportTree", httpMethod = "POST")
+    @Operation(description = "getReportTree")
     public UniformResponse getReportTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -206,8 +208,8 @@ public class VizReportController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createDatareport", httpMethod = "POST")
-    public UniformResponse createDatareport(@RequestBody @ApiParam(name = "req", value = "report info") DatareportActionReqType req){
+    @Operation(description = "createDatareport")
+    public UniformResponse createDatareport(@RequestBody @Parameter(name = "req", description = "report info") DatareportActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -250,8 +252,8 @@ public class VizReportController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateDatareport", httpMethod = "POST")
-    public UniformResponse updateDatareport(@RequestBody @ApiParam(name = "req", value = "Report info") DatareportActionReqType req){
+    @Operation(description = "updateDatareport")
+    public UniformResponse updateDatareport(@RequestBody @Parameter(name = "req", description = "Report info") DatareportActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -295,8 +297,8 @@ public class VizReportController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneDatareport", httpMethod = "POST")
-    public UniformResponse cloneDatareport(@RequestBody @ApiParam(name = "param", value = "report id") JSONObject request){
+    @Operation(description = "cloneDatareport")
+    public UniformResponse cloneDatareport(@RequestBody @Parameter(name = "param", description = "report id") JSONObject request){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -346,8 +348,8 @@ public class VizReportController {
     }
 
     @PostMapping("/cancel")
-    @ApiOperation(value = "cancelPublish", httpMethod = "POST")
-    public UniformResponse cancelPublish(@RequestBody @ApiParam(name = "param", value = "report id") JSONObject request){
+    @Operation(description = "cancelPublish")
+    public UniformResponse cancelPublish(@RequestBody @Parameter(name = "param", description = "report id") JSONObject request){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -376,8 +378,8 @@ public class VizReportController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "request", value = "Report Id and page Id") ReportExeReqType request) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "request", description = "Report Id and page Id") ReportExeReqType request) throws Exception {
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -477,8 +479,8 @@ public class VizReportController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicReport", httpMethod = "POST")
-    public UniformResponse publicReport(@RequestBody @ApiParam(name = "request", value = "Report id and pub flag") PublicReqType request){
+    @Operation(description = "publicReport")
+    public UniformResponse publicReport(@RequestBody @Parameter(name = "request", description = "Report id and pub flag") PublicReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -514,8 +516,8 @@ public class VizReportController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.GRANT)
     @PostMapping("/publish")
-    @ApiOperation(value = "publishReport", httpMethod = "POST")
-    public UniformResponse publishReport(@RequestBody @ApiParam(name = "id", value = "Report id") PublishReqType request){
+    @Operation(description = "publishReport")
+    public UniformResponse publishReport(@RequestBody @Parameter(name = "id", description = "Report id") PublishReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -593,8 +595,8 @@ public class VizReportController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteReport", httpMethod = "DELETE")
-    public UniformResponse deleteReport(@RequestParam @ApiParam(name = "id", value = "Report id") Integer id){
+    @Operation(description = "deleteReport")
+    public UniformResponse deleteReport(@RequestParam @Parameter(name = "id", description = "Report id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -628,7 +630,7 @@ public class VizReportController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

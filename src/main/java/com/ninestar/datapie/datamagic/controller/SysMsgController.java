@@ -13,9 +13,9 @@ import com.ninestar.datapie.datamagic.repository.SysUserRepository;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/msg")
-@Api(tags = "Msg")
+@Tag(name = "SysMsg")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysMsgController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -54,8 +53,8 @@ public class SysMsgController {
     private SysUserRepository userRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getMsgList", httpMethod = "POST")
-    public UniformResponse getMsgList(@RequestBody @ApiParam(name = "req", value = "msg info") MsgActionReqType req) {
+    @Operation(summary = "getMsgList")
+    public UniformResponse getMsgList(@RequestBody @Parameter(name = "req") MsgActionReqType req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -96,8 +95,8 @@ public class SysMsgController {
     }
 
     @PostMapping("/get")
-    @ApiOperation(value = "getUserMsg", httpMethod = "POST")
-    public UniformResponse getUserMsg(@RequestBody @ApiParam(name = "request", value = "user id") JSONObject request) {
+    @Operation(summary = "getUserMsg")
+    public UniformResponse getUserMsg(@RequestBody @Parameter(description = "user id") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();
@@ -137,8 +136,8 @@ public class SysMsgController {
 
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getMsgTree", httpMethod = "POST")
-    public UniformResponse getMsgTree(@RequestBody @ApiParam(name = "request", value = "menu name") JSONObject request) {
+    @Operation(summary = "getMsgTree")
+    public UniformResponse getMsgTree(@RequestBody @Parameter(description = "menu name") JSONObject request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         String tokenUser = auth.getCredentials().toString();
@@ -171,8 +170,8 @@ public class SysMsgController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createMsg", httpMethod = "POST")
-    public UniformResponse createMsg(@RequestBody @ApiParam(name = "request", value = "msg info") SysMsgEntity req){
+    @Operation(summary = "createMsg")
+    public UniformResponse createMsg(@RequestBody @Parameter(description = "msg info") SysMsgEntity req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -203,8 +202,8 @@ public class SysMsgController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ACTIVE)
     @PostMapping("/read")
-    @ApiOperation(value = "readMsg", httpMethod = "POST")
-    public UniformResponse readMsg(@RequestBody @ApiParam(name = "request", value = "msg read") ActiveReqType req){
+    @Operation(summary = "readMsg")
+    public UniformResponse readMsg(@RequestBody @Parameter(description = "msg read") ActiveReqType req){
         if(req.id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
@@ -228,8 +227,8 @@ public class SysMsgController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteMsg", httpMethod = "DELETE")
-    public UniformResponse deleteMsg(@RequestParam @ApiParam(name = "id", value = "msg id") Integer id){
+    @Operation(summary = "deleteMsg")
+    public UniformResponse deleteMsg(@RequestParam @Parameter(name = "id", description = "msg id") Integer id){
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }

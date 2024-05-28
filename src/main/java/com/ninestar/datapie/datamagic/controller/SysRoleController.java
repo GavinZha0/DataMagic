@@ -17,9 +17,8 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeNode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -30,6 +29,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/role")
-@Api(tags = "Role")
+@Tag(name = "SysRole")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysRoleController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -63,8 +63,8 @@ public class SysRoleController {
 
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getRoleList", httpMethod = "POST")
-    public UniformResponse getRoleList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) {
+    @Operation(summary = "getRoleList")
+    public UniformResponse getRoleList(@RequestBody @Validated TableListReqType req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -148,8 +148,8 @@ public class SysRoleController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "createRole", httpMethod = "POST")
-    public UniformResponse createRole(@RequestBody @ApiParam(name = "user", value = "role info") RoleActionReqType role){
+    @Operation(summary = "createRole")
+    public UniformResponse createRole(@RequestBody @Validated RoleActionReqType role){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(r->r.getAuthority()).collect(Collectors.toList());
@@ -186,8 +186,8 @@ public class SysRoleController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "updateRole", httpMethod = "POST")
-    public UniformResponse updateRole(@RequestBody @ApiParam(name = "role", value = "role info") RoleActionReqType role){
+    @Operation(summary = "updateRole")
+    public UniformResponse updateRole(@RequestBody @Validated RoleActionReqType role){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(r->r.getAuthority()).collect(Collectors.toList());
@@ -229,8 +229,8 @@ public class SysRoleController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.GRANT)
     @PostMapping("/permit")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "geRolePermit", httpMethod = "POST")
-    public UniformResponse geRolePermit(@RequestBody @ApiParam(name = "request", value = "role id") JSONObject request) {
+    @Operation(summary = "geRolePermit")
+    public UniformResponse geRolePermit(@RequestBody @Validated JSONObject request) {
         Integer id = Integer.parseInt(request.get("id").toString());
         Set<SysMenuEntity> rolePermits = roleRepository.findById(id).get().getPermits();
         List<AuthPermitRspType> permitList = new ArrayList<AuthPermitRspType>();
@@ -245,8 +245,8 @@ public class SysRoleController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ACTIVE)
     @PostMapping("/active")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "activeRole", httpMethod = "POST")
-    public UniformResponse activeRole(@RequestBody @ApiParam(name = "request", value = "role id") ActiveReqType request){
+    @Operation(summary = "activeRole")
+    public UniformResponse activeRole(@RequestBody @Validated ActiveReqType request){
         if(request.id==0){
             return UniformResponse.error(UniformResponseCode.API_EXCEPTION);
         }
@@ -272,8 +272,8 @@ public class SysRoleController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "deleteRole", httpMethod = "DELETE")
-    public UniformResponse deleteRole(@RequestParam @ApiParam(name = "id", value = "role id") Integer id){
+    @Operation(summary = "deleteRole")
+    public UniformResponse deleteRole(@RequestParam @Validated Integer id){
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
@@ -297,8 +297,8 @@ public class SysRoleController {
 
     @PostMapping("/user_list")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getRoleUsers", httpMethod = "POST")
-    public UniformResponse getRoleUsers(@RequestBody @ApiParam(name = "request", value = "role id") JSONObject request) {
+    @Operation(summary = "getRoleUsers")
+    public UniformResponse getRoleUsers(@RequestBody @Validated JSONObject request) {
         Integer roleId = Integer.parseInt(request.get("id").toString());
 
         SysRoleEntity entity = roleRepository.findById(roleId).get();
@@ -333,8 +333,8 @@ public class SysRoleController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/user_update")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "updateRoleUsers", httpMethod = "POST")
-    public UniformResponse updateRoleUsers(@RequestBody @ApiParam(name = "req", value = "role user list") RoleActionReqType req){
+    @Operation(summary = "updateRoleUsers")
+    public UniformResponse updateRoleUsers(@RequestBody @Validated RoleActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(r->r.getAuthority()).collect(Collectors.toList());
@@ -373,7 +373,7 @@ public class SysRoleController {
 
     @PostMapping("/options")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getRoleOptions", httpMethod = "POST")
+    @Operation(summary = "getRoleOptions")
     public UniformResponse getRoleOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

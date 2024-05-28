@@ -19,9 +19,11 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -53,7 +55,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/ml/eda")
-@Api(tags = "MlEda")
+@Tag(name = "MlEda")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlEdaController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -75,8 +77,8 @@ public class MlEdaController {
     public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getEdaList", httpMethod = "POST")
-    public UniformResponse getEdaList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
+    @Operation(description = "getEdaList")
+    public UniformResponse getEdaList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -159,8 +161,8 @@ public class MlEdaController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createEda", httpMethod = "POST")
-    public UniformResponse createEda(@RequestBody @ApiParam(name = "req", value = "dataset info") MlEdaActionReqType req){
+    @Operation(description = "createEda")
+    public UniformResponse createEda(@RequestBody @Parameter(name = "req", description = "dataset info") MlEdaActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -215,8 +217,8 @@ public class MlEdaController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateEda", httpMethod = "POST")
-    public UniformResponse updateEda(@RequestBody @ApiParam(name = "req", value = "Eda info") MlEdaActionReqType req){
+    @Operation(description = "updateEda")
+    public UniformResponse updateEda(@RequestBody @Parameter(name = "req", description = "Eda info") MlEdaActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -261,8 +263,8 @@ public class MlEdaController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicEda", httpMethod = "POST")
-    public UniformResponse publicEda(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
+    @Operation(description = "publicEda")
+    public UniformResponse publicEda(@RequestBody @Parameter(name = "params", description = "dataset id and pub flag") PublicReqType params){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -294,8 +296,8 @@ public class MlEdaController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneEda", httpMethod = "POST")
-    public UniformResponse cloneEda(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "cloneEda")
+    public UniformResponse cloneEda(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -348,8 +350,8 @@ public class MlEdaController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteEda", httpMethod = "DELETE")
-    public UniformResponse deleteEda(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
+    @Operation(description = "deleteEda")
+    public UniformResponse deleteEda(@RequestParam @Parameter(name = "id", description = "dataset id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -379,7 +381,7 @@ public class MlEdaController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getEdaTree", httpMethod = "POST")
+    @Operation(description = "getEdaTree")
     public UniformResponse getEdaTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -409,8 +411,8 @@ public class MlEdaController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getEda", httpMethod = "POST")
-    public UniformResponse getEda(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "getEda")
+    public UniformResponse getEda(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -436,8 +438,8 @@ public class MlEdaController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "Eda id") JSONObject param) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "param", description = "Eda id") JSONObject param) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -483,7 +485,7 @@ public class MlEdaController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());

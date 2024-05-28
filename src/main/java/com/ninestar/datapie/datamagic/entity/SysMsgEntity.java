@@ -1,7 +1,7 @@
 package com.ninestar.datapie.datamagic.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,7 +14,7 @@ import java.util.Objects;
 @EqualsAndHashCode
 @Entity
 @Table(name = "sys_msg", schema = "datapie", catalog = "")
-@ApiModel(value="SysMsg", description="")
+@Schema(description="SysMsg")
 public class SysMsgEntity {
 
     @Id // primary key

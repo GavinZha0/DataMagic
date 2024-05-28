@@ -1,6 +1,7 @@
 package com.ninestar.datapie.datamagic.controller;
 
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Controller;
  */
 @Controller
 @RequestMapping("/sys-user-role")
+@Tag(name = "SysUser")
 public class SysUserRoleController {
 
 }

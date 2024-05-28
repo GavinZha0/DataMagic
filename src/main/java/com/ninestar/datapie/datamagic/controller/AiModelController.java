@@ -18,9 +18,11 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -50,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/aimodel")
-@Api(tags = "Ai_Trained_Model")
+@Tag(name = "AiTrainedModel")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class AiModelController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -62,8 +64,8 @@ public class AiModelController {
     public AiImageRepository imageAppRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getModels", httpMethod = "POST")
-    public UniformResponse getModels(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
+    @Operation(description = "getModels")
+    public UniformResponse getModels(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -169,8 +171,8 @@ public class AiModelController {
     }
 
     @PostMapping("/create")
-    @ApiOperation(value = "createModel", httpMethod = "POST")
-    public UniformResponse createModel(@RequestBody @ApiParam(name = "req", value = "model info") AiModelActionReqType req){
+    @Operation(description = "createModel")
+    public UniformResponse createModel(@RequestBody @Parameter(name = "req", description = "model info") AiModelActionReqType req){
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
@@ -222,8 +224,8 @@ public class AiModelController {
     }
 
     @PostMapping("/update")
-    @ApiOperation(value = "updateModel", httpMethod = "POST")
-    public UniformResponse updateModel(@RequestBody @ApiParam(name = "req", value = "model info") AiModelActionReqType req){
+    @Operation(description = "updateModel")
+    public UniformResponse updateModel(@RequestBody @Parameter(name = "req", description = "model info") AiModelActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -272,8 +274,8 @@ public class AiModelController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicModel", httpMethod = "POST")
-    public UniformResponse publicModel(@RequestBody @ApiParam(name = "params", value = "model id and pub flag") PublicReqType params){
+    @Operation(description = "publicModel")
+    public UniformResponse publicModel(@RequestBody @Parameter(name = "params", description = "model id and pub flag") PublicReqType params){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -300,8 +302,8 @@ public class AiModelController {
     }
 
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneModel", httpMethod = "POST")
-    public UniformResponse cloneModel(@RequestBody @ApiParam(name = "param", value = "model id") JSONObject param){
+    @Operation(description = "cloneModel")
+    public UniformResponse cloneModel(@RequestBody @Parameter(name = "param", description = "model id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -349,8 +351,8 @@ public class AiModelController {
     }
 
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteModel", httpMethod = "DELETE")
-    public UniformResponse deleteModel(@RequestParam @ApiParam(name = "id", value = "model id") Integer id){
+    @Operation(description = "deleteModel")
+    public UniformResponse deleteModel(@RequestParam @Parameter(name = "id", description = "model id") Integer id){
         //Hibernate: delete from data_source where id=?
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
@@ -377,7 +379,7 @@ public class AiModelController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getModelTree", httpMethod = "POST")
+    @Operation(description = "getModelTree")
     public UniformResponse getModelTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -406,7 +408,7 @@ public class AiModelController {
 
 
     @PostMapping("/types")
-    @ApiOperation(value = "getTypeOptions", httpMethod = "POST")
+    @Operation(description = "getTypeOptions")
     public UniformResponse getTypeOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -432,7 +434,7 @@ public class AiModelController {
     }
 
     @PostMapping("/category")
-    @ApiOperation(value = "getCatOptions", httpMethod = "POST")
+    @Operation(description = "getCatOptions")
     public UniformResponse getCatOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -458,7 +460,7 @@ public class AiModelController {
     }
 
     @PostMapping("/upload")
-    @ApiOperation(value = "imageUpload", httpMethod = "POST")
+    @Operation(description = "imageUpload")
     public UniformResponse imageUpload(@RequestParam("files") MultipartFile[] files) throws Exception {
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)

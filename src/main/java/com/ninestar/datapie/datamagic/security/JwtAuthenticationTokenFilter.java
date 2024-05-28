@@ -61,7 +61,7 @@ public class JwtAuthenticationTokenFilter extends BasicAuthenticationFilter {
             return;
         }
 
-        String pureToken = token.substring(JwtConfig.tokenPrefix.length()+1);
+        String pureToken = token.replace(JwtConfig.tokenPrefix, "").trim();
         try {
             // has jwt token then verify if it expires
             // if so, an exception will be thrown
@@ -101,8 +101,17 @@ public class JwtAuthenticationTokenFilter extends BasicAuthenticationFilter {
                 response.addHeader(JwtConfig.shadowTokenField,  newShadowToken);
             }
         } catch (ExpiredJwtException e){
+            // auth token expired, so check shadowToken
+            if(StrUtil.isEmpty(shadowToken)){
+                // return failure if shadowToken is null
+                logger.error("Auth token expired!");
+                PrintWriter writer = response.getWriter();
+                writer.write(JSONUtil.parseObj(UniformResponse.error(TOKEN_EXPIRED)).toString());
+                return;
+            }
+
             try {
-                // auth token expired, so verify the shadow token which has double expiration time
+                // verify the shadow token which has double expiration time
                 JwtTokenUtil.isTokenExpired(shadowToken);
             }catch (ExpiredJwtException ex){
                 // return failure if both tokens expire

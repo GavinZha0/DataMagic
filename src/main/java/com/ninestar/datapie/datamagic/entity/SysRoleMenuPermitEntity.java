@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import javax.persistence.*;
@@ -10,7 +10,7 @@ import javax.persistence.*;
 @EqualsAndHashCode
 @Entity
 @Table(name = "sys_role_menu_permit", schema = "datapie", catalog = "")
-@ApiModel(value="SysRoleMenuPermit", description="")
+@Schema(description="SysRoleMenuPermit")
 public class SysRoleMenuPermitEntity {
 
     @Id

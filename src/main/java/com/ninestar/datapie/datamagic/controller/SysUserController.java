@@ -1,6 +1,5 @@
 package com.ninestar.datapie.datamagic.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.ninestar.datapie.datamagic.aop.ActionType;
@@ -16,9 +15,9 @@ import com.ninestar.datapie.datamagic.repository.SysUserRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -32,7 +31,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.*;
@@ -48,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/user")
-@Api(tags = "User")
+@Tag(name = "SysUser")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class SysUserController {
 
@@ -67,9 +65,9 @@ public class SysUserController {
     private PasswordEncoder pswEncoder;
 
     @PostMapping("/list")
-    @ApiOperation(value = "listUser", httpMethod = "POST")
+    @Operation(summary = "listUser")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    public UniformResponse listUser(@RequestBody @ApiParam(name = "request", value = "request") TableListReqType request){
+    public UniformResponse listUser(@RequestBody @Parameter(description = "request") TableListReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -169,9 +167,9 @@ public class SysUserController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getUserTree", httpMethod = "POST")
+    @Operation(summary = "getUserTree")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    public UniformResponse getUserTree(@RequestBody @ApiParam(name = "request", value = "request") TableListReqType request){
+    public UniformResponse getUserTree(@RequestBody @Parameter(description = "request") TableListReqType request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
@@ -205,9 +203,9 @@ public class SysUserController {
 
 
     @PostMapping("/one")
-    @ApiOperation(value = "getOneUser", httpMethod = "POST")
+    @Operation(summary = "getOneUser")
     //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    public UniformResponse getOneUser(@RequestBody @ApiParam(name = "request", value = "user id") JSONObject request){
+    public UniformResponse getOneUser(@RequestBody @Parameter(description = "user id") JSONObject request){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -244,8 +242,8 @@ public class SysUserController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "createUser", httpMethod = "POST")
-    public UniformResponse createUser(@RequestBody @ApiParam(name = "user", value = "user info") UserActionReqType user){
+    @Operation(summary = "createUser")
+    public UniformResponse createUser(@RequestBody @Parameter(name = "user", description = "user info") UserActionReqType user){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
@@ -312,8 +310,8 @@ public class SysUserController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateUser", httpMethod = "POST")
-    public UniformResponse updateUser(@RequestBody @ApiParam(name = "user", value = "user info") UserActionReqType req){
+    @Operation(summary = "updateUser")
+    public UniformResponse updateUser(@RequestBody @Parameter(name = "user", description = "user info") UserActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -388,8 +386,8 @@ public class SysUserController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/password")
-    @ApiOperation(value = "updatePassword", httpMethod = "POST")
-    public UniformResponse updatePassword(@RequestBody @ApiParam(name = "password", value = "password") UserPasswordReqType req){
+    @Operation(summary = "updatePassword")
+    public UniformResponse updatePassword(@RequestBody @Parameter(name = "password", description = "password") UserPasswordReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
 
@@ -421,8 +419,8 @@ public class SysUserController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ACTIVE)
     @PostMapping("/active")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "activateUser", httpMethod = "POST")
-    public UniformResponse activateUser(@RequestBody @ApiParam(name = "request", value = "user id and active") ActiveReqType request){
+    @Operation(summary = "activateUser")
+    public UniformResponse activateUser(@RequestBody @Parameter(description = "user id and active") ActiveReqType request){
         if(request.id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
@@ -447,8 +445,8 @@ public class SysUserController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
     @PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "deleteUser", httpMethod = "DELETE")
-    public UniformResponse deleteUser(@RequestParam @ApiParam(name = "id", value = "user id") Integer id){
+    @Operation(summary = "deleteUser")
+    public UniformResponse deleteUser(@RequestParam @Parameter(name = "id", description = "user id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -481,7 +479,7 @@ public class SysUserController {
 
     @PostMapping("/options")
     //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
-    @ApiOperation(value = "getUserOptions", httpMethod = "POST")
+    @Operation(summary = "getUserOptions")
     public UniformResponse getUserOptions() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -506,7 +504,7 @@ public class SysUserController {
     }
 
     @PostMapping("/upload")
-    @ApiOperation(value = "AvatarUpload", httpMethod = "POST")
+    @Operation(summary = "AvatarUpload")
     public UniformResponse AvatarUpload(@RequestParam("file") MultipartFile file) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

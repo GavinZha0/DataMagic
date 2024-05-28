@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "ml_algo_history", schema = "datapie", catalog = "")
-@ApiModel(value="MlAlgoHistory", description="")
+@Schema(description="MlAlgoHistory")
 public class MlAlgoHistoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

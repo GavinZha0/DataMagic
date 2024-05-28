@@ -20,9 +20,11 @@ import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -50,7 +52,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/ml/algo")
-@Api(tags = "MlAlgo")
+@Tag(name = "MlAlgorithm")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlAlgoController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -64,8 +66,8 @@ public class MlAlgoController {
     public SysOrgRepository orgRepository;
 
     @PostMapping("/list")
-    @ApiOperation(value = "getAlgorithmList", httpMethod = "POST")
-    public UniformResponse getAlgorithmList(@RequestBody @ApiParam(name = "req", value = "request") TableListReqType req) throws InterruptedException, IOException {
+    @Operation(description = "getAlgorithmList")
+    public UniformResponse getAlgorithmList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -144,8 +146,8 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ADD)
     @PostMapping("/create")
-    @ApiOperation(value = "createAlgorithm", httpMethod = "POST")
-    public UniformResponse createAlgorithm(@RequestBody @ApiParam(name = "req", value = "dataset info") AlgorithmActionReqType req){
+    @Operation(description = "createAlgorithm")
+    public UniformResponse createAlgorithm(@RequestBody @Parameter(name = "req", description = "dataset info") AlgorithmActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -196,8 +198,8 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.UPDATE)
     @PostMapping("/update")
-    @ApiOperation(value = "updateAlgorithm", httpMethod = "POST")
-    public UniformResponse updateAlgorithm(@RequestBody @ApiParam(name = "req", value = "Algorithm info") AlgorithmActionReqType req){
+    @Operation(description = "updateAlgorithm")
+    public UniformResponse updateAlgorithm(@RequestBody @Parameter(name = "req", description = "Algorithm info") AlgorithmActionReqType req){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -241,8 +243,8 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @ApiOperation(value = "publicAlgorithm", httpMethod = "POST")
-    public UniformResponse publicAlgorithm(@RequestBody @ApiParam(name = "params", value = "dataset id and pub flag") PublicReqType params){
+    @Operation(description = "publicAlgorithm")
+    public UniformResponse publicAlgorithm(@RequestBody @Parameter(name = "params", description = "dataset id and pub flag") PublicReqType params){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -275,8 +277,8 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.CLONE)
     @PostMapping("/clone")
-    @ApiOperation(value = "cloneALgorithm", httpMethod = "POST")
-    public UniformResponse cloneALgorithm(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "cloneALgorithm")
+    public UniformResponse cloneALgorithm(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -330,8 +332,8 @@ public class MlAlgoController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.DELETE)
     @DeleteMapping("/delete")
-    @ApiOperation(value = "deleteAlgorithm", httpMethod = "DELETE")
-    public UniformResponse deleteAlgorithm(@RequestParam @ApiParam(name = "id", value = "dataset id") Integer id){
+    @Operation(description = "deleteAlgorithm")
+    public UniformResponse deleteAlgorithm(@RequestParam @Parameter(name = "id", description = "dataset id") Integer id){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -362,7 +364,7 @@ public class MlAlgoController {
     }
 
     @PostMapping("/tree")
-    @ApiOperation(value = "getAlgorithmTree", httpMethod = "POST")
+    @Operation(description = "getAlgorithmTree")
     public UniformResponse getAlgorithmTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
@@ -393,8 +395,8 @@ public class MlAlgoController {
     }
 
     @PostMapping("/getone")
-    @ApiOperation(value = "getAlgorithm", httpMethod = "POST")
-    public UniformResponse getAlgorithm(@RequestBody @ApiParam(name = "param", value = "dataset id") JSONObject param){
+    @Operation(description = "getAlgorithm")
+    public UniformResponse getAlgorithm(@RequestBody @Parameter(name = "param", description = "dataset id") JSONObject param){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -421,8 +423,8 @@ public class MlAlgoController {
     }
 
     @PostMapping("/execute")
-    @ApiOperation(value = "execute", httpMethod = "POST")
-    public UniformResponse execute(@RequestBody @ApiParam(name = "param", value = "algorithm id") JSONObject param) throws Exception {
+    @Operation(description = "execute")
+    public UniformResponse execute(@RequestBody @Parameter(name = "param", description = "algorithm id") JSONObject param) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -468,8 +470,8 @@ public class MlAlgoController {
     }
 
     @PostMapping("/execute_script")
-    @ApiOperation(value = "executeScript", httpMethod = "POST")
-    public UniformResponse executeScript(@RequestBody @ApiParam(name = "request", value = "request info") AlgorithmActionReqType request) throws Exception {
+    @Operation(description = "executeScript")
+    public UniformResponse executeScript(@RequestBody @Parameter(name = "request", description = "request info") AlgorithmActionReqType request) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -493,7 +495,7 @@ public class MlAlgoController {
     }
 
     @PostMapping("/groups")
-    @ApiOperation(value = "getGroups", httpMethod = "POST")
+    @Operation(description = "getGroups")
     public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

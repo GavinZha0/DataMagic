@@ -7,14 +7,13 @@ import com.ninestar.datapie.datamagic.entity.SysMenuEntity;
 import com.ninestar.datapie.datamagic.entity.VizReportEntity;
 import com.ninestar.datapie.datamagic.repository.SysMenuRepository;
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/home")
-@Api(tags = "Home")
+@Tag(name = "SysHome")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class SysHomeController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -38,7 +37,7 @@ public class SysHomeController {
     private SysMenuRepository menuRepository;
 
     @PostMapping(value="")
-    @ApiOperation(value = "getHomePage", httpMethod = "POST")
+    @Operation(summary = "getHomePage")
     public UniformResponse getHomePage() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

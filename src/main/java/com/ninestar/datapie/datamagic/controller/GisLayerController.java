@@ -1,8 +1,9 @@
 package com.ninestar.datapie.datamagic.controller;
 
 import com.ninestar.datapie.framework.utils.UniformResponse;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -22,13 +23,13 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/gis")
-@Api(tags = "Gis")
+@Tag(name = "GisLayer")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class GisLayerController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @PostMapping("layer")
-    @ApiOperation(value = "getLayers", httpMethod = "POST")
+    @Operation(description = "getLayers")
     public UniformResponse getLayers() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());

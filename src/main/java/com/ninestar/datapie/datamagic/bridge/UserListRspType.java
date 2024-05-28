@@ -1,9 +1,12 @@
 package com.ninestar.datapie.datamagic.bridge;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.sql.Timestamp;
 import java.sql.Date;
 
 //camel style to match with column name of DB
+@Schema(description = "User list response type")
 public class UserListRspType {
     public Integer id;
     public String name;

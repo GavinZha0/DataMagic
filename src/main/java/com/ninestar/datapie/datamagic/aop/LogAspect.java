@@ -1,5 +1,6 @@
 package com.ninestar.datapie.datamagic.aop;
 
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -91,7 +92,9 @@ public class LogAspect
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if(auth!=null){
                 // get user info from authentication normally
-                userId = Integer.parseInt(auth.getPrincipal().toString());
+                Object userObj = auth.getPrincipal();
+                //userId = Integer.parseInt(auth.getPrincipal().toString());
+                userId = 2;
                 username = auth.getCredentials().toString();
                 accLog.setResult("ok");
             }

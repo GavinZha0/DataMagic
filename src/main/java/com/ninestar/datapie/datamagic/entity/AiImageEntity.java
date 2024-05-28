@@ -1,6 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -8,17 +8,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @EqualsAndHashCode
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "ai_image", schema = "datapie", catalog = "")
-@ApiModel(value="AiImage", description="")
+@Schema(description="AiImage")
 public class AiImageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

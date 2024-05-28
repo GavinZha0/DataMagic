@@ -1,6 +1,7 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import io.swagger.annotations.ApiModel;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,7 +18,7 @@ import java.sql.Timestamp;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "ai_data", schema = "datapie", catalog = "")
-@ApiModel(value="AiData", description="")
+@Schema(description="AiData")
 public class AiDataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
