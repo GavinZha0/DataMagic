@@ -1,6 +1,7 @@
 package com.ninestar.datapie.datamagic.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.vertx.core.cli.annotations.DefaultValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,10 +26,6 @@ public class MlAlgoEntity {
     private Integer id;
 
     @Basic
-    @Column(name = "pid")
-    private Integer pid;
-
-    @Basic
     @Column(name = "name", nullable = false, length = 64)
     private String name;
 
@@ -41,10 +38,6 @@ public class MlAlgoEntity {
     private String group;
 
     @Basic
-    @Column(name = "type", nullable = false, length = 16)
-    private String type;
-
-    @Basic
     @Column(name = "framework", length = 16)
     private String framework;
 
@@ -53,16 +46,28 @@ public class MlAlgoEntity {
     private String frameVer;
 
     @Basic
-    @Column(name = "content")
-    private String content;
+    @Column(name = "category", nullable = true, length = 16)
+    private String category;
+
+    @Basic
+    @Column(name = "algo_name", nullable = true, length = 64)
+    private String algoName;
+
+    @Basic
+    @Column(name = "dataset_id", nullable = true)
+    private Integer datasetId;
+
+    @Basic
+    @Column(name = "src_code")
+    private String srcCode;
+
+    @Basic
+    @Column(name = "attr")
+    private String attr;
 
     @Basic
     @Column(name = "config")
     private String config;
-
-    @Basic
-    @Column(name = "version", length = 8)
-    private String version;
 
     @Basic
     @Column(name = "public", nullable = false)

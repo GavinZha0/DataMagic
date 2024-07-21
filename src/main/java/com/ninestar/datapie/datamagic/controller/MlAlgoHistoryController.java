@@ -91,18 +91,11 @@ public class MlAlgoHistoryController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.frameVer) || StrUtil.isEmpty(req.content)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.srcCode)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
         List<MlAlgoEntity> duplicatedEntities = algorithmRepository.findByNameAndGroup(req.name, req.group);
-        if(duplicatedEntities!=null){
-            for(MlAlgoEntity entity: duplicatedEntities){
-                if(entity.getPid() == req.id){
-                    return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
-                }
-            }
-        }
 
         try {
             MlAlgoEntity newEntity = new MlAlgoEntity();
@@ -110,11 +103,10 @@ public class MlAlgoHistoryController {
             newEntity.setName(req.name);
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
-            newEntity.setPid(0);
-            newEntity.setType(req.type);
+            newEntity.setCategory(req.category);
             newEntity.setFramework(req.framework);
-            newEntity.setFrameVer(req.frameVer);
-            newEntity.setContent(req.content);
+            newEntity.setFrameVer("3.10");
+            newEntity.setSrcCode(req.srcCode);
             if(req.config!=null){
                 newEntity.setConfig(req.config.toString());
             }

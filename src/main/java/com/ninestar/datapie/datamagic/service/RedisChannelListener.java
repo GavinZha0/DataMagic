@@ -37,7 +37,7 @@ public class RedisChannelListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] bytes) {
         // receive msg from redis channel
-        // ex: {"userId": 3, "payload": {"code": 1, "task": "ml_algo_1", "progress": 0.9}}
+        // ex: {"userId": 3, "payload": {"code": 1, "msg": "", "data": {"algoId": "6", "progress": 80}}}
         String redisChannel = new String(message.getChannel());
         logger.info("Channel " + redisChannel + " recv: " + message.toString());
 

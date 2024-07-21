@@ -11,7 +11,7 @@ import io.swagger.v3.oas.models.ExternalDocumentation;
 
 @EnableKnife4j
 @Configuration
-public class SwaggerConfig {
+public class Knife4jConfig {
 
     @Value("${knife4j.production}")
     private Boolean enable;

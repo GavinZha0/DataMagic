@@ -5,16 +5,17 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
+import com.ninestar.datapie.datamagic.config.RedisConfig;
 import com.ninestar.datapie.datamagic.entity.MlAlgoEntity;
+import com.ninestar.datapie.datamagic.entity.MlDatasetEntity;
 import com.ninestar.datapie.datamagic.repository.MlAlgoRepository;
+import com.ninestar.datapie.datamagic.repository.MlDatasetRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
@@ -23,8 +24,6 @@ import com.ninestar.datapie.framework.utils.UniformResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -32,10 +31,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamRecords;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
@@ -60,10 +62,18 @@ public class MlAlgoController {
     private static final String pyServerUrl = "http://localhost:9538/ml/";
 
     @Resource
+    public MlDatasetRepository datasetRepository;
+    @Resource
     public MlAlgoRepository algorithmRepository;
 
     @Resource
     public SysOrgRepository orgRepository;
+
+    @Resource
+    public RedisConfig redisConfig;
+
+    @Resource
+    public RedisTemplate redisTemplate;
 
     @PostMapping("/list")
     @Operation(description = "getAlgorithmList")
@@ -130,8 +140,15 @@ public class MlAlgoController {
         List<AlgorithmListRspType> rspList = new ArrayList<AlgorithmListRspType>();
         for(MlAlgoEntity entity: queryEntities){
             AlgorithmListRspType item = new AlgorithmListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"config"});
+            BeanUtil.copyProperties(entity, item, new String[]{"attr", "config"});
+            item.attr = new JSONObject(entity.getAttr());
             item.config = new JSONObject(entity.getConfig());
+            if(entity.getDatasetId()!=null && entity.getDatasetId()!=0){
+                MlDatasetEntity datasetEntity = datasetRepository.findById(entity.getDatasetId()).get();
+                if(datasetEntity!=null){
+                    item.datasetName = datasetEntity.getGroup() + "/" + datasetEntity.getName();
+                }
+            }
             rspList.add(item);
         }
 
@@ -155,17 +172,8 @@ public class MlAlgoController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.frameVer) || StrUtil.isEmpty(req.content)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.srcCode)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
-        }
-
-        List<MlAlgoEntity> duplicatedEntities = algorithmRepository.findByNameAndGroup(req.name, req.group);
-        if(duplicatedEntities!=null){
-            for(MlAlgoEntity entity: duplicatedEntities){
-                if(entity.getPid() == req.id){
-                    return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
-                }
-            }
         }
 
         try {
@@ -174,11 +182,15 @@ public class MlAlgoController {
             newEntity.setName(req.name);
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
-            newEntity.setPid(0);
-            newEntity.setType(req.type);
+            newEntity.setCategory(req.category);
+            newEntity.setAlgoName(req.algoName);
             newEntity.setFramework(req.framework);
-            newEntity.setFrameVer(req.frameVer);
-            newEntity.setContent(req.content);
+            newEntity.setFrameVer("3.11");
+            newEntity.setSrcCode(req.srcCode);
+            newEntity.setDatasetId(req.datasetId);
+            if(req.attr!=null){
+                newEntity.setAttr(req.attr.toString());
+            }
             if(req.config!=null){
                 newEntity.setConfig(req.config.toString());
             }
@@ -208,7 +220,7 @@ public class MlAlgoController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.frameVer) || StrUtil.isEmpty(req.content)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.srcCode)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -220,14 +232,16 @@ public class MlAlgoController {
         try {
             targetEntity.setId(req.id);
             targetEntity.setName(req.name);
-            targetEntity.setType(req.type);
+            targetEntity.setCategory(req.category);
+            targetEntity.setAlgoName(req.algoName);
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
-            targetEntity.setPid(req.pid);
             targetEntity.setFramework(req.framework);
-            targetEntity.setFrameVer(req.frameVer);
+            targetEntity.setFrameVer("3.10");
+            targetEntity.setAttr(req.attr.toString());
             targetEntity.setConfig(req.config.toString());
-            targetEntity.setContent(req.content);
+            targetEntity.setSrcCode(req.srcCode);
+            targetEntity.setDatasetId(req.datasetId);
             targetEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jpa
 
@@ -384,7 +398,7 @@ public class MlAlgoController {
         for(String group : datasetMap.keySet()){
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
             for(MlAlgoEntity source: datasetMap.get(group)){
-                TreeSelect treeNode = new TreeSelect(source.getId(), source.getType(), source.getName(), source.getName(), true, true);
+                TreeSelect treeNode = new TreeSelect(source.getId(), source.getCategory(), source.getName(), source.getName(), true, true);
                 treeGroup.getChildren().add(treeNode);
             }
             treeDatasets.add(treeGroup);
@@ -440,33 +454,32 @@ public class MlAlgoController {
         }
 
         MlAlgoEntity targetEntity = algorithmRepository.findById(id).get();
-        if(targetEntity==null || targetEntity.getContent()==null){
+        if(targetEntity==null || targetEntity.getSrcCode()==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
-        // control plane
-        // forward command to python server for user x and algorithm y
-        HttpResponse response = null;
-        try{
-            String uniqueId = tokenUserId.toString() + "_alg"+targetEntity.getId();
-            response = HttpRequest.post(pyServerUrl + "execute")
-                    .header("uid", uniqueId)
-                    .body(JSONUtil.parseObj(targetEntity).toString()) // need to do toJsonString. Gavin!!!
-                    .execute();
-        }catch (Exception e){
-            logger.error(e.getMessage());
-            return UniformResponse.error(e.getMessage());
+        List<String> frames = Arrays.asList("python", "sklearn", "pytorch", "tensorflow");
+        if(frames.contains(targetEntity.getFramework())){
+            // forward command to python server for user x and algorithm y
+            try{
+                Map<String, Object> taskMap = BeanUtil.beanToMap(targetEntity);
+                taskMap.put("userId", tokenUserId);
+                taskMap.put("task", "ml.algo." + targetEntity.getId());
+
+                // send msg to python server via stream of redis
+                MapRecord stringRecord = StreamRecords.newRecord().ofMap(taskMap).withStreamKey(redisConfig.getReqStream());
+                RecordId msgId = redisTemplate.opsForStream().add(stringRecord);
+                System.out.println("Send task to py server via redis stream: " + msgId.getValue());
+            }catch (Exception e){
+                logger.error(e.getMessage());
+                return UniformResponse.error(e.getMessage());
+            }
+        } else {
+            // schedule a aync task
         }
 
-        if(response!=null){
-            // forward response of python server to front end
-            JSONObject result = new JSONObject(response.body());
-            return result.toBean(UniformResponse.class);
-        }
-        else{
-            return UniformResponse.error();
-        }
+        return UniformResponse.ok();
     }
 
     @PostMapping("/execute_script")
@@ -480,7 +493,7 @@ public class MlAlgoController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
 
-        if(request==null || request.id==null || StrUtil.isEmpty(request.content) || StrUtil.isEmpty(request.framework)){
+        if(request==null || request.id==null || StrUtil.isEmpty(request.srcCode) || StrUtil.isEmpty(request.framework)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 

@@ -12,7 +12,7 @@ public class MlDatasetActionReqType {
     public JSONArray variable;
     public String query;
     public JSONArray fields;
-    public JSONObject target;
+    public JSONArray target;
     public Boolean pubFlag;
     public Integer sourceId;
 }

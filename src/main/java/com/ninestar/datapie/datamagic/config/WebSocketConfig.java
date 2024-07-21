@@ -110,6 +110,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 else if(accessor != null && StompCommand.DISCONNECT.equals(accessor.getCommand())){
                     if(accessor.getUser()!=null){
                         logger.info("WS-user " + accessor.getUser().getName() + " disconnected!");
+                        return null;
                     }
                 }
                 return message;

@@ -32,6 +32,7 @@
 		<dl4j.version>1.0.0-beta7</dl4j.version>
 		<xxl-job.version>2.3.1</xxl-job.version>
 		<ray.version>2.23.0</ray.version>
+		<redis.version>2.7.14</redis.version>
 
 		<lib-path>lib</lib-path>
 		<jar-path>jar</jar-path>
@@ -317,7 +318,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-redis</artifactId>
-			<version>2.7.14</version>
+			<version>${redis.version}</version>
 		</dependency>
 		<!-- minio, file server -->
 		<dependency>

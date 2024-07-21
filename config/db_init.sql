@@ -955,35 +955,6 @@ INSERT INTO ml_eda (id, name, `group`, `desc`, config, dataset_id, org_id, `publ
 VALUES (1, 'Iris_eda', 'eda', 'test', '[{type:"hist", kde:true}]', 1, 1, true, 'Admin', null, 'Admin', null);
 
 
-# ----------------------------
-# Table: ml_feature
-# ----------------------------
-DROP TABLE IF EXISTS ml_feature;
-CREATE TABLE ml_feature
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name           varchar(64)   NOT NULL,
-    `desc`         varchar(128)  DEFAULT NULL comment 'description',
-    `group`        varchar(64)   DEFAULT 'UnGrouped',
-    type           varchar(16)   DEFAULT NULL comment 'classification, regression, clustering, reduction',
-    fields         text          NOT NULL comment 'json array like [{name:"aa",category:"continuous",type:"number"}]',
-	features       int           DEFAULT NULL,
-	target         varchar(16)   DEFAULT NULL comment 'target name',
-    source_id      int          NOT NULL,
-	dataset_name   varchar(32)  DEFAULT NULL comment 'table name',
-	query          text         DEFAULT NULL comment 'sql query',
-	rel_pair       text          DEFAULT NULL comment 'json array like [{id:1,field:["aa","bb"]}]',
-	org_id         int           NOT NULL,
-    `public`       boolean       NOT NULL DEFAULT false,
-    created_by  varchar(64)      NOT NULL,
-    created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_by  varchar(64)      DEFAULT NULL,
-    updated_at  timestamp        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT fk_mlfeature_src   foreign key(source_id)  REFERENCES data_source(id),
-	CONSTRAINT fk_mlfeature_org       foreign key(org_id)     REFERENCES sys_org(id)
-) ENGINE = InnoDB;
-
-
 
 # ----------------------------
 # Table: ml_algo
@@ -991,18 +962,18 @@ CREATE TABLE ml_feature
 DROP TABLE IF EXISTS ml_algo;
 CREATE TABLE ml_algo
 (
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY, -- history version
-    pid            int           DEFAULT NULL, -- latest version
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name           varchar(64)   NOT NULL,
     `desc`         varchar(128)  DEFAULT NULL comment 'description',
     `group`        varchar(64)   DEFAULT 'default',
-    type           varchar(16)   NOT NULL comment 'classification, regression, clustering, reduction',
     framework      varchar(16)   DEFAULT 'python' comment 'python, pytorch, tensorflow, paddle, dl4j, JDL, keras, auto-sklearn',
-    frame_ver      varchar(8)   DEFAULT '3.11',
-    content        text          DEFAULT NULL comment 'code',  
-	attr           text          DEFAULT NULL comment 'json attribute',
-    config         text          DEFAULT NULL comment 'json config',
-	version        varchar(8)    DEFAULT NULL comment 'algo version',
+    frame_ver      varchar(8)    DEFAULT '3.10',
+	category       varchar(16)   NOT NULL comment 'classification, regression, clustering, reduction',
+	algo_name      varchar(64)   comment 'algorithm name',
+	dataset_id     int           comment 'train data',
+    src_code       text          DEFAULT NULL comment 'source code',  
+	attr           text          DEFAULT NULL comment 'algo and data attr',
+    config         text          DEFAULT NULL comment 'train and evaluation config',
 	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by  varchar(64)      NOT NULL,
@@ -1013,8 +984,8 @@ CREATE TABLE ml_algo
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_algo (id, pid, name, `desc`, `group`, type, framework, frame_ver, content, config, version, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'svm', 'new svm algorithm', 'first', 'classification', 'python', '3.10', 'svm() return data', '{id: 1, name:"aaa", type:"int[]"}', '1.0', 1, true, 'Superman', null, null, null);
+INSERT INTO ml_algo (id, name, `desc`, `group`, framework, frame_ver, category, algo_name, dataset_id, src_code, attr, config, org_id, `public`, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'svm', 'new svm algorithm', 'first', 'python', '3.10', 'clf', 'svm', 5, 'svm() return data', '{dataset: 1}', '{timeout:5, trials:3, epochs: 2}', 1, true, 'Superman', null, null, null);
 
 
 # ----------------------------
@@ -1051,7 +1022,6 @@ DROP TABLE IF EXISTS ml_flow;
 CREATE TABLE ml_flow
 ( 
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    pid            int           DEFAULT NULL,
     name           varchar(64)   NOT NULL,
     `desc`         varchar(128)  DEFAULT NULL comment 'description',
     `group`        varchar(64)   DEFAULT 'UnGrouped',

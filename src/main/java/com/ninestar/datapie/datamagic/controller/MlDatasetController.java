@@ -80,12 +80,6 @@ public class MlDatasetController {
     public SysOrgRepository orgRepository;
 
     @Resource
-    private RedisConfig redisConfig;
-
-    @Resource
-    private RedisTemplate<String, Object> redisTemplate;
-
-    @Resource
     private DbUtils dbUtils;
 
     @PostMapping("/list")
@@ -161,18 +155,7 @@ public class MlDatasetController {
                 item.variable = new JSONArray(entity.getVariable()); // convert string to json array
                 item.fields = new JSONArray(entity.getFields());
                 item.target = new JSONArray(entity.getTarget());
-
                 rspList.add(item);
-
-                // verify redis temporally - Gavin!!!
-                Map<String, Object> taskMap = BeanUtil.beanToMap(entity);
-                taskMap.put("userId", tokenUserId);
-                taskMap.put("code", entity.getId());
-
-                // send msg to python server via stream of redis
-                MapRecord stringRecord = StreamRecords.newRecord().ofMap(taskMap).withStreamKey(redisConfig.getReqStream());
-                RecordId msgId = redisTemplate.opsForStream().add(stringRecord);
-                System.out.println("Send msg: " + msgId.getValue());
             }
         }
 

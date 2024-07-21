@@ -80,12 +80,6 @@ public class VizDatasetController {
     public SysOrgRepository orgRepository;
 
     @Resource
-    private RedisConfig redisConfig;
-
-    @Resource
-    private RedisTemplate<String, Object> redisTemplate;
-
-    @Resource
     private DbUtils dbUtils;
 
     @PostMapping("/list")
@@ -165,16 +159,6 @@ public class VizDatasetController {
                 // get related dataset count
                 item.usage = dataviewRepository.countByDatasetId(entity.getId());
                 rspList.add(item);
-
-                // verify redis temporally - Gavin!!!
-                Map<String, Object> taskMap = BeanUtil.beanToMap(entity);
-                taskMap.put("userId", tokenUserId);
-                taskMap.put("code", entity.getId());
-
-                // send msg to python server via stream of redis
-                MapRecord stringRecord = StreamRecords.newRecord().ofMap(taskMap).withStreamKey(redisConfig.getReqStream());
-                RecordId msgId = redisTemplate.opsForStream().add(stringRecord);
-                System.out.println("Send msg: " + msgId.getValue());
             }
         }
 
