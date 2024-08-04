@@ -546,9 +546,9 @@ public class DataSourceController {
         return UniformResponse.ok().data(jsonResponse);
     }
 
-    @PostMapping("/tables")
-    @Operation(description = "getSourceTables")
-    public UniformResponse getSourceTables(@RequestBody @Parameter(name = "param", description = "source id") JSONObject param) throws Exception {
+    @PostMapping("/sets")
+    @Operation(description = "getSourceSets")
+    public UniformResponse getSourceSets(@RequestBody @Parameter(name = "param", description = "source id") JSONObject param) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -556,6 +556,7 @@ public class DataSourceController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
+        // sets is tables for database
         Integer sourceId = Integer.parseInt(param.get("id").toString());
         Boolean includeLocked = false;
         if(param.containsKey("locked")){

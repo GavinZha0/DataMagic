@@ -54,20 +54,16 @@ public class MlAlgoEntity {
     private String algoName;
 
     @Basic
-    @Column(name = "dataset_id", nullable = true)
-    private Integer datasetId;
+    @Column(name = "data_cfg")
+    private String dataCfg;
+
+    @Basic
+    @Column(name = "train_cfg")
+    private String trainCfg;
 
     @Basic
     @Column(name = "src_code")
     private String srcCode;
-
-    @Basic
-    @Column(name = "attr")
-    private String attr;
-
-    @Basic
-    @Column(name = "config")
-    private String config;
 
     @Basic
     @Column(name = "public", nullable = false)

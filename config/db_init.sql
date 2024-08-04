@@ -970,10 +970,9 @@ CREATE TABLE ml_algo
     frame_ver      varchar(8)    DEFAULT '3.10',
 	category       varchar(16)   NOT NULL comment 'classification, regression, clustering, reduction',
 	algo_name      varchar(64)   comment 'algorithm name',
-	dataset_id     int           comment 'train data',
-    src_code       text          DEFAULT NULL comment 'source code',  
-	attr           text          DEFAULT NULL comment 'algo and data attr',
-    config         text          DEFAULT NULL comment 'train and evaluation config',
+	data_cfg       text          DEFAULT NULL comment 'dataset config',
+    train_cfg      text          DEFAULT NULL comment 'train and evaluation config',
+	src_code       text          DEFAULT NULL comment 'source code',  
 	org_id         int           NOT NULL,
     `public`       boolean       NOT NULL DEFAULT false,
     created_by  varchar(64)      NOT NULL,
@@ -984,7 +983,7 @@ CREATE TABLE ml_algo
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_algo (id, name, `desc`, `group`, framework, frame_ver, category, algo_name, dataset_id, src_code, attr, config, org_id, `public`, created_by, created_at, updated_by, updated_at)
+INSERT INTO ml_algo (id, name, `desc`, `group`, framework, frame_ver, category, algo_name, data_cfg, train_cfg, src_code, org_id, `public`, created_by, created_at, updated_by, updated_at)
 VALUES (1, 'svm', 'new svm algorithm', 'first', 'python', '3.10', 'clf', 'svm', 5, 'svm() return data', '{dataset: 1}', '{timeout:5, trials:3, epochs: 2}', 1, true, 'Superman', null, null, null);
 
 

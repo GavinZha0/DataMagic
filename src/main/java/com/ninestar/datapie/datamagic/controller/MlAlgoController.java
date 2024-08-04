@@ -140,15 +140,9 @@ public class MlAlgoController {
         List<AlgorithmListRspType> rspList = new ArrayList<AlgorithmListRspType>();
         for(MlAlgoEntity entity: queryEntities){
             AlgorithmListRspType item = new AlgorithmListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"attr", "config"});
-            item.attr = new JSONObject(entity.getAttr());
-            item.config = new JSONObject(entity.getConfig());
-            if(entity.getDatasetId()!=null && entity.getDatasetId()!=0){
-                MlDatasetEntity datasetEntity = datasetRepository.findById(entity.getDatasetId()).get();
-                if(datasetEntity!=null){
-                    item.datasetName = datasetEntity.getGroup() + "/" + datasetEntity.getName();
-                }
-            }
+            BeanUtil.copyProperties(entity, item, new String[]{"dataCfg", "trainCfg"});
+            item.dataCfg = new JSONObject(entity.getDataCfg());
+            item.trainCfg = new JSONObject(entity.getTrainCfg());
             rspList.add(item);
         }
 
@@ -187,12 +181,11 @@ public class MlAlgoController {
             newEntity.setFramework(req.framework);
             newEntity.setFrameVer("3.11");
             newEntity.setSrcCode(req.srcCode);
-            newEntity.setDatasetId(req.datasetId);
-            if(req.attr!=null){
-                newEntity.setAttr(req.attr.toString());
+            if(req.dataCfg!=null){
+                newEntity.setDataCfg(req.dataCfg.toString());
             }
-            if(req.config!=null){
-                newEntity.setConfig(req.config.toString());
+            if(req.trainCfg!=null){
+                newEntity.setTrainCfg(req.trainCfg.toString());
             }
             newEntity.setPubFlag(false);
             newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
@@ -237,11 +230,10 @@ public class MlAlgoController {
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
             targetEntity.setFramework(req.framework);
-            targetEntity.setFrameVer("3.10");
-            targetEntity.setAttr(req.attr.toString());
-            targetEntity.setConfig(req.config.toString());
+            targetEntity.setFrameVer("3.11");
+            targetEntity.setDataCfg(req.dataCfg.toString());
+            targetEntity.setTrainCfg(req.trainCfg.toString());
             targetEntity.setSrcCode(req.srcCode);
-            targetEntity.setDatasetId(req.datasetId);
             targetEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jpa
 

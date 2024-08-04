@@ -12,9 +12,8 @@ public class AlgorithmActionReqType {
     public String framework;
     public String category;
     public String algoName;
-    public Integer datasetId;
-    public JSONObject attr;
-    public JSONObject config;
+    public JSONObject dataCfg;
+    public JSONObject trainCfg;
     public String srcCode;
     public Boolean pubFlag;
 }

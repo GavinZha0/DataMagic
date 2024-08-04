@@ -15,10 +15,9 @@ public class AlgorithmListRspType {
     public String frameVer;
     public String category;
     public String algoName;
-    public JSONObject attr;
-    public JSONObject config;
+    public JSONObject dataCfg;
+    public JSONObject trainCfg;
     public String srcCode;
-    public String datasetName;
     public Boolean pubFlag;
     public String createdBy;
     public Timestamp createdAt;

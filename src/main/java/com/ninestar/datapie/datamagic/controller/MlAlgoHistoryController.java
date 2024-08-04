@@ -107,8 +107,8 @@ public class MlAlgoHistoryController {
             newEntity.setFramework(req.framework);
             newEntity.setFrameVer("3.10");
             newEntity.setSrcCode(req.srcCode);
-            if(req.config!=null){
-                newEntity.setConfig(req.config.toString());
+            if(req.dataCfg!=null){
+                newEntity.setDataCfg(req.dataCfg.toString());
             }
             newEntity.setPubFlag(false);
             newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
