@@ -1,14 +1,19 @@
 package com.ninestar.datapie.datamagic.controller;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.ninestar.datapie.datamagic.annotation.SingleReqParam;
 import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
-import com.ninestar.datapie.datamagic.bridge.ActiveReqType;
 import com.ninestar.datapie.datamagic.bridge.MsgActionReqType;
 import com.ninestar.datapie.datamagic.entity.SysMsgEntity;
+import com.ninestar.datapie.datamagic.entity.SysOrgEntity;
+import com.ninestar.datapie.datamagic.entity.SysUserEntity;
 import com.ninestar.datapie.datamagic.repository.SysMsgRepository;
+import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.repository.SysUserRepository;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.utils.TreeUtils;
@@ -28,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +55,9 @@ public class SysMsgController {
 
     @Resource
     private SysUserRepository userRepository;
+
+    @Resource
+    private SysOrgRepository orgRepository;
 
     @PostMapping("/list")
     @Operation(summary = "getMsgList")
@@ -78,21 +85,59 @@ public class SysMsgController {
         }
 
         for(SysMsgEntity msgEntity: targetEntities){
-            msgEntity.setFrom(msgEntity.getFromUser().getRealname());
-            if(msgEntity.getType().equalsIgnoreCase("MESSAGE")){
-                msgEntity.setTo(msgEntity.getToUser().getRealname());
-            } else {
-                msgEntity.setTo(msgEntity.getToOrg().getName());
+            if(msgEntity.getFromId() != null){
+                // from a user
+                SysUserEntity user = userRepository.findById(msgEntity.getFromId()).get();
+                msgEntity.setFrom(user.getRealname());
             }
 
-            // remove sub entities for response
-            msgEntity.setFromUser(null);
-            msgEntity.setToUser(null);
-            msgEntity.setToOrg(null);
+            if(msgEntity.getType().equals("notice")){
+                // to an org
+                SysOrgEntity org = orgRepository.findById(msgEntity.getToId()).get();
+                msgEntity.setTo(org.getName());
+            } else {
+                // to a user
+                SysUserEntity user = userRepository.findById(msgEntity.getToId()).get();
+                msgEntity.setTo(user.getRealname());
+            }
         }
 
         return UniformResponse.ok().data(targetEntities);
     }
+
+    @PostMapping("/get_unread_msg")
+    @Operation(summary = "getUnreadMsg")
+    public UniformResponse getUnreadMsg() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
+
+        // query data from database
+        List<SysMsgEntity> notice = msgRepository.findUnreadNoticeById(tokenOrgId, tokenUserId, tokenUserId, tokenUserId, tokenUserId);
+        for(SysMsgEntity item: notice){
+            if(item.getFromId() != null){
+                SysUserEntity user = userRepository.findById(item.getFromId()).get();
+                item.setFrom(user.getRealname());
+            }
+        }
+        List<SysMsgEntity> message = msgRepository.findUnreadMsgById(tokenUserId);
+        for(SysMsgEntity item: message){
+            if(item.getFromId() != null) {
+                SysUserEntity user = userRepository.findById(item.getFromId()).get();
+                item.setFrom(user.getRealname());
+            }
+        }
+        JSONObject rsp = new JSONObject();
+        rsp.set("notice", notice);
+        rsp.set("msg", message);
+        return UniformResponse.ok().data(rsp);
+    }
+
 
     @PostMapping("/get")
     @Operation(summary = "getUserMsg")
@@ -133,7 +178,6 @@ public class SysMsgController {
 
         return UniformResponse.ok().data(allEntities);
     }
-
 
     @PostMapping("/tree")
     @Operation(summary = "getMsgTree")
@@ -180,15 +224,13 @@ public class SysMsgController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
         Boolean tokenIsAdmin = tokenIsSuperuser || tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
-        if(StrUtil.isEmpty(req.getMsg())){
+        if(StrUtil.isEmpty(req.getContent())){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
         try {
-            req.setType("MESSAGE");
-            req.setFromUser(userRepository.findById(tokenUserId).get());
-            req.setToUser(userRepository.findByRealname(req.getTo()));
-            req.setRead(false);
+            req.setType("msg");
+            req.setReadUsers("[]");
 
             // save source
             msgRepository.save(req);
@@ -203,20 +245,31 @@ public class SysMsgController {
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.ACTIVE)
     @PostMapping("/read")
     @Operation(summary = "readMsg")
-    public UniformResponse readMsg(@RequestBody @Parameter(description = "msg read") ActiveReqType req){
-        if(req.id==0){
+    public UniformResponse readMsg(@SingleReqParam @Parameter(description = "msg id") Integer id){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenIsSuperuser || tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
+        if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        Optional<SysMsgEntity> targetEntity = msgRepository.findById(req.id);
-        if(targetEntity.isEmpty()){
-            return UniformResponse.error();
-        }
-
+        // find the msg
+        SysMsgEntity targetEntity = msgRepository.findById(id).get();
         try {
             // update active and save
-            targetEntity.get().setRead(req.active);
-            msgRepository.save(targetEntity.get());
+            List<String> readUsers = JSONUtil.parseArray(targetEntity.getReadUsers()).toList(String.class);
+            if (!readUsers.contains(String.valueOf(tokenUserId))){
+                // add user to read list
+                readUsers.add(String.valueOf(tokenUserId));
+                JSONArray jsonArray = new JSONArray(readUsers);
+                targetEntity.setReadUsers(jsonArray.toString());
+                msgRepository.save(targetEntity);
+            }
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -242,5 +295,4 @@ public class SysMsgController {
             return UniformResponse.error(e.getMessage());
         }
     }
-
 }

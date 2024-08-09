@@ -38,8 +38,8 @@ public class RedisChannelListener implements MessageListener {
     public void onMessage(Message message, byte[] bytes) {
         // receive msg from redis channel
         // ex: {"userId": 3, "payload": {"code": 1, "msg": "", "data": {"algoId": "6", "progress": 80}}}
-        String redisChannel = new String(message.getChannel());
-        logger.info("Channel " + redisChannel + " recv: " + message.toString());
+        // String redisChannel = new String(message.getChannel());
+        // logger.info("Channel " + redisChannel + " recv: " + message.toString());
 
         // get target user
         JSONObject jsonMsg = new JSONObject(message.toString());
@@ -52,6 +52,13 @@ public class RedisChannelListener implements MessageListener {
             // forward message to user via websocket
             logger.info("Forward msg to user " + userId + " via ws");
             simpMessagingTemplate.convertAndSendToUser(userId, wsChannel, jsonMsg.get("payload").toString());
+
+            JSONObject payload = new JSONObject(jsonMsg.get("payload"));
+            Integer code = Integer.parseInt(payload.get("code").toString());
+            if(code == 5){
+                // update db
+                logger.info(String.valueOf(code));
+            }
         }
     }
 }

@@ -1,14 +1,11 @@
 package com.ninestar.datapie.datamagic.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 @Data
 @EqualsAndHashCode
@@ -32,33 +29,28 @@ public class SysMsgEntity {
     private String type;
 
     @Basic
-    @Column(name = "msg", nullable = true, length = -1)
-    private String msg;
+    @Column(name = "category", nullable = false, length = 16)
+    private String category;
+
+    @Basic
+    @Column(name = "from_id", nullable = true)
+    private Integer fromId;
+
+    @Basic
+    @Column(name = "to_id", nullable = false)
+    private Integer toId;
+
+    @Basic
+    @Column(name = "content", nullable = false, length = -1)
+    private String content;
 
     @Basic
     @Column(name = "tid", nullable = true)
     private Integer tid;
 
     @Basic
-    @Column(name = "`read`", nullable = true)
-    private Boolean read;
-
-
-    // foreign key from_id
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "from_id", referencedColumnName = "id")
-    //@JsonIgnore
-    private SysUserEntity fromUser;
-
-    // foreign key user_id
-    @ManyToOne(optional = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private SysUserEntity toUser;
-
-    // foreign key org_id
-    @ManyToOne(optional = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "org_id", referencedColumnName = "id")
-    private SysOrgEntity toOrg;
+    @Column(name = "read_users", nullable = true, length = -1)
+    private String readUsers;
 
     @Transient
     private String from;

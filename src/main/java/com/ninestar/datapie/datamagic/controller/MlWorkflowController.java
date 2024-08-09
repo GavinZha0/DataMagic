@@ -46,10 +46,10 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/mlworkflow")
+@RequestMapping("/ml/workflow")
 @Tag(name = "MlWorkflow")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
-public class MlFlowController {
+public class MlWorkflowController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource

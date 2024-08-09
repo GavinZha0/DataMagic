@@ -624,22 +624,20 @@ VALUES (1, 'Salary Distribution', 'employee salary', 'first', 'single', '[{id: 1
 
 
 # ----------------------------
-# Table: sys_notif
+# Table: sys_notice
 # someone send notification to a org
 # ----------------------------
-DROP TABLE IF EXISTS sys_notif;
-CREATE TABLE sys_notif
+DROP TABLE IF EXISTS sys_notice;
+CREATE TABLE sys_notice
 (
     id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts_utc         timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    type           varchar(16)  NOT NULL DEFAULT 'message' comment 'like message, inquiry, ad, warning',
-    from_id        int          NOT NULL comment 'from user id',
-	to_id          int          DEFAULT NULL comment 'to org id',
+    ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    type           varchar(16)  NOT NULL DEFAULT 'notice' comment 'notice, inquiry, ad, warning',
+    from_id        int          DEFAULT NULL comment 'user id',
+	to_id          int          NOT NULL comment 'org id',
     content        text         NOT NULL,
-    tid            int          DEFAULT NULL comment 'refer to a source/dataset/view/ml model etc.',
-	`read`         int          DEFAULT 0,
-    CONSTRAINT fk_notif_from    foreign key(from_id)    REFERENCES sys_user(id),
-	CONSTRAINT fk_notif_to      foreign key(to_id)    REFERENCES sys_org(id)
+    tid            int          DEFAULT NULL comment 'ml_algo.id = 15',
+	`read`         int          DEFAULT 0 comment 'count read user'
 ) ENGINE = InnoDB;
 
 # ----------------------------
@@ -650,15 +648,14 @@ DROP TABLE IF EXISTS sys_msg;
 CREATE TABLE sys_msg
 (
     id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts_utc         timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    type           varchar(16)  NOT NULL DEFAULT 'msg' comment 'like msg, broadcast, inquiry, ad, warning',
-    from_id        int          NOT NULL comment 'from user id',
-    to_id          int          DEFAULT NULL comment 'to user id',
+    ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    type           varchar(16)  NOT NULL DEFAULT 'msg' comment 'notice or msg',
+	category	   varchar(16)  NOT NULL DEFAULT 'ml' comment 'ai, bi, ml, chat',
+    from_id        int          DEFAULT NULL comment 'user id',
+    to_id          int          NOT NULL comment 'user id when msg, org id when notice',
     content        text         NOT NULL,
-    tid            int          DEFAULT NULL comment 'refer to a source/dataset/view/ml model etc.',
-	`read`         boolean      DEFAULT false comment 'read or not',
-    CONSTRAINT fk_msg_from      foreign key(from_id)    REFERENCES sys_user(id),
-    CONSTRAINT fk_msg_to        foreign key(to_id)    REFERENCES sys_user(id)
+    tid            int          DEFAULT NULL comment 'ml_algo.id = 15',
+	read_users     text         DEFAULT '[]' comment 'user list'
 ) ENGINE = InnoDB;
 
 
@@ -988,29 +985,27 @@ VALUES (1, 'svm', 'new svm algorithm', 'first', 'python', '3.10', 'clf', 'svm', 
 
 
 # ----------------------------
-# Table: ml_algo_history
+# Table: ml_experiment
 # ----------------------------
-DROP TABLE IF EXISTS ml_algo_history;
-CREATE TABLE ml_algo_history
+DROP TABLE IF EXISTS ml_exper;
+CREATE TABLE ml_exper
 (
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
     algo_id        int           NOT NULL,
-	framework      varchar(16)   DEFAULT 'python' comment 'python, pytorch, tensorflow, paddle, dl4j, JDL, keras, auto-sklearn',
-    frame_ver      varchar(8)    DEFAULT '3.11',
-    content        text          DEFAULT NULL comment 'code',  
-    config         text          DEFAULT NULL comment 'json config',
+	exper_id	   int			 NOT NULL comment 'experiment id in mlflow',
+	trials		   text          DEFAULT NULL comment '[{id:2,params:{},eval:{}}]',
     duration       int           DEFAULT NULL comment 'unit minute',
-	status         int           DEFAULT 5 comment '0:succ, 1:failure, 3:interruption, 4:timeout, 5:exception',
-    result         text          DEFAULT NULL comment 'json result, {acu: 0.95}',
+	status         int           DEFAULT 1 comment '0:succ, 1:scheduled, 2:inprogress, 3:failed, 4:interrupted, 5:timeout, 6:except, 7:canceled',
+	user_id        int			 NOT NULL,
 	org_id         int           NOT NULL,
-    created_by  varchar(64)      NOT NULL,
     created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT fk_algo_h_algo       foreign key(algo_id)     REFERENCES ml_algo(id),
-	CONSTRAINT fk_algo_h_org       foreign key(org_id)     REFERENCES sys_org(id)
+	CONSTRAINT fk_exper_algo      foreign key(algo_id)     REFERENCES ml_algo(id),
+	CONSTRAINT fk_exper_user      foreign key(user_id)    REFERENCES sys_user(id),
+	CONSTRAINT fk_exper_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_algo_history (id, algo_id, framework, frame_ver, content, config, duration, status, result, org_id, created_by, created_at)
-VALUES (1, 2, 'python', '3.11', 'asdfasdfasdfasf', '{a:1, b: 3}', 100, 0, '{auc: 99}', 1,'GavinZ', null);
+INSERT INTO ml_exper (id, algo_id, exper_id, trials, duration, status, user_id, org_id, created_at)
+VALUES (1, 17, 50, '[{id:123, params: {a:1, b:2}, eval:{loss:0.2}}]', 2, 0, 3, 1, null);
 
 
 
