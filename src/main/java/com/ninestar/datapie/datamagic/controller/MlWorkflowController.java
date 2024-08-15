@@ -7,8 +7,8 @@ import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
-import com.ninestar.datapie.datamagic.entity.MlFlowEntity;
-import com.ninestar.datapie.datamagic.repository.MlFlowRepository;
+import com.ninestar.datapie.datamagic.entity.MlWorkflowEntity;
+import com.ninestar.datapie.datamagic.repository.MlWorkflowRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
@@ -53,7 +53,7 @@ public class MlWorkflowController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
-    public MlFlowRepository workflowRepository;
+    public MlWorkflowRepository workflowRepository;
 
     @Resource
     public SysOrgRepository orgRepository;
@@ -70,8 +70,8 @@ public class MlWorkflowController {
 
 
         Long totalRecords = 0L;
-        Page<MlFlowEntity> pageEntities = null;
-        List<MlFlowEntity> queryEntities = null;
+        Page<MlWorkflowEntity> pageEntities = null;
+        List<MlWorkflowEntity> queryEntities = null;
 
         // put multiple orders into a sort which will be put into a pageable
         List<Sort.Order> orders = new ArrayList<Sort.Order>();
@@ -106,7 +106,7 @@ public class MlWorkflowController {
         }
 
         // build JPA specification
-        Specification<MlFlowEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
+        Specification<MlWorkflowEntity> specification = JpaSpecUtil.build(tokenOrgId,tokenIsSuperuser, tokenUsername, req.filter, req.search);
 
         // query data from database
         if(pageable!=null){
@@ -121,7 +121,7 @@ public class MlWorkflowController {
 
         // build response
         List<WorkflowListRspType> rspList = new ArrayList<WorkflowListRspType>();
-        for(MlFlowEntity entity: queryEntities){
+        for(MlWorkflowEntity entity: queryEntities){
             WorkflowListRspType item = new WorkflowListRspType();
             BeanUtil.copyProperties(entity, item, new String[]{"config","workflow","canvas"});
             if(StrUtil.isNotEmpty(entity.getConfig())) {
@@ -160,9 +160,9 @@ public class MlWorkflowController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<MlFlowEntity> duplicatedEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
+        List<MlWorkflowEntity> duplicatedEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
         if(duplicatedEntities!=null){
-            for(MlFlowEntity entity: duplicatedEntities){
+            for(MlWorkflowEntity entity: duplicatedEntities){
                 if(entity.getId() == req.id){
                     return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
                 }
@@ -170,7 +170,7 @@ public class MlWorkflowController {
         }
 
         try {
-            MlFlowEntity newEntity = new MlFlowEntity();
+            MlWorkflowEntity newEntity = new MlWorkflowEntity();
             //don't set ID for creating
             newEntity.setName(req.name);
             newEntity.setDesc(req.desc);
@@ -187,8 +187,8 @@ public class MlWorkflowController {
             // save new entity
             workflowRepository.save(newEntity);
 
-            List<MlFlowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
-            for(MlFlowEntity item: targetEntities){
+            List<MlWorkflowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
+            for(MlWorkflowEntity item: targetEntities){
                 if(item==newEntity){
                     // the main entity has same pid and id
                     item.setPid(item.getId());
@@ -216,7 +216,7 @@ public class MlWorkflowController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlFlowEntity targetEntity = workflowRepository.findById(req.id).get();
+        MlWorkflowEntity targetEntity = workflowRepository.findById(req.id).get();
         if(targetEntity==null){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
@@ -256,11 +256,11 @@ public class MlWorkflowController {
         }
 
         String newSubVersion = "0";
-        List<MlFlowEntity> relatedEntities = workflowRepository.findByPidAndVersionStartingWith(req.pid, req.version);
+        List<MlWorkflowEntity> relatedEntities = workflowRepository.findByPidAndVersionStartingWith(req.pid, req.version);
         if(relatedEntities!=null){
             // find latest sub version
             Integer latestSubIdx = 0;
-            for(MlFlowEntity entity: relatedEntities){
+            for(MlWorkflowEntity entity: relatedEntities){
                 if(entity.getVersion().length() == req.version.length() + 1){
                     String lastChar = entity.getVersion().substring(entity.getVersion().length()-1);
                     Integer temp = Integer.parseInt(lastChar);
@@ -275,7 +275,7 @@ public class MlWorkflowController {
         }
 
         try {
-            MlFlowEntity newEntity = new MlFlowEntity();
+            MlWorkflowEntity newEntity = new MlWorkflowEntity();
             //don't set ID for creating
             newEntity.setPid(req.pid);
             newEntity.setName(req.name);
@@ -292,8 +292,8 @@ public class MlWorkflowController {
             // save new entity
             workflowRepository.save(newEntity);
 
-            List<MlFlowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
-            for(MlFlowEntity item: targetEntities){
+            List<MlWorkflowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
+            for(MlWorkflowEntity item: targetEntities){
                 if(item==newEntity){
                     // the main entity has same pid and id
                     item.setPid(item.getId());
@@ -323,7 +323,7 @@ public class MlWorkflowController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlFlowEntity targetEntity = workflowRepository.findById(params.id).get();
+        MlWorkflowEntity targetEntity = workflowRepository.findById(params.id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
@@ -353,14 +353,14 @@ public class MlWorkflowController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlFlowEntity targetEntity = workflowRepository.findById(id).get();
+        MlWorkflowEntity targetEntity = workflowRepository.findById(id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
         String copyName = targetEntity.getName();
-        List<MlFlowEntity> targetCopies = workflowRepository.findByNameContainingOrderByIdDesc(copyName+"(");
+        List<MlWorkflowEntity> targetCopies = workflowRepository.findByNameContainingOrderByIdDesc(copyName+"(");
         if(targetCopies.size()>0){
             String tmp = targetCopies.get(0).getName();
             tmp = tmp.substring(tmp.indexOf("(")+1, tmp.indexOf(")"));
@@ -403,7 +403,7 @@ public class MlWorkflowController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlFlowEntity targetEntity = workflowRepository.findById(id).get();
+        MlWorkflowEntity targetEntity = workflowRepository.findById(id).get();
         if(targetEntity==null){
             //target entity doesn't exist
             return UniformResponse.ok();
@@ -429,7 +429,7 @@ public class MlWorkflowController {
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
         // jpa page is starting with 0
-        List<MlFlowEntity> queryEntities = workflowRepository.findAll();
+        List<MlWorkflowEntity> queryEntities = workflowRepository.findAll();
 
         if(queryEntities==null){
             return UniformResponse.ok();
@@ -437,7 +437,7 @@ public class MlWorkflowController {
 
         try {
             //build tree list
-            List<MlFlowEntity> treeWorkflows = TreeUtils.buildTree(queryEntities, "id", "pid", "children");
+            List<MlWorkflowEntity> treeWorkflows = TreeUtils.buildTree(queryEntities, "id", "pid", "children");
             return UniformResponse.ok().data(treeWorkflows);
         }catch (Exception e){
             return UniformResponse.error();
@@ -456,7 +456,7 @@ public class MlWorkflowController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        MlFlowEntity targetEntity = workflowRepository.findById(id).get();
+        MlWorkflowEntity targetEntity = workflowRepository.findById(id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);

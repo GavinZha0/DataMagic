@@ -987,26 +987,29 @@ VALUES (1, 'svm', 'new svm algorithm', 'first', 'python', '3.10', 'clf', 'svm', 
 # ----------------------------
 # Table: ml_experiment
 # ----------------------------
-DROP TABLE IF EXISTS ml_exper;
-CREATE TABLE ml_exper
+DROP TABLE IF EXISTS ml_experiment;
+CREATE TABLE ml_experiment
 (
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    algo_id        int           NOT NULL,
-	exper_id	   int			 NOT NULL comment 'experiment id in mlflow',
-	trials		   text          DEFAULT NULL comment '[{id:2,params:{},eval:{}}]',
-    duration       int           DEFAULT NULL comment 'unit minute',
-	status         int           DEFAULT 1 comment '0:succ, 1:scheduled, 2:inprogress, 3:failed, 4:interrupted, 5:timeout, 6:except, 7:canceled',
+	ml_id          int           NOT NULL,
+	type		   varchar(16)   NOT NULL comment 'algo or workflow',
+	name		   varchar(64)   NOT NULL comment 'runs name without trial NO.',
+	`desc`         varchar(128)  DEFAULT NULL comment 'description',
+	dataset		   text          NOT NULL comment '{id:12, fields:[]}',
+	algo		   text          NOT NULL comment '{name,framework,frameVer,srcCode}',
+	train		   text          NOT NULL comment '{params:[],evals:[]}',
+	trials		   text          DEFAULT NULL comment '[{uuid:123,params:{},evals{}}]',
+	status         int           DEFAULT 0 comment '0:waiting, 1~99:progress, 100:done, 101:canceled, -1:failed',
 	user_id        int			 NOT NULL,
 	org_id         int           NOT NULL,
-    created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT fk_exper_algo      foreign key(algo_id)     REFERENCES ml_algo(id),
+    start_at  	   timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	end_at         timestamp     DEFAULT NULL,
 	CONSTRAINT fk_exper_user      foreign key(user_id)    REFERENCES sys_user(id),
 	CONSTRAINT fk_exper_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_exper (id, algo_id, exper_id, trials, duration, status, user_id, org_id, created_at)
+INSERT INTO ml_experiment (id, name, `desc`, algo_id, dataset, algo, train, trials, status, user_id, org_id, start_at, end_at)
 VALUES (1, 17, 50, '[{id:123, params: {a:1, b:2}, eval:{loss:0.2}}]', 2, 0, 3, 1, null);
-
 
 
 # ----------------------------
