@@ -60,8 +60,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-				// White list
-				.antMatchers(whiteList.split(",")).permitAll()
 				// all other requests need to be authenticated
 				.anyRequest().authenticated()
 				// form login and all related interfaces have permit

@@ -3,7 +3,8 @@ package com.ninestar.datapie.datamagic.entity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -20,7 +21,7 @@ public class SysMsgEntity {
     private Integer id;
 
     @Basic
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(name = "ts", nullable = false)
     private Timestamp ts;
 
