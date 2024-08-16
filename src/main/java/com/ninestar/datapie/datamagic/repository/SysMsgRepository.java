@@ -25,4 +25,7 @@ public interface SysMsgRepository extends JpaRepository<SysMsgEntity, Integer>, 
 
     @Query(value = "select * from sys_msg where type = 'msg' and to_id = ? and (read_users is null or read_users = '' or read_users = '[]') order by ts_utc desc",nativeQuery = true)
     List<SysMsgEntity> findUnreadMsgById(Integer userId);
+
+    SysMsgEntity findByCode(String code);
+
 }

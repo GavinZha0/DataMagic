@@ -11,7 +11,6 @@ import java.util.TimeZone;
 
 @SpringBootApplication
 @EnableJpaAuditing
-//@EnableWebSocket
 @EnableAsync
 @EnableGlobalMethodSecurity(prePostEnabled=true)
 @EnableJpaRepositories("com.ninestar.datapie.datamagic.repository")

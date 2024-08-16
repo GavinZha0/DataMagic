@@ -492,7 +492,7 @@ public class MlFeatureController {
             // save to parameters to redis
             redisTpl.opsForValue().set(uniqueId, targetEntity.toString());
             // send req to channel
-            redisTpl.convertAndSend("reqQ", targetEntity);
+            redisTpl.convertAndSend("downstream", targetEntity);
 
             StringRecord stringRecord = StreamRecords.string(Collections.singletonMap("data", targetEntity.toString())).withStreamKey(redisConfig.getReqStream());
             RecordId rId = redisTpl.opsForStream().add(stringRecord);

@@ -651,6 +651,7 @@ CREATE TABLE sys_msg
     ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     type           varchar(16)  NOT NULL DEFAULT 'msg' comment 'notice or msg',
 	category	   varchar(16)  NOT NULL DEFAULT 'ml' comment 'ai, bi, ml, chat',
+	code 		   varchar(64)  DEFAULT NULL comment 'unique code',
     from_id        int          DEFAULT NULL comment 'user id',
     to_id          int          NOT NULL comment 'user id when msg, org id when notice',
     content        text         NOT NULL,

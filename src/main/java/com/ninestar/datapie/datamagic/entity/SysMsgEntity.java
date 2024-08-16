@@ -21,8 +21,8 @@ public class SysMsgEntity {
 
     @Basic
     @CreationTimestamp
-    @Column(name = "ts_utc", nullable = false)
-    private Timestamp tsUtc;
+    @Column(name = "ts", nullable = false)
+    private Timestamp ts;
 
     @Basic
     @Column(name = "type", nullable = false, length = 16)
@@ -31,6 +31,10 @@ public class SysMsgEntity {
     @Basic
     @Column(name = "category", nullable = false, length = 16)
     private String category;
+
+    @Basic
+    @Column(name = "code", nullable = true, length = 64)
+    private String code;
 
     @Basic
     @Column(name = "from_id", nullable = true)

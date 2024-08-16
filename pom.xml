@@ -30,9 +30,8 @@
 		<djl.version>0.17.0</djl.version>
 		<jnl.version>5.8.0</jnl.version>
 		<dl4j.version>1.0.0-beta7</dl4j.version>
-		<xxl-job.version>2.3.1</xxl-job.version>
 		<ray.version>2.23.0</ray.version>
-		<redis.version>2.7.14</redis.version>
+		<redis.version>3.3.2</redis.version>
 
 		<lib-path>lib</lib-path>
 		<jar-path>jar</jar-path>
@@ -146,12 +145,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.32</version>
-		</dependency>
-		<!--  a distributed task scheduling framework -->
-		<dependency>
-			<groupId>com.xuxueli</groupId>
-			<artifactId>xxl-job-core</artifactId>
-			<version>${xxl-job.version}</version>
 		</dependency>
 		<!-- knife4j, swagger wrap for doc and restful api debugging-->
 		<dependency>
@@ -314,10 +307,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-redis</artifactId>
 			<version>${redis.version}</version>
 		</dependency>
 		<!-- minio, file server -->

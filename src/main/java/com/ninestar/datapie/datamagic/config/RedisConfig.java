@@ -2,12 +2,10 @@ package com.ninestar.datapie.datamagic.config;
 
 import com.ninestar.datapie.datamagic.service.RedisChannelListener;
 import com.ninestar.datapie.datamagic.service.RedisStreamListener;
-import io.lettuce.core.RedisException;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -83,45 +81,6 @@ public class RedisConfig {
             return null;
         }
     }
-/*
-    @Bean
-    public StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, ?> streamMessageListenerContainerOptions(){
-        return StreamMessageListenerContainer
-                .StreamMessageListenerContainerOptions
-                .builder()
-                .pollTimeout(Duration.ofSeconds(10))
-                .build();
-    }
-    @Bean
-    public StreamMessageListenerContainer streamMessageListenerContainer(RedisConnectionFactory factory,
-               StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, ?> streamMessageListenerContainerOptions){
-        StreamMessageListenerContainer listenerContainer = StreamMessageListenerContainer.create(factory,
-                streamMessageListenerContainerOptions);
-
-        if(redisMsgEnabled) {
-
-            try {
-                // create stream if not exist
-                factory.getConnection().streamCommands()
-                        .xGroupCreate(rspStream.getBytes(), consumerGroup, ReadOffset.lastConsumed(), true);
-            } catch (RedisSystemException exception) {
-                // do nothing
-                String aaa = "ss";
-            }
-
-            // subscribe stream
-            listenerContainer.receiveAutoAck(
-                    Consumer.from(consumerGroup, consumerName),
-                    StreamOffset.create(rspStream, ReadOffset.lastConsumed()),
-                    redisStreamListener
-            );
-
-            // start listener
-            listenerContainer.start();
-        }
-        return listenerContainer;
-    }
-*/
 
     @Bean
     public Subscription subscription(RedisConnectionFactory redisFactory) throws UnknownHostException {
