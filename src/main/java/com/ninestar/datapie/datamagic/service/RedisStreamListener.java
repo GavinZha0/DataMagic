@@ -31,29 +31,32 @@ public class RedisStreamListener implements StreamListener<String, MapRecord<Str
 
     @Override
     public void onMessage(MapRecord<String, String, String> message) {
-        // receive msg from redis UP-STREAM
+        // receive k-value msg from redis UP-STREAM
+        // msg:"{uid:3, code:4, msg: '', data:{algoId:17, experId:56, progress:88}}"
         logger.info(String.format("Recv %s from %s", message.getId(), message.getStream()));
         try {
-            JSONObject jsonMsg = new JSONObject(message.getValue().get("msg"));
-            logger.info(jsonMsg.toString());
+            // ack to mark done
             redisTemplate.opsForStream().acknowledge(message.getStream(),redisConfig.getConsumerGroup(), message.getId());
+            JSONObject jsonMsg = new JSONObject(message.getValue().get("msg"));
             QmsgType qMsg = jsonMsg.toBean(QmsgType.class);
-            UniformResponse uniformMsg = qMsg.getPayload().toBean(UniformResponse.class);
-            if(uniformMsg.getCode() == QmsgCode.RAY_EXPERIMENT_REPORT.getCode()){
-                JSONObject jsonData = new JSONObject(uniformMsg.getData());
+            if(qMsg.getCode() == QmsgCode.RAY_EXPERIMENT_REPORT.getCode()){
+                // experiment progress report
+                JSONObject jsonData = new JSONObject(qMsg.getData());
                 if(jsonData.get("progress").toString().equals("1")){
+                    // experiment start
                     SysMsgEntity newEntity = new SysMsgEntity();
                     newEntity.setType("msg");
                     newEntity.setCategory("ml");
-                    newEntity.setFromId(0); // system
-                    newEntity.setToId(qMsg.getUserId());
+                    newEntity.setFromId(0); // background job
+                    newEntity.setToId(qMsg.getUid());
                     newEntity.setCode(QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString());
-                    newEntity.setContent(uniformMsg.getData().toString());
+                    newEntity.setContent(qMsg.getData().toString());
                     newEntity.setTid(Integer.parseInt(jsonData.get("algoId").toString()));
                     sysMsgRepository.save(newEntity);
                 } else if(jsonData.get("progress").toString().equals("100")){
+                    // experiment end
                     SysMsgEntity targetEntity = sysMsgRepository.findByCode(QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString());
-                    targetEntity.setContent(uniformMsg.getData().toString());
+                    targetEntity.setContent(qMsg.getData().toString());
                     sysMsgRepository.save(targetEntity);
                 }
             }

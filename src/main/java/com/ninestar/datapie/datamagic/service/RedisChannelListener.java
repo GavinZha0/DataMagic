@@ -37,13 +37,11 @@ public class RedisChannelListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] bytes) {
         // receive msg from redis channel
-        // ex: {"userId": 3, "payload": {"code": 1, "msg": "", "data": {"algoId": "6", "progress": 80}}}
-        // String redisChannel = new String(message.getChannel());
-        // logger.info("Channel " + redisChannel + " recv: " + message.toString());
+        // ex: {"uid": 3, "code": 1, "msg": "", "data": {"algoId": "6", "progress": 80}}
 
         // get target user
         JSONObject jsonMsg = new JSONObject(message.toString());
-        String userId = jsonMsg.get("userId").toString();
+        String userId = jsonMsg.get("uid").toString();
 
         // check if the user is online
         SimpUser simpUser = redisListener.userRegistry.getUser(userId);
@@ -51,14 +49,7 @@ public class RedisChannelListener implements MessageListener {
             String wsChannel = redisListener.redisConfig.getWsChannel();
             // forward message to user via websocket
             logger.info("Forward msg to user " + userId + " via ws");
-            simpMessagingTemplate.convertAndSendToUser(userId, wsChannel, jsonMsg.get("payload").toString());
-
-            JSONObject payload = new JSONObject(jsonMsg.get("payload"));
-            Integer code = Integer.parseInt(payload.get("code").toString());
-            if(code == 5){
-                // update db
-                logger.info(String.valueOf(code));
-            }
+            simpMessagingTemplate.convertAndSendToUser(userId, wsChannel, jsonMsg.toString());
         }
     }
 }

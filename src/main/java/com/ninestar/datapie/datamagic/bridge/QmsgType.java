@@ -5,7 +5,9 @@ import lombok.Data;
 
 @Data
 public class QmsgType {
-    public Integer userId;
-    public JSONObject payload;
+    private Integer uid;
+    private Integer code;
+    private String msg;
+    private Object data;
 }
 
