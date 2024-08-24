@@ -1,15 +1,12 @@
 package com.ninestar.datapie.datamagic.aop;
 
-import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
@@ -20,7 +17,6 @@ import com.ninestar.datapie.datamagic.entity.LogAccessEntity;
 import com.ninestar.datapie.datamagic.entity.LogActionEntity;
 import com.ninestar.datapie.datamagic.service.AsyncTaskService;
 import com.ninestar.datapie.datamagic.utils.IpUtils;
-import io.netty.handler.codec.http.HttpMethod;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -269,7 +265,7 @@ public class LogAspect
 
             if(ctrlLog.saveReq()){
                 String requestMethod = attributes.getRequest().getMethod();
-                if(HttpMethod.PUT.name().equals(requestMethod) || HttpMethod.POST.name().equals(requestMethod)){
+                if(requestMethod.equals("PUT") || requestMethod.equals("POST")){
                     String params = argsArrayToString(joinPoint.getArgs());
                     JSONObject jParams = new JSONObject(params);
                     for(Map.Entry<String, Object> entry: jParams.entrySet()){
@@ -288,7 +284,7 @@ public class LogAspect
                         }
                     }
                 }
-                else if(HttpMethod.DELETE.name().equals(requestMethod))
+                else if(requestMethod.equals("DELETE"))
                 {
                     // delete have one parameter id
                     String id = attributes.getRequest().getParameter("id");

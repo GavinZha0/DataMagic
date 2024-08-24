@@ -1,49 +1,11 @@
 package com.ninestar.datapie.datamagic.service;
 
-import ai.djl.Application;
-import ai.djl.MalformedModelException;
-import ai.djl.Model;
-import ai.djl.basicdataset.cv.classification.Mnist;
-import ai.djl.basicmodelzoo.basic.Mlp;
-import ai.djl.engine.Engine;
-import ai.djl.inference.Predictor;
-import ai.djl.metric.Metric;
-import ai.djl.metric.Metrics;
-import ai.djl.modality.Classifications;
-import ai.djl.modality.cv.Image;
-import ai.djl.modality.cv.ImageFactory;
-import ai.djl.modality.cv.output.DetectedObjects;
-import ai.djl.modality.cv.transform.CenterCrop;
-import ai.djl.modality.cv.transform.Normalize;
-import ai.djl.modality.cv.transform.Resize;
-import ai.djl.modality.cv.transform.ToTensor;
-import ai.djl.modality.cv.translator.ImageClassificationTranslator;
-import ai.djl.modality.cv.util.NDImageUtils;
-import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.NDList;
-import ai.djl.ndarray.types.Shape;
-import ai.djl.nn.Block;
-import ai.djl.repository.zoo.Criteria;
-import ai.djl.repository.zoo.ModelNotFoundException;
-import ai.djl.repository.zoo.ZooModel;
-import ai.djl.training.DefaultTrainingConfig;
-import ai.djl.training.Trainer;
-import ai.djl.training.dataset.Batch;
-import ai.djl.training.dataset.Dataset;
-import ai.djl.training.dataset.RandomAccessDataset;
-import ai.djl.training.evaluator.Accuracy;
-import ai.djl.training.listener.TrainingListener;
-import ai.djl.training.loss.Loss;
-import ai.djl.training.util.ProgressBar;
-import ai.djl.translate.*;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.text.csv.*;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONObject;
 import com.googlecode.aviator.AviatorEvaluator;
 import com.ninestar.datapie.datamagic.bridge.ImporterUploadReqType;
-import com.ninestar.datapie.datamagic.bridge.MlTrainEpochIndType;
 import com.ninestar.datapie.datamagic.entity.*;
 import com.ninestar.datapie.datamagic.repository.*;
 import com.ninestar.datapie.datamagic.utils.DbUtils;
@@ -53,51 +15,21 @@ import com.ninestar.datapie.framework.consts.MysqlColumnType;
 import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.framework.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.datavec.api.io.labels.ParentPathLabelGenerator;
-import org.datavec.api.split.FileSplit;
-import org.datavec.image.loader.NativeImageLoader;
-import org.datavec.image.recordreader.ImageRecordReader;
-import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.inputs.InputType;
-import org.deeplearning4j.nn.conf.layers.*;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.util.ModelSerializer;
-import org.nd4j.evaluation.classification.Evaluation;
-import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
-import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
-import org.nd4j.linalg.learning.config.Nesterovs;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static ai.djl.training.EasyTrain.*;
 
 @Service
 @Slf4j
@@ -559,6 +491,7 @@ public class AsyncTaskService {
         return inportedRecords.get();
     }
 
+    /*
     @Async
     public CompletableFuture<Integer> executeDl4j(String outPath, String msgTarget) throws IOException {
         // log start with message target
@@ -612,9 +545,7 @@ public class AsyncTaskService {
         DataSetIterator testIter = new RecordReaderDataSetIterator(testRR, batchSize, 1, outputNum);
         testIter.setPreProcessor(imageScaler);
 
-        /*
-            Construct the neural network
-         */
+        // Construct the neural network
         logger.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .weightInit(WeightInit.XAVIER)
@@ -655,25 +586,6 @@ public class AsyncTaskService {
         // 根据配置初始化神经网络模型
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-
-/*
-        // early stop
-        //在epoch终止条件最大为30epoch、最大为20分钟的训练时间的情况下，计算每个epoch的得分，并将中间结果保存到磁盘
-        EarlyStoppingConfiguration esConf = new EarlyStoppingConfiguration.Builder()
-                .epochTerminationConditions(new MaxEpochsTerminationCondition(30))
-                .iterationTerminationConditions(new MaxTimeIterationTerminationCondition(20, TimeUnit.MINUTES))
-                .scoreCalculator(new DataSetLossCalculator(testIter, true))
-                .evaluateEveryNEpochs(1)
-                .modelSaver(new LocalFileModelSaver(new File(outPath + "/model.zip")))
-                .build();
-
-
-        EarlyStoppingTrainer modelTrainer = new EarlyStoppingTrainer(esConf,conf,trainIter);
-        // 早停法配置好之后开始训练
-        EarlyStoppingResult<MultiLayerNetwork> result = modelTrainer.fit();
-        model = result.getBestModel();
-*/
-
 
         logger.info("Train model....");
         // 保存统计信息
@@ -748,8 +660,9 @@ public class AsyncTaskService {
         logger.info("TARGET<<<"+msgTarget);
         return CompletableFuture.completedFuture(0);
     }
+    */
 
-
+    /*
     @Async
     public CompletableFuture<Integer>  executeDJL(String outPath, String msgTarget) throws IOException {
         Marker TARGETMARKER = MarkerFactory.getMarker(msgTarget);
@@ -872,8 +785,11 @@ public class AsyncTaskService {
         return CompletableFuture.completedFuture(0);
     }
 
+     */
+
     @Async
     public CompletableFuture<Integer>  executeDJL(String targetModel, String targetFile, String outPath, String msgTarget) throws IOException {
+        /*
         JSONObject msgChat = new JSONObject();
         File targetFolder = new File(outPath);
         if (!targetFolder.exists()) {
@@ -922,11 +838,13 @@ public class AsyncTaskService {
             //
         }
 
+         */
         return CompletableFuture.completedFuture(0);
     }
 
     @Async
     public CompletableFuture<Integer>  executeDJL(String modelPath, List<String> modelFiles, String framework, String targetFile, String outPath, String msgTarget) throws IOException {
+        /*
         JSONObject msgChat = new JSONObject();
         File targetFolder = new File(outPath);
         if (!targetFolder.exists()) {
@@ -1086,7 +1004,7 @@ public class AsyncTaskService {
             }
         }
 
-
+        */
 
         return CompletableFuture.completedFuture(0);
     }

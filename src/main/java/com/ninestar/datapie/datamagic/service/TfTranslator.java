@@ -1,19 +1,7 @@
 package com.ninestar.datapie.datamagic.service;
 
-import ai.djl.modality.Classifications;
-import ai.djl.modality.cv.Image;
-import ai.djl.modality.cv.util.NDImageUtils;
-import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.NDList;
-import ai.djl.ndarray.NDManager;
-import ai.djl.translate.Batchifier;
-import ai.djl.translate.Translator;
-import ai.djl.translate.TranslatorContext;
-
-import java.util.Arrays;
-import java.util.List;
-
-public class TfTranslator implements Translator<Image, Classifications> {
+public class TfTranslator {
+    /*
     private static final List<String> CLASSES = Arrays.asList("Normal", "Pneumonia");
 
     @Override
@@ -34,5 +22,7 @@ public class TfTranslator implements Translator<Image, Classifications> {
     public Batchifier getBatchifier() {
         return Batchifier.STACK;
     }
+
+    */
 
 }

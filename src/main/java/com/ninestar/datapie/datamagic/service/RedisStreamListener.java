@@ -33,12 +33,12 @@ public class RedisStreamListener implements StreamListener<String, MapRecord<Str
     public void onMessage(MapRecord<String, String, String> message) {
         // receive k-value msg from redis UP-STREAM
         // msg:"{uid:3, code:4, msg: '', data:{algoId:17, experId:56, progress:88}}"
-        logger.info(String.format("Recv %s from %s", message.getId(), message.getStream()));
         try {
             // ack to mark done
             redisTemplate.opsForStream().acknowledge(message.getStream(),redisConfig.getConsumerGroup(), message.getId());
             JSONObject jsonMsg = new JSONObject(message.getValue().get("msg"));
             QmsgType qMsg = jsonMsg.toBean(QmsgType.class);
+            logger.info(String.format("Recv msg %s from %s", qMsg.getCode(), message.getStream()));
             if(qMsg.getCode() == QmsgCode.RAY_EXPERIMENT_REPORT.getCode()){
                 // experiment progress report
                 JSONObject jsonData = new JSONObject(qMsg.getData());

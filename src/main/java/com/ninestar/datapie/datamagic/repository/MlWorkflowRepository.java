@@ -11,6 +11,6 @@ public interface MlWorkflowRepository extends JpaRepository<MlWorkflowEntity, In
     List<MlWorkflowEntity> findByNameContainingOrderByIdDesc(String name);
     List<MlWorkflowEntity> findByPidAndVersionStartingWith(Integer pid, String version);
 
-    @Query(value = "select distinct `group` from ml_flow where 'group' is not null order by `group`",nativeQuery = true)
+    @Query(value = "select distinct `group` from ml_workflow where 'group' is not null order by `group`",nativeQuery = true)
     List<Object> findDistinctGroup();
 }

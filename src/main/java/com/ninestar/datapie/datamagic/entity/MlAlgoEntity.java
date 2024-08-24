@@ -1,7 +1,6 @@
 package com.ninestar.datapie.datamagic.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.cli.annotations.DefaultValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,7 +8,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 

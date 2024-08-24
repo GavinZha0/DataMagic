@@ -2,8 +2,7 @@ package com.ninestar.datapie.datamagic.annotation;
 
 import cn.hutool.json.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ValueConstants;
@@ -61,7 +60,7 @@ public class CustomMethodArgumentResolver implements HandlerMethodArgumentResolv
         JSONObject reqParam = new JSONObject(getRequestBody(servletRequest));
         Map<String, Object> params = reqParam.getRaw();
 
-        params = MapUtils.isEmpty(params) ? new HashMap<>(0) : params;
+        params = params.size()==0 ? new HashMap<>(0) : params;
         String name = StringUtils.isBlank(customParam.value()) ? parameter.getParameterName() : customParam.value();
         Object value = params.get(name);
 

@@ -656,7 +656,7 @@ CREATE TABLE sys_msg
     to_id          int          NOT NULL comment 'user id when msg, org id when notice',
     content        text         NOT NULL,
     tid            int          DEFAULT NULL comment 'ml_algo.id = 15',
-	read_users     text         DEFAULT '[]' comment 'user list'
+	read_users     text         DEFAULT '[]' comment 'user ids'
 ) ENGINE = InnoDB;
 
 
@@ -1014,10 +1014,10 @@ VALUES (1, 17, 50, '[{id:123, params: {a:1, b:2}, eval:{loss:0.2}}]', 2, 0, 3, 1
 
 
 # ----------------------------
-# Table: ml_flow
+# Table: ml_workflow
 # ----------------------------
-DROP TABLE IF EXISTS ml_flow;
-CREATE TABLE ml_flow
+DROP TABLE IF EXISTS ml_workflow;
+CREATE TABLE ml_workflow
 ( 
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name           varchar(64)   NOT NULL,
@@ -1037,7 +1037,7 @@ CREATE TABLE ml_flow
 	CONSTRAINT fk_flow_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_flow (id, pid, name, `desc`, `group`, config, workflow, canvas, flow_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
+INSERT INTO ml_workflow (id, pid, name, `desc`, `group`, config, workflow, canvas, flow_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
 VALUES (1, null, 'Svm train', 'New svm train', 'first', '{timeout: 10}', '{nodes:[{id:"node1", shape:"rect", width: 20, height: 10}], edges:[]}', '{gbColor:"#123456"}', '2.0', '0', '2024-04-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
 
 # ----------------------------

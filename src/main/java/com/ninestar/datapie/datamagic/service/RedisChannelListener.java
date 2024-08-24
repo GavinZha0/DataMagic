@@ -48,7 +48,7 @@ public class RedisChannelListener implements MessageListener {
         if(simpUser!=null && simpMessagingTemplate != null){
             String wsChannel = redisListener.redisConfig.getWsChannel();
             // forward message to user via websocket
-            logger.info("Forward msg to user " + userId + " via ws");
+            logger.info(String.format("Forward msg %s to user %s via ws", jsonMsg.get("code"), userId));
             simpMessagingTemplate.convertAndSendToUser(userId, wsChannel, jsonMsg.toString());
         }
     }

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.ninestar.datapie</groupId>
 	<artifactId>datamagic</artifactId>
-	<version>0.5.0</version>
+	<version>0.6.0</version>
 	<name>DataMagic</name>
 	<packaging>jar</packaging>
 	<description>A big data platform for AI and BI</description>
@@ -158,15 +158,15 @@
 			<artifactId>hutool-all</artifactId>
 			<version>${hutool.version}</version>
 		</dependency>
-		<!-- spring-boot-actuator -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.12.5</version>
 		</dependency>
-		<!-- prometheus -->
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.aviator</groupId>
@@ -182,111 +182,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.python</groupId>
-			<artifactId>jython-standalone</artifactId>
-			<version>2.7.3</version>
-		</dependency>
-		<!-- Ray for remote task and ML-->
-		<!--dependency>
-			<groupId>io.ray</groupId>
-			<artifactId>ray-api</artifactId>
-			<version>${ray.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.ray</groupId>
-			<artifactId>ray-runtime</artifactId>
-			<version>${ray.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.ray</groupId>
-			<artifactId>ray-serve</artifactId>
-			<version>${ray.version}</version>
-			<scope>provided</scope>
-		</dependency-->
-		<!-- AWS DJL Mxnet-->
-		<dependency>
-			<groupId>ai.djl</groupId>
-			<artifactId>api</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl</groupId>
-			<artifactId>basicdataset</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl</groupId>
-			<artifactId>model-zoo</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.mxnet</groupId>
-			<artifactId>mxnet-engine</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.mxnet</groupId>
-			<artifactId>mxnet-model-zoo</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-engine</artifactId>
-			<version>${djl.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-native-auto</artifactId>
-			<version>1.9.1</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-native-cpu</artifactId>
-			<classifier>win-x86_64</classifier>
-			<version>1.11.0</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-model-zoo</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.tensorflow</groupId>
-			<artifactId>tensorflow-engine</artifactId>
-			<version>${djl.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.tensorflow</groupId>
-			<artifactId>tensorflow-native-cpu</artifactId>
-			<classifier>win-x86_64</classifier>
-			<version>2.7.0</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.tensorflow</groupId>
-			<artifactId>tensorflow-model-zoo</artifactId>
-			<version>${djl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.deeplearning4j</groupId>
-			<artifactId>deeplearning4j-core</artifactId>
-			<version>1.0.0-M2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-native-platform</artifactId>
-			<version>1.0.0-M2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.deeplearning4j</groupId>
-			<artifactId>deeplearning4j-ui</artifactId>
-			<version>1.0.0-M2</version>
 		</dependency>
 		<!-- SpringBoot WebSocket -->
 		<dependency>
