@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS datapie6 DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS datapie DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
 # ----------------------------
@@ -10,10 +10,10 @@ CREATE TABLE sys_site
 (
     id          int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name        varchar(64)    NOT NULL comment 'Site name',
-    owner       varchar(64)    NOT NULL comment 'Company name',
+    owner       varchar(64)    NOT NULL comment 'Owner name',
     partner     varchar(64)	   DEFAULT NULL,
     about       varchar(255)   DEFAULT NULL,
-    logo        varchar(255)   DEFAULT '/default/profile/logo.png' comment 'logo file',
+    logo        varchar(255)   DEFAULT 's3:/datapie/profile/logo.png' comment 'logo file',
     created_by  varchar(64)    NOT NULL,
     created_at  timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)    DEFAULT NULL,
@@ -21,37 +21,7 @@ CREATE TABLE sys_site
 ) ENGINE = InnoDB;
 
 INSERT INTO sys_site (id, name, owner, partner, about, logo, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'DataPie', 'NineStar Tech', null, 'A big data platform for AI and BI!', '/ftp/sys/logo.png', 'Superman', null, 'Superman', null);
-
-
-# ----------------------------
-# Table: sys parameter
-# system/user defined parameters
-# ----------------------------
-
-DROP TABLE IF EXISTS sys_param;
-CREATE TABLE sys_param
-(
-    id          int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name        varchar(64)    NOT NULL,
-    `desc`      varchar(128)   DEFAULT NULL comment 'description',
-    `group`     varchar(64)    DEFAULT NULL comment 'parameter group',
-    module      varchar(64)    NOT NULL comment 'module or feature',
-    type        varchar(64)    NOT NULL comment 'integer, float, boolean, string, [string], json',
-    value       varchar(255)   NOT NULL comment 'current value',
-    previous    varchar(255)   DEFAULT NULL comment 'previous value',
-	org_id      int            DEFAULT 1 comment 'free center by default',
-    created_by  varchar(64)    NOT NULL,
-    created_at  timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_by  varchar(64)    DEFAULT NULL,
-    updated_at  timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT fk_param_org    foreign key(org_id)     REFERENCES sys_org(id)
-) ENGINE = InnoDB;
-
-INSERT INTO sys_param (id, name, `desc`, `group`, module, type, value, previous, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'source_type', null, 'datasource', 'dataviz', '[string]', "['CSV', 'JSON', 'MySQL', 'MariaDB', 'Vertica']", '', 2, 'Superman', null, 'Superman', null),
-(2, 'chart_lib', null, 'dataview', 'dataviz', '[json]', "[{name:'G2Plot',ver:['2.4']},{name:'S2',ver:['1.51']},{name:'ECharts',ver:['1.0']},{name:'AmCharts',ver:['5.0','4.1']},{name:'ApexCharts',ver:['2.0']},{name:'VegaLite', ver:['5.6']}]", null, 2, 'Superman', null, 'Superman', null);
-
+VALUES (1, 'DataPie', 'NineStar', null, 'A data platform for AI and BI!', 's3:/datapie/profile/logo.png', 'Superman', now(), 'Superman', null);
 
 
 # ----------------------------
@@ -77,16 +47,40 @@ CREATE TABLE sys_org
 ) ENGINE = InnoDB;
 
 INSERT INTO sys_org (id, pid, name, `desc`, logo, active, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'Free Center', 'Discover the production for free', null, true, null, false, 'Superman', null, 'Superman', null);
+VALUES (1, null, 'Playground', 'Discover the production for free', null, true, null, false, 'Superman', now(), 'Superman', null),
+	   (2, null, 'NineStar', 'A future AI company', null, true, null, false, 'Superman', now(), 'Superman', null),
+	   (3, null, 'Demo A', 'demo for company A', null, true, null, false, 'Superman', now(), 'Superman', null);
 
-INSERT INTO sys_org (id, pid, name, `desc`, logo, active, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (2, null, 'NineStar', 'A future AI company', null, true, null, false, 'Superman', null, 'Superman', null);
 
-INSERT INTO sys_org (id, pid, name, `desc`, logo, active, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (3, null, 'VIP Club', 'paying users', null, true, null, false, 'Superman', null, 'Superman', null);
 
-INSERT INTO sys_org (id, pid, name, `desc`, logo, active, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (4, null, 'Demo Center', 'demo users of company A', null, true, null, false, 'Superman', null, 'Superman', null);
+# ----------------------------
+# Table: sys parameter
+# system or user defined parameters
+# ----------------------------
+DROP TABLE IF EXISTS sys_param;
+CREATE TABLE sys_param
+(
+    id          int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name        varchar(64)    NOT NULL,
+    `desc`      varchar(128)   DEFAULT NULL comment 'description',
+    `group`     varchar(64)    DEFAULT NULL comment 'parameter group',
+    module      varchar(64)    NOT NULL comment 'module or feature',
+    type        varchar(64)    NOT NULL comment 'int, float, bool, string, [string], json, [json]',
+    value       varchar(255)   NOT NULL comment 'current value',
+    previous    varchar(255)   DEFAULT NULL comment 'previous value',
+	org_id      int            DEFAULT 1 comment 'organization id',
+    created_by  varchar(64)    NOT NULL,
+    created_at  timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by  varchar(64)    DEFAULT NULL,
+    updated_at  timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_param_org    foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
+
+INSERT INTO sys_param (id, name, `desc`, `group`, module, type, value, previous, org_id, created_by, created_at, updated_by, updated_at)
+VALUES (1, 'source_type', null, 'datasource', 'datamgr', '[string]', "['CSV', 'JSON', 'MySQL', 'MariaDB', 'Vertica']", '', 2, 'Superman', now(), 'Superman', null),
+       (2, 'chart_lib', null, 'dataview', 'dataviz', '[json]', "[{name:'G2Plot',ver:['2.4']},{name:'S2',ver:['1.51']},{name:'ECharts',ver:['1.0']}]", null, 2, 'Superman', now(), 'Superman', null);
+
+
 
 # ----------------------------
 # Table: user
@@ -117,10 +111,9 @@ CREATE TABLE sys_user
 ) ENGINE = InnoDB;
   
 INSERT INTO sys_user (id, name, password, realname, `desc`, email, phone, org_id, avatar, social, active, sms_code, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Superman', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Gavin.Zhao', '', 'jichun.zhao@outlook.com', '18611815495', 2, null, null, true, false, null, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_user (id, name, password, realname, `desc`, email, phone, org_id, avatar, social, active, sms_code, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (2, 'Admin', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Mr.Zhao', '', 'jichun.zhao@gmail.com', '7328902296', 2, 'cat.jpg', null, true, false, null, false, 'Superman', null, 'Superman', null);
+VALUES (1, 'Superman', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Gavin.Zhao', '', 'jichun.zhao@outlook.com', '18611815495', 2, null, null, true, false, null, false, 'Superman', now(), 'Superman', null),
+       (2, 'Admin', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Mr.Zhao', '', 'jichun.zhao@gmail.com', '7328902296', 2, 'cat.jpg', null, true, false, null, false, 'Superman', now(), 'Superman', null),
+       (3, 'visitor', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Visitor', '', 'visitor@gmail.com', '7321234567', 1, null, null, true, false, null, false, 'Superman', now(), 'Superman', null);
 
 # ----------------------------
 # Table: role
@@ -133,7 +126,7 @@ CREATE TABLE sys_role
     name        varchar(64)     NOT NULL, 
     `desc`      varchar(128)    DEFAULT NULL comment 'description',
     active      boolean         NOT NULL DEFAULT false,
-    org_id      int             DEFAULT NULL comment 'global role when org is null',
+    org_id      int             DEFAULT NULL comment 'null or 0 for all org/users',
     created_by  varchar(64)     NOT NULL,
     created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)     DEFAULT NULL,
@@ -143,25 +136,12 @@ CREATE TABLE sys_role
 
 
 INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Guest', 'view only', true, null, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (2, 'Superuser', 'has all permissions', true, null, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (3, 'Administrator', 'has all permissions', true, null, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (4, 'Admin', 'control panel only', true, null, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (5, 'Tester', 'has all permissions', true, null, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (6, 'Viewer', 'view only', true, null, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_role (id, name, `desc`, active, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (7, 'Publisher', 'has publish permissions', true, 2, 'Superman', null, 'Superman', null);
+VALUES (1, 'Guest', 'build AI and BI', true, null, 'Superman', now(), 'Superman', null),
+       (2, 'Superuser', 'has all permissions', true, null, 'Superman', now(), 'Superman', null),
+       (3, 'Administrator', 'has all permissions', true, null, 'Superman', now(), 'Superman', null),
+       (4, 'Admin', 'control panel only', true, null, 'Superman', now(), 'Superman', null),
+       (5, 'Tester', 'has all permissions', true, null, 'Superman', now(), 'Superman', null),
+       (6, 'Viewer', 'view only', true, null, 'Superman', now(), 'Superman', null);
 
 
 
@@ -182,9 +162,9 @@ CREATE TABLE sys_user_role
 
 
 INSERT INTO sys_user_role (id, user_id, role_id)
-VALUES (1, 1, 2);
-INSERT INTO sys_user_role (id, user_id, role_id)
-VALUES (2, 2, 3);
+VALUES (1, 1, 2),
+       (2, 2, 3),
+	   (3, 3, 1);
 
 
 # ----------------------------
@@ -205,7 +185,7 @@ CREATE TABLE sys_menu
 	component    varchar(64)   DEFAULT NULL comment 'component of frontend',
     path         varchar(64)   DEFAULT NULL comment 'route path/url',
     redirect     varchar(64)   DEFAULT NULL comment 'route redirection',
-    
+    org_id       int           DEFAULT NULL,
     active       boolean       NOT NULL DEFAULT true,
     deleted      boolean       NOT NULL DEFAULT false comment 'true: it was deleted',
     created_by  varchar(64)    NOT NULL,
@@ -215,145 +195,57 @@ CREATE TABLE sys_menu
 ) ENGINE = InnoDB;
 
 INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'Home', '主页', 'ant-design:home-outlined', 0, false, '/home/index', '/home', null, true, false, 'Superman', null, 'Superman', null);
+VALUES (1, null, 'Home', '主页', 'ant-design:home-outlined', 0, false, '/home/index', '/home', null, true, false, 'Superman', now(), 'Superman', null),
+(2, null, 'Dashboard', '仪表板', 'ant-design:dashboard-outlined', 1, false, 'BlankLayout', '/dashboard', null, true, false, 'Superman', now(), 'Superman', null),
 
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (2, null, 'Dashboard', '仪表板', 'ant-design:dashboard-outlined', 1, false, 'BlankLayout', '/dashboard', null, true, false, 'Superman', null, 'Superman', null);
+(3, null, 'Visualization', '数据可视化', 'ant-design:appstore-outlined', 2, false, 'BlankLayout', '/dataviz', null, true, false, 'Superman', now(), 'Superman', null),
+(4, 3, 'Dataset', '数据集', 'ant-design:database-outlined', 0, false, '/dataviz/dataset/index', '/dataviz/dataset', null, true, false, 'Superman', now(), 'Superman', null),
+(5, 3, 'View', '视图', 'ant-design:line-chart-outlined', 1, false, '/dataviz/dataview/index', '/dataviz/dataview', null, true, false, 'Superman', now(), 'Superman', null),
+(6, 3, 'Report', '报表', 'ant-design:appstore-add-outlined', 2, false, '/dataviz/report/index', '/dataviz/report', null, true, false, 'Superman', now(), 'Superman', null),
 
+(7, null, 'Source Mgr', '数据管理', 'ant-design:money-collect-outlined', 3, false, 'BlankLayout', '/datamgr', null, true, false, 'Superman', now(), 'Superman', null),
+(8, 7, 'Source', '数据源', 'ant-design:database-outlined', 3, false, '/datamgr/datasource/index', '/datamgr/datasource', null, true, false, 'Superman', now(), 'Superman', null),
+(9, 7, 'Import', '导入数据', 'control', 0, false, '/datamgr/import/index', '/datamgr/import', null, true, false, 'Superman', now(), 'Superman', null),
+(10, 7, 'Anchor', '采集点', 'control', 1, false, '/datamgr/anchor/index', '/datamgr/anchor', null, true, false, 'Superman', now(), 'Superman', null),
+(11, 7, 'Kafka', 'Kafka', 'control', 2, false, '/datamgr/kafka/index', '/datamgr/kafka', null, true, false, 'Superman', now(), 'Superman', null),
+(12, 7, 'ETL', 'ETL', 'control', 3, false, '/datamgr/etl/index', '/datamgr/etl', null, true, false, 'Superman', now(), 'Superman', null),
+(13, 7, 'Web Magic', 'Web Magic', 'control', 4, false, '/datamgr/webmagic/index', '/datamgr/webmagic', null, true, false, 'Superman', now(), 'Superman', null),
 
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (3, null, 'Visualization', '数据可视化', 'ant-design:appstore-outlined', 2, false, 'BlankLayout', '/dataviz', null, true, false, 'Superman', null, 'Superman', null);
+(14, null, 'ML Dev', '机器学习', 'ant-design:car-outlined', 4, false, 'BlankLayout', '/ml', null, true, false, 'Superman', now(), 'Superman', null),
+(15, 14, 'Dataset', '数据集', 'ant-design:database-outlined', 0, false, '/ml/dataset/index', '/ml/dataset', null, true, false, 'Superman', now(), 'Superman', null),
+(16, 14, 'EDA', '数据探索', 'control', 1, false, '/ml/eda/index', '/ml/eda', null, true, false, 'Superman', now(), 'Superman', null),
+(17, 14, 'Algorithm', '算法', 'control', 2, false, '/ml/algorithm/index', '/ml/algorithm', null, true, false, 'Superman', now(), 'Superman', null),
+(18, 14, 'Model', '模型', 'control', 3, false, '/ml/model/index', '/ml/model', null, true, false, 'Superman', now(), 'Superman', null),
+(19, 14, 'Workflow', '工作流', 'control', 4, false, '/ml/workflow/index', '/ml/workflow', null, true, false, 'Superman', now(), 'Superman', null),
+(20, 14, 'Vis', '可视化', 'control', 5, false, '/ml/vis/index', '/ml/vis', null, true, false, 'Superman', now(), 'Superman', null),
 
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (4, 3, 'Report', '报表', 'ant-design:appstore-add-outlined', 0, false, '/dataviz/report/index', '/dataviz/report', null, true, false, 'Superman', null, 'Superman', null);
+(21, null, 'AI App', '人工智能', 'ant-design:coffee-outlined', 5, false, 'BlankLayout', '/ai', null, true, false, 'Superman', now(), 'Superman', null),
+(22, 21, 'Market', '模型市场', 'control', 0, false, '/ai/market/index', '/ai/market', null, true, false, 'Superman', now(), 'Superman', null),
+(23, 21, 'Image', '图像处理', 'control', 1, false, '/ai/image/index', '/ai/image', null, true, false, 'Superman', now(), 'Superman', null),
+(24, 21, 'Video', '视频分析', 'control', 2, false, '/ai/video/index', '/ai/video', null, true, false, 'Superman', now(), 'Superman', null),
+(25, 21, 'Audio', '语音处理', 'control', 3, false, '/ai/audio/index', '/ai/audio', null, true, false, 'Superman', now(), 'Superman', null),
+(26, 21, 'Text', '文本分心', 'control', 4, false, '/ai/text/index', '/ai/text', null, true, false, 'Superman', now(), 'Superman', null),
+(27, 21, 'DM', '数据挖掘', 'control', 5, false, '/ai/dm/index', '/ai/dm', null, true, false, 'Superman', now(), 'Superman', null),
 
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (5, 3, 'View', '视图', 'ant-design:line-chart-outlined', 1, false, '/dataviz/dataview/index', '/dataviz/dataview', null, true, false, 'Superman', null, 'Superman', null);
+(28, null, 'Admin', '控制面板', 'ant-design:setting-outlined', 6, false, 'BlankLayout', '/admin', null, true, false, 'Superman', now(), 'Superman', null),
+(29, 28, 'User', '用户管理', 'control', 0, false, '/admin/user/index', '/admin/user', null, true, false, 'Superman', now(), 'Superman', null),
+(30, 28, 'Role', '角色管理', 'control', 1, false, '/admin/role/index', '/admin/role', null, true, false, 'Superman', now(), 'Superman', null),
+(31, 28, 'Menu', '菜单管理', 'control', 2, false, '/admin/menu/index', '/admin/menu', null, true, false, 'Superman', now(), 'Superman', null),
+(32, 28, 'Parameter', '参数管理', 'control', 3, false, '/admin/param/index', '/admin/config', null, true, false, 'Superman', now(), 'Superman', null),
+(33, 28, 'Organization', '组织管理', 'control', 0, false, '/admin/org/index', '/admin/org', null, true, false, 'Superman', now(), 'Superman', null),
+(34, 28, 'Scheduler', '调度计划', 'control', 4, false, '/admin/scheduler/index', '/admin/scheduler', null, true, false, 'Superman', now(), 'Superman', null),
+(35, 28, 'My Center', '个人中心', 'control', 4, false, '/admin/mycenter/index', '/admin/mycenter', null, true, false, 'Superman', now(), 'Superman', null),
 
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (6, 3, 'Dataset', '数据集', 'ant-design:database-outlined', 2, false, '/dataviz/dataset/index', '/dataviz/dataset', null, true, false, 'Superman', null, 'Superman', null);
+(36, null, 'Monitor', '系统监控', 'ant-design:fund-projection-screen-outlined', 7, false, 'BlankLayout', '/monitor', null, true, false, 'Superman', now(), 'Superman', null),
+(37, 36, 'Druid', 'Druid', 'control', 0, false, '/monitor/druid/index', '/monitor/druid', null, true, false, 'Superman', now(), 'Superman', null),
+(38, 36, 'Knife4j', 'Knife4j', 'control', 1, false, '/monitor/knife4j/index', '/monitor/knife4j', null, true, false, 'Superman', now(), 'Superman', null),
+(39, 36, 'Gateway', '网关代理', 'control', 2, false, '/monitor/gateway/index', '/monitor/gateway', null, true, false, 'Superman', now(), 'Superman', null),
+(40, 36, 'Network', '网络', 'control', 3, false, '/monitor/network/index', '/monitor/network', null, true, false, 'Superman', now(), 'Superman', null),
 
-
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (7, null, 'Source Mgr', '数据管理', 'ant-design:money-collect-outlined', 3, false, 'BlankLayout', '/datamgr', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (8, 7, 'Source', '数据源', 'ant-design:database-outlined', 3, false, '/datamgr/datasource/index', '/datamgr/datasource', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (9, 7, 'Import', '导入数据', 'control', 0, false, '/datamgr/import/index', '/datamgr/import', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (10, 7, 'Anchor', '采集点', 'control', 1, false, '/datamgr/anchor/index', '/datamgr/anchor', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (11, 7, 'Kafka', 'Kafka', 'control', 2, false, '/datamgr/kafka/index', '/datamgr/kafka', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (12, 7, 'ETL', 'ETL', 'control', 3, false, '/datamgr/etl/index', '/datamgr/etl', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (13, 7, 'Web Magic', 'Web Magic', 'control', 4, false, '/datamgr/webmagic/index', '/datamgr/webmagic', null, true, false, 'Superman', null, 'Superman', null);
-
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (14, null, 'ML Dev', '机器学习', 'ant-design:car-outlined', 4, false, 'BlankLayout', '/ml', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (15, 14, 'Dataset', '数据集', 'ant-design:database-outlined', 2, false, '/ml/dataset/index', '/ml/dataset', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (16, 14, 'EDA', '数据探索', 'control', 3, false, '/ml/eda/index', '/ml/eda', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (17, 14, 'Algorithm', '算法', 'control', 0, false, '/ml/algorithm/index', '/ml/algorithm', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (18, 14, 'Model', '模型', 'control', 1, false, '/ml/model/index', '/ml/model', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (19, 14, 'Workflow', '工作流', 'control', 3, false, '/ml/workflow/index', '/ml/workflow', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (20, 14, 'Vis', '可视化', 'control', 3, false, '/ml/vis/index', '/ml/vis', null, true, false, 'Superman', null, 'Superman', null);
-
-
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (21, null, 'AI App', '人工智能', 'ant-design:coffee-outlined', 5, false, 'BlankLayout', '/ai', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (22, 21, 'Market', '模型市场', 'control', 0, false, '/ai/market/index', '/ai/market', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (23, 21, 'Image', '图像处理', 'control', 1, false, '/ai/image/index', '/ai/image', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (24, 21, 'Video', '视频分析', 'control', 2, false, '/ai/video/index', '/ai/video', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (25, 21, 'Audio', '语音处理', 'control', 3, false, '/ai/audio/index', '/ai/audio', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (26, 21, 'Text', '文本分心', 'control', 4, false, '/ai/text/index', '/ai/text', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (27, 21, 'DM', '数据挖掘', 'control', 5, false, '/ai/dm/index', '/ai/dm', null, true, false, 'Superman', null, 'Superman', null);
-
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (28, null, 'Admin', '控制面板', 'ant-design:setting-outlined', 6, false, 'BlankLayout', '/admin', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (29, 28, 'User', '用户管理', 'control', 0, false, '/admin/user/index', '/admin/user', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (30, 28, 'Role', '角色管理', 'control', 1, false, '/admin/role/index', '/admin/role', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (31, 28, 'Menu', '菜单管理', 'control', 2, false, '/admin/menu/index', '/admin/menu', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (32, 28, 'Parameter', '参数管理', 'control', 3, false, '/admin/param/index', '/admin/config', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (33, 28, 'Organization', '组织管理', 'control', 0, false, '/admin/org/index', '/admin/org', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (34, 28, 'Scheduler', '调度计划', 'control', 4, false, '/admin/scheduler/index', '/admin/scheduler', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (35, 28, 'My Center', '个人中心', 'control', 4, false, '/admin/mycenter/index', '/admin/mycenter', null, true, false, 'Superman', null, 'Superman', null);
-
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (36, null, 'Monitor', '系统监控', 'ant-design:fund-projection-screen-outlined', 7, false, 'BlankLayout', '/monitor', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (37, 36, 'Druid', 'Druid', 'control', 0, false, '/monitor/druid/index', '/monitor/druid', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (38, 36, 'Knife4j', 'Knife4j', 'control', 1, false, '/monitor/knife4j/index', '/monitor/knife4j', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (39, 36, 'Gateway', '网关代理', 'control', 2, false, '/monitor/gateway/index', '/monitor/gateway', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (40, 36, 'Network', '网络', 'control', 3, false, '/monitor/network/index', '/monitor/network', null, true, false, 'Superman', null, 'Superman', null);
-
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (41, null, 'System', '系统管理', 'ant-design:apple-outlined', 8, false, 'BlankLayout', '/system', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (42, 41, 'Log', '日志管理', 'control', 0, false, 'BlankLayout', '/system/log', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (43, 41, 'Access', '登录日志', 'control', 0, false, '/system/log/access/index', '/system/log/access', null, true, false, 'Superman', null, 'Superman', null);
-
-INSERT INTO sys_menu (id, pid, name, title, icon, pos, subreport, component, path, redirect, active, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (44, 41, 'Action', '操作日志', 'control', 1, false, '/system/log/action/index', '/system/log/action', null, true, false, 'Superman', null, 'Superman', null);
+(41, null, 'System', '系统管理', 'ant-design:apple-outlined', 8, false, 'BlankLayout', '/system', null, true, false, 'Superman', now(), 'Superman', null),
+(42, 41, 'Log', '日志管理', 'control', 0, false, 'BlankLayout', '/system/log', null, true, false, 'Superman', now(), 'Superman', null),
+(43, 41, 'Access', '登录日志', 'control', 0, false, '/system/log/access/index', '/system/log/access', null, true, false, 'Superman', now(), 'Superman', null),
+(44, 41, 'Action', '操作日志', 'control', 1, false, '/system/log/action/index', '/system/log/action', null, true, false, 'Superman', now(), 'Superman', null);
 
 
 
@@ -380,64 +272,201 @@ CREATE TABLE sys_role_menu_permit
 
 
 INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (1, 1, 1, 1, true, false, false, false, false, false);
+VALUES (1, 1, 1, 1, true, true, true, true, false, false),
+(2, 1, 2, 1, true, true, true, true, false, false),
+(3, 1, 3, 1, true, true, true, true, false, false),
+(4, 1, 7, 1, true, true, true, true, false, false),
+(5, 1, 14, 1, true, true, true, true, false, false),
+(6, 1, 21, 1, true, true, true, true, false, false),
 
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (2, 2, 1, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (3, 2, 2, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (4, 2, 3, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (5, 2, 7, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (6, 2, 14, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (7, 2, 19, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (8, 2, 26, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (9, 2, 34, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (10, 2, 39, 64, true, true, true, true, true, true);
+(null, 2, 1, 64, true, true, true, true, true, true),
+(null, 2, 2, 64, true, true, true, true, true, true),
+(null, 2, 3, 64, true, true, true, true, true, true),
+(null, 2, 7, 64, true, true, true, true, true, true),
+(null, 2, 14, 64, true, true, true, true, true, true),
+(null, 2, 21, 64, true, true, true, true, true, true),
+(null, 2, 28, 64, true, true, true, true, true, true),
+(null, 2, 36, 64, true, true, true, true, true, true),
+(null, 2, 41, 64, true, true, true, true, true, true),
 
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (11, 3, 1, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (12, 3, 2, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (13, 3, 3, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (14, 3, 7, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (15, 3, 14, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (16, 3, 19, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (17, 3, 26, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (18, 3, 34, 64, true, true, true, true, true, true);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (19, 3, 39, 64, true, true, true, true, true, true);
+(null, 3, 1, 64, true, true, true, true, true, true),
+(null, 3, 2, 64, true, true, true, true, true, true),
+(null, 3, 3, 64, true, true, true, true, true, true),
+(null, 3, 7, 64, true, true, true, true, true, true),
+(null, 3, 14, 64, true, true, true, true, true, true),
+(null, 3, 21, 64, true, true, true, true, true, true),
+(null, 3, 28, 64, true, true, true, true, true, true),
+(null, 3, 36, 64, true, true, true, true, true, true),
+(null, 3, 41, 64, true, true, true, true, true, true),
 
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (20, 4, 1, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (21, 4, 2, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (22, 4, 3, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (23, 4, 7, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (24, 4, 14, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (25, 4, 19, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (26, 4, 26, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (27, 4, 34, 8, true, true, true, false, false, false);
-INSERT INTO sys_role_menu_permit (id, role_id, menu_id, permit, view, edit, publish, subscribe, import, export)
-VALUES (28, 4, 39, 8, true, true, true, false, false, false);
+(null, 4, 1, 8, true, true, true, false, false, false),
+(null, 4, 2, 8, true, true, true, false, false, false),
+(null, 4, 3, 8, true, true, true, false, false, false),
+(null, 4, 7, 8, true, true, true, false, false, false),
+(null, 4, 14, 8, true, true, true, false, false, false),
+(null, 4, 21, 8, true, true, true, false, false, false),
+(null, 4, 28, 8, true, true, true, false, false, false),
+(null, 4, 36, 8, true, true, true, false, false, false),
+(null, 4, 41, 8, true, true, true, false, false, false);
+
+
+
+# ----------------------------
+# Table: sys_msg
+# someone send msg to another user or a broadcast to a org
+# ----------------------------
+DROP TABLE IF EXISTS sys_msg;
+CREATE TABLE sys_msg
+(
+    id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    type           varchar(16)  NOT NULL DEFAULT 'msg' comment 'notice or msg',
+	category	   varchar(16)  NOT NULL DEFAULT 'ml' comment 'ai, bi, ml, chat',
+	code 		   varchar(64)  DEFAULT NULL comment 'unique code',
+    from_id        int          DEFAULT NULL comment 'user id',
+    to_id          int          NOT NULL comment 'user id when msg, org id when notice',
+    content        text         NOT NULL,
+    tid            int          DEFAULT NULL comment 'ml_algo.id = 15',
+	read_users     text         DEFAULT NULL comment '[id]'
+) ENGINE = InnoDB;
+
+
+# ----------------------------
+# Table: log_access
+# 
+# ----------------------------
+DROP TABLE IF EXISTS log_access;
+CREATE TABLE log_access
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ts_utc         timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    username       varchar(64)   NOT NULL comment 'username',
+	user_id        int           DEFAULT NULL,
+	login          boolean       NOT NULL DEFAULT true,
+    ip             varchar(64)   DEFAULT NULL comment 'IPV4 or IPV6',
+    os             varchar(64)   DEFAULT NULL comment 'Window 11, MacOS',
+	browser        varchar(16)   DEFAULT NULL comment 'Browser name',
+	lang           varchar(16)   DEFAULT NULL comment 'browser language',
+	time_zone      varchar(64)   DEFAULT NULL comment 'Time zone',
+	location       varchar(64)   DEFAULT NULL comment 'Location based on ip',
+    result         varchar(255)  DEFAULT 'ok' comment 'ok: success, others: failure info',
+	CONSTRAINT fk_access_user    foreign key(user_id)    REFERENCES sys_user(id)
+) ENGINE = InnoDB;
+
+# ----------------------------
+# Table: log_action
+# ----------------------------
+DROP TABLE IF EXISTS log_action;
+CREATE TABLE log_action
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ts_utc         timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	username       varchar(64)   NOT NULL comment 'username',
+    user_id        int           NOT NULL,
+	type           varchar(64)   DEFAULT NULL comment 'view, add, update, delete, active, import, export, auth, other',
+    url            varchar(64)   DEFAULT NULL comment 'http://x/y',
+	module         varchar(64)   DEFAULT NULL comment 'class name',
+    method         varchar(64)   DEFAULT NULL,
+	tid            int           DEFAULT NULL comment 'target id, like user id, soruce id',
+	param          text          DEFAULT NULL comment 'json, like {in:{}, out:{}}',
+    result         varchar(255)  DEFAULT 'ok' comment 'ok: success, others: failure info',
+    CONSTRAINT fk_act_user       foreign key(user_id)    REFERENCES sys_user(id)
+) ENGINE = InnoDB;
+
+
+
+# ----------------------------
+# not use
+# Table: gis_ip
+# ip to country
+# ----------------------------
+DROP TABLE IF EXISTS gis_ip;
+CREATE TABLE gis_ip
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	ip_from        int unsigned  NOT NULL,
+	ip_to          int unsigned  NOT NULL,
+	code           varchar(8)    comment 'country code',  
+	country        varchar(64)   comment 'country name'
+) ENGINE = InnoDB;
+
+
+
+# ----------------------------
+# Table: gis_point
+# longitude and latitude of a point on map
+# ----------------------------
+DROP TABLE IF EXISTS gis_point;
+CREATE TABLE gis_point
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	pid            int           NULL,
+	name           varchar(64)   NOT NULL,
+	abbr           varchar(32)   DEFAULT NULL comment 'abbreviation',
+    type           varchar(64)   NULL comment 'village, city, county, state, province, area, country or region',
+    code           int           DEFAULT NULL comment 'house number, street number, zip code or post code',	
+    lat            float         NOT NULL comment 'latitude',
+	lng            float         NOT NULL comment 'longitude' 
+) ENGINE = InnoDB;
+
+
+# ----------------------------
+# Table: gis_area
+# a area on map which is described by multiple points
+# ----------------------------
+DROP TABLE IF EXISTS gis_area;
+CREATE TABLE gis_area
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	pid            int           NULL,
+	name           varchar(64)   NOT NULL,
+	loc            geometry      NOT NULL comment 'GeoJSON'
+) ENGINE = InnoDB;
+
+
+
+# ----------------------------
+# Table: gis layer
+# map base layers and over layers
+# ----------------------------
+DROP TABLE IF EXISTS gis_layer;
+CREATE TABLE gis_layer
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name           varchar(64)   NOT NULL,
+	type           varchar(64)   NOT NULL comment 'tileLayer, tileLayer.wms, wmts',
+	`group`    	   varchar(64)   NOT NULL comment 'baselayer, overlayer',
+	icon           varchar(255)  NULL,
+	args		   varchar(255)  NOT NULL comment 'server link',
+	options        text          NULL comment 'json'
+) ENGINE = InnoDB;
+
+
+INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
+VALUES (1, 'OSM.Mapnik', 'tileLayer', 'baselayer', 'http://b.tile.osm.org/1/0/0.png', 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', '{ attribution: "" }'),
+(2, 'OPNVKarte', 'tileLayer', 'baselayer', 'https://tileserver.memomaps.de/tilegen/5/8/11.png', 'https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png', '{attribution:\'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}"),
+(3, 'OpenTopoMap', 'tileLayer', 'baselayer', 'https://tile.opentopomap.org/3/7/2.png', 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', '{attribution:\'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)\'}'),
+(4, 'Stadia.Dark', 'tileLayer', 'baselayer', 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/6/14/25.png', 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', '{ attribution:\'&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors\'}'),
+(5, 'Stadia.Outdoors', 'tileLayer', 'baselayer', 'https://tiles.stadiamaps.com/tiles/outdoors/8/77/94.png', 'https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', '{ attribution:\'&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors\'}'),
+(6, 'OpenCycleMap', 'tileLayer', 'baselayer', 'https://tiles.stadiamaps.com/tiles/outdoors/1/1/0.png', 'https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey={apikey}', '{ attribution:\'&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(7, 'CyclOSM', 'tileLayer', 'baselayer', 'https://c.tile.openstreetmap.fr/hot/6/17/24.png', 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', '{ attribution:\'<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(8, 'Stamen.Toner', 'tileLayer', 'baselayer', 'https://stamen-tiles-b.a.ssl.fastly.net/toner/1/1/0.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', '{ subdomains: "abcd", ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(9, 'Stamen.Watercolor', 'tileLayer', 'baselayer', 'https://stamen-tiles-a.a.ssl.fastly.net/watercolor/1/0/0.jpg', 'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(10, 'Stamen.Terrain', 'tileLayer', 'baselayer', 'https://stamen-tiles-d.a.ssl.fastly.net/terrain-background/2/2/1.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(11, 'Stamen.TonerBackground', 'tileLayer', 'baselayer', 'https://stamen-tiles-d.a.ssl.fastly.net/toner-background/2/2/1.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(12, 'Stamen.TerrainLabels', 'tileLayer', 'baselayer', 'https://stamen-tiles-b.a.ssl.fastly.net/terrain-labels/4/3/6.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-labels/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(13, 'Esri.WorldStreetMap', 'tileLayer', 'baselayer', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/4/6/3', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', '{ attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012" }'),
+(14, 'Esri.WorldImagery', 'tileLayer', 'baselayer', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/94/77', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', '{ attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012" }'),
+(15, 'Esri.WorldGrayCanvas', 'tileLayer', 'baselayer', 'https://c.basemaps.cartocdn.com/light_all/8/74/96.png', 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', '{ attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ" }'),
+(16, 'CartoDB.DarkMatter', 'tileLayer', 'baselayer', 'https://d.basemaps.cartocdn.com/dark_all/5/8/11.png', 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', '{ attribution:\'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>\' }'),
+(17, 'WMS-Layer-1', 'tileLayer', 'baselayer', 'https://ows.mundialis.de/services/service?&service=WMS&request=GetMap&layers=TOPO-WMS%2COSM-Overlay-WMS&styles=&format=image%2Fjpeg&transparent=false&version=1.1.1&width=256&height=256&srs=EPSG%3A3857', 'http://ows.mundialis.de/services/service?&service=WMS&request=GetMap&layers=TOPO-WMS%2COSM-Overlay-WMS', '{ attribution: "" }'),
+
+(31, 'OpenRailway', 'tileLayer', 'overlayer', 'https://a.tiles.openrailwaymap.org/standard/4/10/5.png', 'https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', '{ attribution:\'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://www.OpenRailwayMap.org">OpenRailwayMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)\'}'),
+(32, 'Stamen.TonerHybrid', 'tileLayer', 'overlayer', 'https://stamen-tiles-a.a.ssl.fastly.net/toner-hybrid/4/3/5.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(33, 'Stamen.TonerLines', 'tileLayer', 'overlayer', 'https://stamen-tiles-a.a.ssl.fastly.net/toner-lines/4/3/5.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(34, 'Stamen.TonerLabels', 'tileLayer', 'overlayer', 'https://stamen-tiles-b.a.ssl.fastly.net/toner-labels/4/3/6.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}'),
+(35, 'Stamen.TopOSMFeatures', 'tileLayer', 'overlayer', 'https://stamen-tiles-c.a.ssl.fastly.net/toposm-features/6/16/25.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toposm-features/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
+
 
 
 
@@ -469,7 +498,7 @@ CREATE TABLE data_source
 
 
 INSERT INTO data_source (id, name, `group`, `desc`, type, url, params, username, password, version, `public`, org_id, locked_table, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'AWS Maria', 'AWS', 'test of aws MariaDB', 'MySQL', 'datapie.c34q1kuwepfw.us-east-1.rds.amazonaws.com:3306/foodmart2', '[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]', 'admin', 'cm9vdDEyMw==', '10.6.3', true, 2, null, 'Admin', null, 'Admin', null);
+VALUES (1, 'AWS Mysql', 'AWS', 'test db', 'MySQL', 'datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/foodmart2', '[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]', 'admin', 'cm9vdDEyMw==', '10.6.3', true, 2, null, 'Admin', now(), 'Admin', null);
 
 
 # ----------------------------
@@ -501,9 +530,6 @@ CREATE TABLE data_import
     updated_at     timestamp     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT fk_import_org     foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
-
-INSERT INTO data_import (id, files, `type`, attrs, fields, config, source_id, table_name, overwrite, `rows`, records, ftp_path, status, detail, `public`, org_id, created_by, created_at, updated_by, updated_at)
-VALUES (1, '["abc.csv"]', 'CSV', '{"header":true}', '[{"name":"cat","type":"string"}]', '{"ts":"UTC"}', 1, 'abc', false, null, null, '20230222173548', 'success', null, false, 1, 'Superman', null, 'Superman', null);
 
 
 
@@ -622,278 +648,6 @@ INSERT INTO viz_report (id, name, `desc`, `group`, type, pages, org_id, `public`
 VALUES (1, 'Salary Distribution', 'employee salary', 'first', 'single', '[{id: 1, name:"aaa", layout:"2x2", dataviews:[1,2,3,4], filter:{label: "FULL_NAME", value: "Gavin"}}]', 1, true, true, null, 'Superman', null, null, null);
 
 
-
-# ----------------------------
-# Table: sys_notice
-# someone send notification to a org
-# ----------------------------
-DROP TABLE IF EXISTS sys_notice;
-CREATE TABLE sys_notice
-(
-    id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    type           varchar(16)  NOT NULL DEFAULT 'notice' comment 'notice, inquiry, ad, warning',
-    from_id        int          DEFAULT NULL comment 'user id',
-	to_id          int          NOT NULL comment 'org id',
-    content        text         NOT NULL,
-    tid            int          DEFAULT NULL comment 'ml_algo.id = 15',
-	`read`         int          DEFAULT 0 comment 'count read user'
-) ENGINE = InnoDB;
-
-# ----------------------------
-# Table: sys_msg
-# someone send msg to another user or a broadcast to a org
-# ----------------------------
-DROP TABLE IF EXISTS sys_msg;
-CREATE TABLE sys_msg
-(
-    id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    type           varchar(16)  NOT NULL DEFAULT 'msg' comment 'notice or msg',
-	category	   varchar(16)  NOT NULL DEFAULT 'ml' comment 'ai, bi, ml, chat',
-	code 		   varchar(64)  DEFAULT NULL comment 'unique code',
-    from_id        int          DEFAULT NULL comment 'user id',
-    to_id          int          NOT NULL comment 'user id when msg, org id when notice',
-    content        text         NOT NULL,
-    tid            int          DEFAULT NULL comment 'ml_algo.id = 15',
-	read_users     text         DEFAULT '[]' comment 'user ids'
-) ENGINE = InnoDB;
-
-
-# ----------------------------
-# Table: log_access
-# 
-# ----------------------------
-DROP TABLE IF EXISTS log_access;
-CREATE TABLE log_access
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts_utc         timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    username       varchar(64)   NOT NULL comment 'username',
-	user_id        int           DEFAULT NULL,
-	login          boolean       NOT NULL DEFAULT true,
-    ip             varchar(64)   DEFAULT NULL comment 'IPV4 or IPV6',
-    os             varchar(64)   DEFAULT NULL comment 'Window 11, MacOS',
-	browser        varchar(16)   DEFAULT NULL comment 'Browser name',
-	lang           varchar(16)   DEFAULT NULL comment 'browser language',
-	time_zone      varchar(64)   DEFAULT NULL comment 'Time zone',
-	location       varchar(64)   DEFAULT NULL comment 'Location based on ip',
-    result         varchar(255)  DEFAULT 'ok' comment 'ok: success, others: failure info',
-	CONSTRAINT fk_access_user    foreign key(user_id)    REFERENCES sys_user(id)
-) ENGINE = InnoDB;
-
-# ----------------------------
-# Table: log_action
-# ----------------------------
-DROP TABLE IF EXISTS log_action;
-CREATE TABLE log_action
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts_utc         timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	username       varchar(64)   NOT NULL comment 'username',
-    user_id        int           NOT NULL,
-	type           varchar(64)   DEFAULT NULL comment 'view, add, update, delete, active, import, export, auth, other',
-    url            varchar(64)   DEFAULT NULL comment 'http://x/y',
-	module         varchar(64)   DEFAULT NULL comment 'class name',
-    method         varchar(64)   DEFAULT NULL,
-	tid            int           DEFAULT NULL comment 'target id, like user id, soruce id',
-	param          text          DEFAULT NULL comment 'json, like {in:{}, out:{}}',
-    result         varchar(255)  DEFAULT 'ok' comment 'ok: success, others: failure info',
-    CONSTRAINT fk_act_user       foreign key(user_id)    REFERENCES sys_user(id)
-) ENGINE = InnoDB;
-
-# ----------------------------
-# Table: log_perf
-# ----------------------------
-DROP TABLE IF EXISTS log_perf;
-CREATE TABLE log_perf
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts_utc         timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	username       varchar(64)   NOT NULL comment 'username',
-    user_id        int           NOT NULL,
-    url            varchar(64)   DEFAULT NULL comment 'http://x/y',
-	module         varchar(64)   DEFAULT NULL comment 'class name',
-    method         varchar(64)   DEFAULT NULL,
-	tid            int           DEFAULT NULL comment 'target id, like user id, soruce id',
-	param          text          DEFAULT NULL comment 'json, like {in:{}, out:{}}',
-    duration       int           comment 'query performance',
-    CONSTRAINT fk_perf_user      foreign key(user_id)    REFERENCES sys_user(id)
-) ENGINE = InnoDB;
-
-
-# ----------------------------
-# Table: log_system
-# ----------------------------
-DROP TABLE IF EXISTS log_system;
-CREATE TABLE log_system
-(
-    id             int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    ts             timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    severity       varchar(8)   NOT NULL comment 'Critical, Error, Warnning, Info, Debug',
-    module         varchar(64)  NOT NULL comment 'internal module',
-	content        text         NULL,
-	`repeat`        int          DEFAULT 1 comment 'times of repetition'
-) ENGINE = InnoDB;
-
-
-# ----------------------------
-# not use
-# Table: gis_ip
-# ip to country
-# ----------------------------
-DROP TABLE IF EXISTS gis_ip;
-CREATE TABLE gis_ip
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	ip_from        int unsigned  NOT NULL,
-	ip_to          int unsigned  NOT NULL,
-	code           varchar(8)    comment 'country code',  
-	country        varchar(64)   comment 'country name'
-) ENGINE = InnoDB;
-
-
-
-# ----------------------------
-# Table: gis_point
-# longitude and latitude of a point on map
-# ----------------------------
-DROP TABLE IF EXISTS gis_point;
-CREATE TABLE gis_point
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	pid            int           NULL,
-	name           varchar(64)   NOT NULL,
-	abbr           varchar(32)   DEFAULT NULL comment 'abbreviation',
-    type           varchar(64)   NULL comment 'village, city, county, state, province, area, country or region',
-    code           int           DEFAULT NULL comment 'house number, street number, zip code or post code',	
-    lat            float         NOT NULL comment 'latitude',
-	lng            float         NOT NULL comment 'longitude' 
-) ENGINE = InnoDB;
-
-
-# ----------------------------
-# Table: gis_area
-# a area on map which is described by multiple points
-# ----------------------------
-DROP TABLE IF EXISTS gis_area;
-CREATE TABLE gis_area
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	pid            int           NULL,
-	name           varchar(64)   NOT NULL,
-	loc            geometry      NOT NULL comment 'GeoJSON'
-) ENGINE = InnoDB;
-
-
-
-# ----------------------------
-# Table: gis_entry
-# a area on map which is described by multiple points
-# ----------------------------
-DROP TABLE IF EXISTS gis_entry;
-CREATE TABLE gis_entry
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	name           varchar(64)   NOT NULL,
-	type           varchar(16)   NOT NULL comment 'type',
-	`group`        varchar(64)   DEFAULT 'UnGrouped',
-	attrs          varchar(128)  DEFAULT NULL comment 'array like [market, hot]',   
-    points         text          DEFAULT NULL comment 'city or county',   
-    areas          text          DEFAULT NULL comment 'province or state',      
-	visible        boolean       NOT NULL DEFAULT true,
-	created_by  varchar(64)     NOT NULL,
-    created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_by  varchar(64)     DEFAULT NULL,
-    updated_at  timestamp       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE = InnoDB;
-
-# ----------------------------
-# Table: gis layer
-# map base layers and over layers
-# ----------------------------
-DROP TABLE IF EXISTS gis_layer;
-CREATE TABLE gis_layer
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	name           varchar(64)   NOT NULL,
-	type           varchar(64)   NOT NULL comment 'tileLayer, tileLayer.wms, wmts',
-	`group`    	   varchar(64)   NOT NULL comment 'baselayer, overlayer',
-	icon           varchar(255)  NULL,
-	args		   varchar(255)  NOT NULL comment 'server link',
-	options        text          NULL comment 'json'
-) ENGINE = InnoDB;
-
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (1, 'OSM.Mapnik', 'tileLayer', 'baselayer', 'http://b.tile.osm.org/1/0/0.png', 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', '{ attribution: "" }');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (2, 'OPNVKarte', 'tileLayer', 'baselayer', 'https://tileserver.memomaps.de/tilegen/5/8/11.png', 'https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png', '{attribution:\'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}");
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (3, 'OpenTopoMap', 'tileLayer', 'baselayer', 'https://tile.opentopomap.org/3/7/2.png', 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', '{attribution:\'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (4, 'Stadia.Dark', 'tileLayer', 'baselayer', 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/6/14/25.png', 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', '{ attribution:\'&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (5, 'Stadia.Outdoors', 'tileLayer', 'baselayer', 'https://tiles.stadiamaps.com/tiles/outdoors/8/77/94.png', 'https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', '{ attribution:\'&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (6, 'OpenCycleMap', 'tileLayer', 'baselayer', 'https://tiles.stadiamaps.com/tiles/outdoors/1/1/0.png', 'https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey={apikey}', '{ attribution:\'&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (7, 'CyclOSM', 'tileLayer', 'baselayer', 'https://c.tile.openstreetmap.fr/hot/6/17/24.png', 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', '{ attribution:\'<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (8, 'Stamen.Toner', 'tileLayer', 'baselayer', 'https://stamen-tiles-b.a.ssl.fastly.net/toner/1/1/0.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', '{ subdomains: "abcd", ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (9, 'Stamen.Watercolor', 'tileLayer', 'baselayer', 'https://stamen-tiles-a.a.ssl.fastly.net/watercolor/1/0/0.jpg', 'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (10, 'Stamen.Terrain', 'tileLayer', 'baselayer', 'https://stamen-tiles-d.a.ssl.fastly.net/terrain-background/2/2/1.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (11, 'Stamen.TonerBackground', 'tileLayer', 'baselayer', 'https://stamen-tiles-d.a.ssl.fastly.net/toner-background/2/2/1.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (12, 'Stamen.TerrainLabels', 'tileLayer', 'baselayer', 'https://stamen-tiles-b.a.ssl.fastly.net/terrain-labels/4/3/6.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-labels/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "jpg", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (13, 'Esri.WorldStreetMap', 'tileLayer', 'baselayer', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/4/6/3', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', '{ attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012" }');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (14, 'Esri.WorldImagery', 'tileLayer', 'baselayer', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/94/77', 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', '{ attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012" }');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (15, 'Esri.WorldGrayCanvas', 'tileLayer', 'baselayer', 'https://c.basemaps.cartocdn.com/light_all/8/74/96.png', 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', '{ attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ" }');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (16, 'CartoDB.DarkMatter', 'tileLayer', 'baselayer', 'https://d.basemaps.cartocdn.com/dark_all/5/8/11.png', 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', '{ attribution:\'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>\' }');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (17, 'WMS-Layer-1', 'tileLayer', 'baselayer', 'https://ows.mundialis.de/services/service?&service=WMS&request=GetMap&layers=TOPO-WMS%2COSM-Overlay-WMS&styles=&format=image%2Fjpeg&transparent=false&version=1.1.1&width=256&height=256&srs=EPSG%3A3857', 'http://ows.mundialis.de/services/service?&service=WMS&request=GetMap&layers=TOPO-WMS%2COSM-Overlay-WMS', '{ attribution: "" }');
-
-
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (31, 'OpenRailway', 'tileLayer', 'overlayer', 'https://a.tiles.openrailwaymap.org/standard/4/10/5.png', 'https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', '{ attribution:\'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://www.OpenRailwayMap.org">OpenRailwayMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (32, 'Stamen.TonerHybrid', 'tileLayer', 'overlayer', 'https://stamen-tiles-a.a.ssl.fastly.net/toner-hybrid/4/3/5.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (33, 'Stamen.TonerLines', 'tileLayer', 'overlayer', 'https://stamen-tiles-a.a.ssl.fastly.net/toner-lines/4/3/5.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (34, 'Stamen.TonerLabels', 'tileLayer', 'overlayer', 'https://stamen-tiles-b.a.ssl.fastly.net/toner-labels/4/3/6.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-INSERT INTO gis_layer (id, name, type, `group`, icon, args, options)
-VALUES (35, 'Stamen.TopOSMFeatures', 'tileLayer', 'overlayer', 'https://stamen-tiles-c.a.ssl.fastly.net/toposm-features/6/16/25.png', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toposm-features/{z}/{x}/{y}{r}.{ext}', '{subdomains: "abcd",ext: "png", attribution:\'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors\'}');
-
-
 # ----------------------------
 # Table: dataset
 # ----------------------------
@@ -985,33 +739,6 @@ INSERT INTO ml_algo (id, name, `desc`, `group`, framework, frame_ver, category, 
 VALUES (1, 'svm', 'new svm algorithm', 'first', 'python', '3.10', 'clf', 'svm', 5, 'svm() return data', '{dataset: 1}', '{timeout:5, trials:3, epochs: 2}', 1, true, 'Superman', null, null, null);
 
 
-# ----------------------------
-# Table: ml_experiment
-# ----------------------------
-DROP TABLE IF EXISTS ml_experiment;
-CREATE TABLE ml_experiment
-(
-    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	ml_id          int           NOT NULL,
-	type		   varchar(16)   NOT NULL comment 'algo or workflow',
-	name		   varchar(64)   NOT NULL comment 'runs name without trial NO.',
-	`desc`         varchar(128)  DEFAULT NULL comment 'description',
-	dataset		   text          NOT NULL comment '{id:12, fields:[]}',
-	algo		   text          NOT NULL comment '{name,framework,frameVer,srcCode}',
-	train		   text          NOT NULL comment '{params:[],evals:[]}',
-	trials		   text          DEFAULT NULL comment '[{uuid:123,params:{},evals{}}]',
-	status         int           DEFAULT 0 comment '0:waiting, 1~99:progress, 100:done, 101:canceled, -1:failed',
-	user_id        int			 NOT NULL,
-	org_id         int           NOT NULL,
-    start_at  	   timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	end_at         timestamp     DEFAULT NULL,
-	CONSTRAINT fk_exper_user      foreign key(user_id)    REFERENCES sys_user(id),
-	CONSTRAINT fk_exper_org       foreign key(org_id)     REFERENCES sys_org(id)
-) ENGINE = InnoDB;
-
-INSERT INTO ml_experiment (id, name, `desc`, algo_id, dataset, algo, train, trials, status, user_id, org_id, start_at, end_at)
-VALUES (1, 17, 50, '[{id:123, params: {a:1, b:2}, eval:{loss:0.2}}]', 2, 0, 3, 1, null);
-
 
 # ----------------------------
 # Table: ml_workflow
@@ -1040,26 +767,36 @@ CREATE TABLE ml_workflow
 INSERT INTO ml_workflow (id, pid, name, `desc`, `group`, config, workflow, canvas, flow_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
 VALUES (1, null, 'Svm train', 'New svm train', 'first', '{timeout: 10}', '{nodes:[{id:"node1", shape:"rect", width: 20, height: 10}], edges:[]}', '{gbColor:"#123456"}', '2.0', '0', '2024-04-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
 
+
+
 # ----------------------------
-# Table: ml_flow_history
+# Table: ml_experiment
 # ----------------------------
-DROP TABLE IF EXISTS ml_flow_history;
-CREATE TABLE ml_flow_history
+DROP TABLE IF EXISTS ml_experiment;
+CREATE TABLE ml_experiment
 (
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    flow_id        int           NOT NULL,
-	config         text          DEFAULT NULL comment 'ML training config', 
-	workflow       text          DEFAULT NULL comment 'flow config with json', 
-    x6_ver         varchar(8)    DEFAULT NULL comment 'antvX6 version',
-    duration       int           DEFAULT NULL comment 'unit minute',
-	status         int           DEFAULT 5 comment '0:succ, 1:failure, 3:interruption, 4:timeout, 5:exception',
-    result         text          DEFAULT NULL comment 'json result, {acu: 0.95}',
+	ml_id          int           NOT NULL,
+	type		   varchar(16)   NOT NULL comment 'algo or workflow',
+	name		   varchar(64)   NOT NULL comment 'runs name without trial NO.',
+	`desc`         varchar(128)  DEFAULT NULL comment 'description',
+	dataset		   text          NOT NULL comment '{id:12, fields:[]}',
+	algo		   text          NOT NULL comment '{name,framework,frameVer,srcCode}',
+	train		   text          NOT NULL comment '{params:[],evals:[]}',
+	trials		   text          DEFAULT NULL comment '[{uuid:123,params:{},evals{}}]',
+	status         int           DEFAULT 0 comment '0:waiting, 1~99:progress, 100:done, 101:canceled, -1:failed',
+	user_id        int			 NOT NULL,
 	org_id         int           NOT NULL,
-    created_by  varchar(64)      NOT NULL,
-    created_at  timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT fk_flow_h_flow       foreign key(flow_id)     REFERENCES ml_flow(id),
-	CONSTRAINT fk_flow_h_org       foreign key(org_id)     REFERENCES sys_org(id)
+    start_at  	   timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	end_at         timestamp     DEFAULT NULL,
+	CONSTRAINT fk_exper_user      foreign key(user_id)    REFERENCES sys_user(id),
+	CONSTRAINT fk_exper_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
+
+INSERT INTO ml_experiment (id, name, `desc`, algo_id, dataset, algo, train, trials, status, user_id, org_id, start_at, end_at)
+VALUES (1, 17, 50, '[{id:123, params: {a:1, b:2}, eval:{loss:0.2}}]', 2, 0, 3, 1, null);
+
+
 
 
 # ----------------------------

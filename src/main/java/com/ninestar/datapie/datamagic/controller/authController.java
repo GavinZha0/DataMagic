@@ -107,7 +107,7 @@ public class authController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
         Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
-        List<SysMenuEntity> activeMenus = menuRepository.findByActiveAndDeleted(true, false);
+        List<SysMenuEntity> activeMenus = menuRepository.findByOrgIdActiveAndDeleted(tokenOrgId, true, false);
         List<SysMenuEntity> treeMenus = TreeUtils.buildTree(activeMenus, "id", "pid", "children");
         List<Map> menuPermit = rolePermitRepository.findPermitByUserId(tokenUserId);
         filterPermitMenus(treeMenus, menuPermit);

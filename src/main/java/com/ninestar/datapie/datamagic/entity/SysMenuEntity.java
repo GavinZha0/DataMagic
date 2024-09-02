@@ -64,6 +64,10 @@ public class SysMenuEntity {
     private Integer pos;
 
     @Basic
+    @Column(name = "org_id", nullable = true)
+    private Integer orgId;
+
+    @Basic
     @Column(name = "active", nullable = false)
     private Boolean active;
 

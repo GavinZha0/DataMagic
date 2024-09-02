@@ -547,7 +547,7 @@ public class VizViewController {
             distinctGroups = dataviewRepository.findDistinctGroupByOrg(tokenOrgId, tokenUsername);
         }
 
-        if(distinctGroups!=null && distinctGroups.get(0)==null){
+        if(distinctGroups!=null && distinctGroups.size() > 0 && distinctGroups.get(0)==null){
             // show empty as a group ""
             distinctGroups.set(0, "");
         }

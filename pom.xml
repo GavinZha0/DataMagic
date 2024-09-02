@@ -32,6 +32,7 @@
 		<dl4j.version>1.0.0-beta7</dl4j.version>
 		<ray.version>2.23.0</ray.version>
 		<redis.version>3.3.2</redis.version>
+		<mysql.version>8.4.0</mysql.version>
 
 		<lib-path>lib</lib-path>
 		<jar-path>jar</jar-path>
@@ -142,9 +143,9 @@
 			<version>1.7</version>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.32</version>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<version>${mysql.version}</version>
 		</dependency>
 		<!-- knife4j, swagger wrap for doc and restful api debugging-->
 		<dependency>

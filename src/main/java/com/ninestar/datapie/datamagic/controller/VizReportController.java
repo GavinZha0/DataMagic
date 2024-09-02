@@ -143,7 +143,7 @@ public class VizReportController {
         for(VizReportEntity entity: queryEntities){
             if(tokenIsSuperuser || entity.getCreatedBy().equals(tokenUsername) || entity.getPubFlag()) {
                 DatareportListRspType item = new DatareportListRspType();
-                BeanUtil.copyProperties(entity, item, new String[]{"page", "menu"});
+                BeanUtil.copyProperties(entity, item, new String[]{"pages", "menu"});
                 item.id = entity.getId();
                 item.pubFlag = entity.getPubFlag();
                 item.publishPub = entity.getPublishPub();

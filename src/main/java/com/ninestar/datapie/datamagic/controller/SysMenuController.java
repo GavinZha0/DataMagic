@@ -108,14 +108,21 @@ public class SysMenuController {
     //@PreAuthorize("hasAnyRole('Superuser', 'Administrator', 'Admin')")
     @Operation(summary = "getMenuTree")
     public UniformResponse getMenuTree(@RequestBody @Validated JSONObject request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenIsSuperuser || tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
         List<Sort.Order> orders = new ArrayList<Sort.Order>();
         Sort.Order order = new Sort.Order(Sort.Direction.ASC, "pos");
         orders.add(order);
         Sort sortable = Sort.by(orders);
-        //Pageable pageable = PageRequest.of(0, 1000, sortable);
 
         // get all first
-        List<SysMenuEntity> queryEntities = menuRepository.findByActiveAndDeleted(true, false, sortable);
+        List<SysMenuEntity> queryEntities = menuRepository.findByOrgIdActiveAndDeleted(tokenOrgId, true, false);
 
         if(queryEntities==null){
             return UniformResponse.ok();
