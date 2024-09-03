@@ -2,7 +2,6 @@ package com.ninestar.datapie.datamagic.config;
 
 import org.apache.commons.io.IOUtils;
 import org.lionsoul.ip2region.xdb.Searcher;
-
 import java.io.IOException;
 import java.io.InputStream;
 

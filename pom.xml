@@ -33,6 +33,7 @@
 		<ray.version>2.23.0</ray.version>
 		<redis.version>3.3.2</redis.version>
 		<mysql.version>8.4.0</mysql.version>
+		<ip2region.version>2.7.0</ip2region.version>
 
 		<lib-path>lib</lib-path>
 		<jar-path>jar</jar-path>
@@ -109,11 +110,11 @@
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>${druid.version}</version>
         </dependency>
-		<!-- druid, database pool -->
+		<!-- ip2region db -->
 		<dependency>
 			<groupId>org.lionsoul</groupId>
 			<artifactId>ip2region</artifactId>
-			<version>2.6.1</version>
+			<version>${ip2region.version}</version>
 		</dependency>
 		<!-- lombok, replace get/set methods with annotation -->
 		<dependency>

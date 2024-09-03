@@ -186,17 +186,6 @@ public class MlWorkflowController {
 
             // save new entity
             workflowRepository.save(newEntity);
-
-            List<MlWorkflowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
-            for(MlWorkflowEntity item: targetEntities){
-                if(item==newEntity){
-                    // the main entity has same pid and id
-                    item.setPid(item.getId());
-                    workflowRepository.save(item);
-                    break;
-                }
-            }
-
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -256,7 +245,7 @@ public class MlWorkflowController {
         }
 
         String newSubVersion = "0";
-        List<MlWorkflowEntity> relatedEntities = workflowRepository.findByPidAndVersionStartingWith(req.pid, req.version);
+        List<MlWorkflowEntity> relatedEntities = workflowRepository.findByVersionStartingWith(req.version);
         if(relatedEntities!=null){
             // find latest sub version
             Integer latestSubIdx = 0;
@@ -277,7 +266,6 @@ public class MlWorkflowController {
         try {
             MlWorkflowEntity newEntity = new MlWorkflowEntity();
             //don't set ID for creating
-            newEntity.setPid(req.pid);
             newEntity.setName(req.name);
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
@@ -291,16 +279,6 @@ public class MlWorkflowController {
 
             // save new entity
             workflowRepository.save(newEntity);
-
-            List<MlWorkflowEntity> targetEntities = workflowRepository.findByNameAndGroup(req.name, req.group);
-            for(MlWorkflowEntity item: targetEntities){
-                if(item==newEntity){
-                    // the main entity has same pid and id
-                    item.setPid(item.getId());
-                    workflowRepository.save(item);
-                    break;
-                }
-            }
 
             return UniformResponse.ok();
         }

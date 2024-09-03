@@ -9,7 +9,7 @@ import java.util.List;
 public interface MlWorkflowRepository extends JpaRepository<MlWorkflowEntity, Integer>, JpaSpecificationExecutor<MlWorkflowEntity> {
     List<MlWorkflowEntity> findByNameAndGroup(String name, String category);
     List<MlWorkflowEntity> findByNameContainingOrderByIdDesc(String name);
-    List<MlWorkflowEntity> findByPidAndVersionStartingWith(Integer pid, String version);
+    List<MlWorkflowEntity> findByVersionStartingWith(String version);
 
     @Query(value = "select distinct `group` from ml_workflow where 'group' is not null order by `group`",nativeQuery = true)
     List<Object> findDistinctGroup();

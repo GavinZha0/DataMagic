@@ -14,8 +14,6 @@ public class DatasetListRspType {
     public JSONArray variable;
     public String query;
     public JSONArray fields;
-    public JSONObject graph;
-    public String graphVer;
     public Boolean pubFlag;
     public Integer usage;
     public Integer sourceId;

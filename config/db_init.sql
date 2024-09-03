@@ -1,4 +1,8 @@
 CREATE DATABASE IF NOT EXISTS datapie DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS footmart DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS classicmodels DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS datastore DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS mlflow DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
 # ----------------------------
@@ -111,9 +115,10 @@ CREATE TABLE sys_user
 ) ENGINE = InnoDB;
   
 INSERT INTO sys_user (id, name, password, realname, `desc`, email, phone, org_id, avatar, social, active, sms_code, exp_date, deleted, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Superman', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Gavin.Zhao', '', 'jichun.zhao@outlook.com', '18611815495', 2, null, null, true, false, null, false, 'Superman', now(), 'Superman', null),
-       (2, 'Admin', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Mr.Zhao', '', 'jichun.zhao@gmail.com', '7328902296', 2, 'cat.jpg', null, true, false, null, false, 'Superman', now(), 'Superman', null),
-       (3, 'visitor', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Visitor', '', 'visitor@gmail.com', '7321234567', 1, null, null, true, false, null, false, 'Superman', now(), 'Superman', null);
+VALUES (1, 'Superman', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Mr.Gavin', '', 'jichun.zhao@outlook.com', '18611815495', 2, null, null, true, false, null, false, 'Superman', now(), 'Superman', null),
+       (2, 'Admin', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Mr.Zhao', '', 'jichun.zhao@outlook.com', '7328902296', 2, null, null, true, false, null, false, 'Superman', now(), 'Superman', null),
+       (3, 'visitor', '$2a$10$7lSDEQ8pyopeE6MMInDQweXboiU8ZF/6CSN0x2.SCVeSz9z4CU57O', 'Visitor', '', 'visitor@gmail.com', null, 1, null, null, true, false, null, false, 'Superman', now(), 'Superman', null),
+       (4, 'GavinZ', '$2a$10$5UdWUefOL1ZQtXmwmcRwVunQlR278M/VtgxE59VydihhInziQ9Lua', 'Gavin.Zhao', '', 'jichun.zhao@outlook.com', null, 1, null, null, true, false, null, false, 'Superman', now(), 'Superman', null);
 
 # ----------------------------
 # Table: role
@@ -497,8 +502,13 @@ CREATE TABLE data_source
 ) ENGINE = InnoDB;
 
 
-INSERT INTO data_source (id, name, `group`, `desc`, type, url, params, username, password, version, `public`, org_id, locked_table, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'AWS Mysql', 'AWS', 'test db', 'MySQL', 'datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/foodmart2', '[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]', 'admin', 'cm9vdDEyMw==', '10.6.3', true, 2, null, 'Admin', now(), 'Admin', null);
+INSERT INTO data_source (id, name,`desc`,`group`,`type`,url,params,username,password,version,org_id,public,locked_table,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'Footmart','Public source','demo','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/footmart','[{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezone","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',1,1,NULL,'GavinZ','2024-09-02 00:22:42','GavinZ','2024-09-02 18:02:58'),
+	 (2, 'classicmodels','Public source','demo','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/classicmodels','[{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezone","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',1,1,NULL,'GavinZ','2024-09-02 17:45:07','GavinZ','2024-09-02 18:01:36'),
+	 (3, 'Datastore','Public source','demo','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/datastore',NULL,'admin','YWRtaW4jNTIw','8.0.35',1,1,NULL,'GavinZ','2024-09-02 00:30:19','GavinZ','2024-09-02 18:01:36'),
+	 (4, 'Foodmart','public sale data','AWS','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/foodmart','[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',2,1,NULL,'Admin','2024-09-01 00:18:58','Admin','2024-09-02 18:01:36'),
+	 (5, 'classicmodels','public sale data','AWS','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/classicmodels','[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',2,1,NULL,'Admin','2024-09-02 17:47:56','Admin','2024-09-02 18:01:36'),
+	 (6, 'Data Store','data for ML','AWS','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/datastore','[{"name":"useUnicode","value":"true"},{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezon","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',2,1,NULL,'Admin','2024-08-31 19:03:10','Admin','2024-09-02 18:01:36');
 
 
 # ----------------------------
@@ -550,8 +560,6 @@ CREATE TABLE viz_dataset
 	final_query    text         DEFAULT NULL comment 'final query',
 	error          varchar(255) DEFAULT NULL,
     field          text         DEFAULT NULL comment 'json array like [{name:"Name", type:"string", alias:"Username", metrics:true, hidden: true, order: -2}]',
-    graph          text         DEFAULT NULL comment 'ER graph, json object',
-    graph_ver      varchar(8)   DEFAULT NULL,
     source_id      int          NOT NULL,
 	org_id         int          NOT NULL,
     `public`       boolean      NOT NULL DEFAULT false,
@@ -564,8 +572,150 @@ CREATE TABLE viz_dataset
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_dataset (id, name, `group`, `desc`, variable, query, field, graph, graph_ver, source_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'employee salary', 'first', 'test of local MariaDB', '[{name:"aaa", type:"number", value:"35"},{name:"bbb", type:"string", value:"hello"},{name:"ccc", type:"timestamp", value:"2021-10-10"}]', 'select * from employee limit 20', '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', null, null, 1, 1, true, 'Admin', null, null, null);
+INSERT INTO viz_dataset (id, name,`desc`,`group`,variable,query,final_query,error,field,source_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'employee salary','Employee salary trend','footmart','[{"type":"date","name":"StartDay","value":"''1975-01-01''"}]','WITH
+  xx AS (
+    SELECT
+      employee_id,
+      position_title,
+      birth_date,
+      education_level,
+      marital_status,
+      gender,
+      salary
+    FROM
+      employee
+    WHERE
+      birth_date > @StartDay
+  )
+SELECT
+  SQL_CALC_FOUND_ROWS 
+  employee_id,
+  position_title,
+  birth_date,
+  education_level,
+  marital_status,
+  gender,
+  salary
+FROM
+  xx
+ORDER BY
+  birth_date','',NULL,'[{"hidden":true,"type":"number","name":"employee_id"},{"type":"string","name":"position_title","alias":"Position"},{"type":"timestamp","name":"birth_date"},{"type":"string","name":"education_level","alias":"Education"},{"type":"string","name":"marital_status"},{"type":"string","name":"gender"},{"type":"number","name":"salary","metrics":true,"order":1}]',1,1,1,'GavinZ','2024-09-01 00:32:41','GavinZ','2024-09-02 18:42:16'),
+	 (2, 'Store sales','sales analysis','footmart','[{"type":"timestamp","name":"StartDate","value":"''2011-01-01''"},{"type":"timestamp","name":"EndDate","value":"''2012-01-01''"}]','SELECT
+  SQL_CALC_FOUND_ROWS DATE,
+  MONTH,
+  QUARTER,
+  store,
+  city,
+  state,
+  region,
+  country,
+  p_brand,
+  p_cagegory,
+  p_family,
+  cost,
+  sales,
+  ''K'' AS unit,
+  lat,
+  lng,
+  dir
+FROM
+  (
+    SELECT
+      DATE_FORMAT(THE_DATE, ''%Y-%m-%d'') AS DATE,
+      THE_MONTH AS MONTH,
+      QUARTER AS QUARTER,
+      store_name AS store,
+      STORE_CITY AS city,
+      SALES_STATE AS state,
+      STORE_country AS country,
+      SALES_REGION AS region,
+      BRAND_NAME AS p_brand,
+      PRODUCT_CATEGORY AS p_cagegory,
+      PRODUCT_FAMILY AS p_family,
+      STORE_COST AS cost,
+      STORE_SALES AS sales,
+      lat,
+      lng,
+      CASE
+        WHEN SALES_REGION LIKE ''%West%'' THEN ''left''
+        ELSE ''right''
+      END AS dir
+    FROM
+      sales_fact_sample AS sales
+      JOIN store AS store ON sales.store_id = store.store_id
+      JOIN time_by_day AS DATE ON sales.time_id = DATE.time_id
+      JOIN product AS product ON sales.PRODUCT_ID = product.PRODUCT_ID
+  ) x
+WHERE
+  DATE BETWEEN $StartDate AND $EndDate
+ORDER BY
+  DATE
+  ','SELECT SQL_CALC_FOUND_ROWS DATE, MONTH, QUARTER, store, city
+	, state, region, country, p_brand, p_cagegory
+	, p_family, cost, sales, ''K'' AS unit, lat
+	, lng, dir
+FROM (
+	SELECT DATE_FORMAT(THE_DATE, ''%Y-%m-%d'') AS DATE, THE_MONTH AS MONTH, QUARTER AS QUARTER
+		, store_name AS store, STORE_CITY AS city, SALES_STATE AS state, STORE_country AS country, SALES_REGION AS region
+		, BRAND_NAME AS p_brand, PRODUCT_CATEGORY AS p_cagegory, PRODUCT_FAMILY AS p_family, STORE_COST AS cost, STORE_SALES AS sales
+		, lat, lng
+		, CASE 
+			WHEN SALES_REGION LIKE ''%West%'' THEN ''left''
+			ELSE ''right''
+		END AS dir
+	FROM sales_fact_sample sales
+		JOIN store store ON sales.store_id = store.store_id
+		JOIN time_by_day DATE ON sales.time_id = DATE.time_id
+		JOIN product product ON sales.PRODUCT_ID = product.PRODUCT_ID
+) x
+WHERE DATE BETWEEN ''2011-01-01'' AND ''2012-01-01''
+ORDER BY DATE',NULL,'[{"name":"DATE","type":"string"},{"name":"MONTH","type":"string"},{"name":"QUARTER","type":"string"},{"name":"store","type":"string"},{"name":"city","type":"string"},{"name":"state","type":"string"},{"name":"region","type":"string"},{"name":"country","type":"string"},{"name":"p_brand","type":"string"},{"name":"p_cagegory","type":"string"},{"name":"p_family","type":"string"},{"name":"cost","type":"number","metrics":true},{"name":"sales","type":"number","metrics":true},{"name":"unit","type":"string"},{"name":"lat","type":"number"},{"name":"lng","type":"number"},{"name":"dir","type":"string"}]',1,1,1,'GavinZ','2024-09-02 18:39:45',NULL,'2024-09-02 18:43:44'),
+	 (3, 'Order info','customer, order and products','footmart','[{"type":"timestamp","name":"startDate","value":"''2004-01-01''"},{"type":"timestamp","name":"endDate","value":"''2004-12-31''"}]','select 
+orderDate,
+  customerName,
+  city,
+  state,
+  country,
+ amount,
+  productName,
+  productLine,
+  MSRP,
+  buyPrice
+from
+(
+SELECT
+  orderDate,
+  customerName,
+  city,
+  state,
+  country,
+  quantityOrdered * priceEach AS amount,
+  productCode
+FROM
+  orders o
+  JOIN customers c USING (customerNumber)
+  JOIN orderdetails d USING (orderNumber)
+  where orderDate >= $startDate and orderDate <= $endDate
+  )x 
+  join products using(productCode)
+  ORDER BY
+  orderDate','SELECT orderDate, customerName, city, state, country
+	, amount, productName, productLine, MSRP, buyPrice
+FROM (
+	SELECT orderDate, customerName, city, state, country
+		, quantityOrdered * priceEach AS amount, productCode
+	FROM orders o
+		JOIN customers c USING (customerNumber)
+		JOIN orderdetails d USING (orderNumber)
+	WHERE orderDate >= ''2004-01-01''
+		AND orderDate <= ''2004-12-31''
+) x
+	JOIN products USING (productCode)
+ORDER BY orderDate',NULL,'[{"name":"orderDate","type":"timestamp"},{"name":"customerName","type":"string"},{"name":"city","type":"string"},{"name":"state","type":"string"},{"name":"country","type":"string"},{"name":"amount","type":"number","metrics":true},{"name":"productName","type":"string"},{"name":"productLine","type":"string"},{"name":"MSRP","type":"number","metrics":true},{"name":"buyPrice","type":"number","metrics":true}]',2,1,1,'GavinZ','2024-09-02 18:39:51',NULL,'2024-09-02 18:45:16');
+
+
+
 
 # ----------------------------
 # 动态sql支持变量，条件，循环等语法（Maybe Velocity, MyBatis）
@@ -612,9 +762,20 @@ CREATE TABLE viz_view
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_view (id, name, `desc`, `group`, type, dim, metrics, agg, filter, sorter, variable, calculation, model, lib_name, lib_ver, lib_cfg, dataset_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'employee salary', 'test of employee', 'first', 'line_chart', 'aa, bb, cc', 'dd, ee', 'count', null, null, '[{name:"aaa", type:"number", value:"35"},{name:"bbb", type:"string", value:"hello"},{name:"ccc", type:"timestamp", value:"2021-10-10"}]', null, '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', 'antvG2Plot', '2.2', '[{name:"FULL_NAME", title:"name"}, {name:"SALARY", metrics:true, orderPri:0, orderDir:"Asc"}, {name:"DEPARTMENT_ID", hidden:true},{name:"EDUCATION_LEVEL", title:"Education", dim:true},{name:"MARITAL_STATUS", filter:"=\'M\'"},{name:"GENDER"}, {name:"POSITION_TITLE"}, {name:"EMPLOYEE_ID"}]', 1, 1, true, 'Admin', null, 'Admin', null);
-
+INSERT INTO viz_view (id, name,`desc`,`group`,`type`,dim,relation,location,metrics,agg,prec,`filter`,sorter,variable,calculation,model,lib_name,lib_ver,lib_cfg,dataset_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'Employee Salary Trend','Employee Salary Trending','footmart','line_chart','["birth_date"]',NULL,NULL,'["salary"]','sum',NULL,NULL,'["DATE ASC"]','[]',NULL,'{"legend":{"enabled":true},"tooltip":{"marker":true},"title":"","axis":{"slider":true},"advance":{"readonly":true},"auxiliary":{"annotations":[{"color":"black","start":"[''min'',''median'']","type":"line","end":"[''max'',''median'']","text":{"color":"blue","content":"Average"}},{"color":"red","start":"[''min'',''median'']","type":"regionFilter","end":"[''max'',''0'']"},{"type":"text","text":{"color":"green","content":"Salary Trend","fontSize":24,"position":"[''20%'',''10%'']"}},{"color":"gray","start":"[''1976-10-05'',''0'']","type":"region","end":"[''1978-07-02'',''max'']","opacity":0.1}]},"theme":"light","style":{"appear":[]},"metricsField":[{"type":"number","name":"salary","id":6}],"dimField":[{"type":"timestamp","name":"birth_date","id":2}]}','G2Plot','2.4','{"chartType":"Line","config":{"slider":{"trendCfg":{"isArea":true},"start":0,"end":1},"yField":"salary","annotations":[{"start":["min","median"],"type":"line","end":["max","median"],"style":{"stroke":"black","lineDash":[2,2]},"text":{"content":"Average","style":{"textBaseline":"bottom","fill":"blue"}},"id":"0"},{"color":"red","start":["min","median"],"type":"regionFilter","end":["max","0"],"id":"1"},{"type":"text","content":"Salary Trend","style":{"textBaseline":"bottom","fill":"green","fontSize":24},"position":["20%","10%"],"id":"2"},{"start":["1976-10-05","0"],"type":"region","end":["1978-07-02","max"],"style":{"fillOpacity":0.1,"fill":"yellow","lineDash":[2,2]},"id":"3"}],"xField":"birth_date","animation":{"update":{"animation":"path-in"}},"area":false,"isStack":false,"smooth":true,"theme":"default"}}',1,1,1,'GavinZ','2024-09-02 19:16:10','GavinZ','2024-09-02 19:59:20'),
+	 (2, 'Region sales by Q',NULL,'footmart','heatmap','["region","QUARTER"]',NULL,NULL,'["sales"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','G2Plot','2.4','{"chartType":"Heatmap","config":{"xField":"region","yField":"QUARTER","colorField":"sales"}}',2,1,1,'GavinZ','2024-09-02 19:18:25','GavinZ','2024-09-02 19:59:21'),
+	 (3, 'Month sale comparation',NULL,'footmart','column_chart','["MONTH"]',NULL,NULL,'["sales"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','G2Plot','2.4','{"chartType":"Column","config":{"xField":"MONTH","yField":"sales"}}',2,1,1,'GavinZ','2024-09-02 19:19:33','GavinZ','2024-09-02 19:59:22'),
+	 (4, 'State sale pie',NULL,'footmart','pie_chart','["state"]',NULL,NULL,'["cost"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','G2Plot','2.4','{"chartType":"Pie","config":{"angleField":"cost","colorField":"state"}}',2,1,1,'GavinZ','2024-09-02 19:20:35','GavinZ','2024-09-02 19:59:23'),
+	 (5, 'Region stores',NULL,'footmart','pie_chart','["region"]',NULL,NULL,'["store"]','count',NULL,NULL,NULL,'[]',NULL,'{}','G2Plot','2.4','{"chartType":"Pie","config":{"angleField":"store","colorField":"region","innerRadius":0.5}}',2,1,1,'GavinZ','2024-09-02 19:41:35','GavinZ','2024-09-02 19:59:23'),
+	 (6, 'family sales bar','','footmart','bar_chart','["p_family","p_cagegory"]',NULL,NULL,'["sales"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','G2Plot','2.4','{"chartType":"Bar","config":{"xField":"sales","yField":"p_family","seriesField":"p_cagegory","isStack":true}}',2,1,1,'GavinZ','2024-09-02 19:49:25','GavinZ','2024-09-02 19:59:24'),
+	 (7, 'state cost map',NULL,'footmart','choropleth_map','["country","region","state"]',NULL,NULL,'["cost"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Leaflet','1.7','{"chartType":"Choropleth","config":{"baselayer":["Stamen.TonerBackground"],"overlayer":[],"toolkit":{"fullscreen":false,"seek":false,"search":false,"export":false,"open":false,"locator":false,"coordinator":true,"scale":false,"player":false},"choropleth":{"refLayer":"us-stats.geojson","refJoin":["abbr","state"],"colorField":"cost","colorSteps":4,"colorScale":["#f5deb3","#f89477","#fc4a3c","#ff0000"],"fillOpacity":0.3,"borderColor":"gray","popup":"{=name}: {=sales}","colorMap":[{"color":"#f5deb3","value":[0,1],"label":"0~1"},{"color":"#f89477","value":[1,2],"label":"1~2"},{"color":"#fc4a3c","value":[2,3],"label":"2~3"},{"color":"#ff0000","value":[3,8],"label":"3~8"}]},"tooltip":"cost: {=cost}"}}',2,1,1,'GavinZ','2024-09-02 19:23:57','GavinZ','2024-09-02 19:59:25'),
+	 (8, 'Region sales map',NULL,'footmart','marker_map','["region","lat","lng"]',NULL,NULL,'["sales"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Leaflet','1.7','{"chartType":"Marker","config":{"baselayer":["OSM.Mapnik"],"overlayer":[],"latField":"lat","lngField":"lng","toolkit":{"fullscreen":false,"seek":false,"search":false,"export":false,"open":false,"locator":false,"coordinator":true,"scale":false,"player":false},"marker":{"cluster":{"enabled":true},"shapeField":"region","shapeMap":[{"shape":"circle","value":"CenterWest","label":"CenterWest"},{"shape":"square","value":"WestCoast","label":"WestCoast"},{"shape":"star","value":"EastCost","label":"EastCost"}],"colorField":"sales","colorMap":[{"color":"#008000","value":[5,131],"label":"5~131"},{"color":"#ff0000","value":[131,226],"label":"131~226"}]},"tooltip":"sales: {=sales}"}}',2,1,1,'GavinZ','2024-09-02 19:25:53','GavinZ','2024-09-02 19:59:25'),
+	 (9, 'cost migration map',NULL,'footmart','migration_map','["region","lat","lng"]',NULL,NULL,'["cost"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Leaflet','1.7','{"chartType":"Migration","config":{"baselayer":["OSM.Mapnik"],"overlayer":[],"latLngField":["lat","lng"],"toField":["toLat","toLng"],"labelFields":["country","store"],"toolkit":{"fullscreen":false,"seek":false,"search":false,"export":false,"open":false,"locator":false,"coordinator":true,"scale":false,"player":false},"marker":{"pulse":true,"textVisible":false,"pulseRadius":20},"line":{"width":2,"arrowSize":10,"colorField":"cost","colorMap":[{"color":"#008000","value":[0,1],"label":"0~1"},{"color":"#555500","value":[1,2],"label":"1~2"},{"color":"#aa2b00","value":[2,3],"label":"2~3"},{"color":"#ff0000","value":[3,8],"label":"3~8"}]}}}',2,1,1,'GavinZ','2024-09-02 19:28:32','GavinZ','2024-09-02 19:59:29'),
+	 (10, 'Cost movement map',NULL,'footmart','movement_map','["lat","lng"]',NULL,NULL,'["cost"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Leaflet','1.7','{"chartType":"Movement","config":{"baselayer":["OSM.Mapnik"],"overlayer":[],"latField":"lat","lngField":"lng","toolkit":{"fullscreen":false,"seek":false,"search":false,"export":false,"open":false,"locator":false,"coordinator":true,"scale":false,"player":false},"movement":{"color":"#00ffff","pulseColor":"purple","weight":3,"delay":600,"dash":[5,50],"colorField":"cost","colorMap":[{"color":"#008000","value":[0,1],"label":"0~1"},{"color":"#555500","value":[1,2],"label":"1~2"},{"color":"#aa2b00","value":[2,3],"label":"2~3"},{"color":"#ff0000","value":[3,8],"label":"3~8"}]},"tooltip":"cost: {=cost}"}}',2,1,1,'GavinZ','2024-09-02 19:35:21','GavinZ','2024-09-02 19:59:30'),
+	 (11, 'Region store topology',NULL,'footmart','tree_net','["region","state","store"]',NULL,NULL,'["cost"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Cytoscape','3.2','{"chartType":"Tree","config":{"nameField":[],"toolkit":{"fullscreen":true,"export":true},"layout":[{"alias":"Mrtree","name":"elk","options":{"fit":true,"animate":true,"elk":{"algorithm":"mrtree","edgeRoutingMode":"AVOID_OVERLAP","aspectRatio":0,"nodeNode":20}}}],"node":{"icon":{"shapeField":"nodeLevel","shapeMap":[{"shape":"star","value":0,"label":"region"},{"shape":"heart","value":1,"label":"state"},{"shape":"bell","value":2,"label":"store"}],"color":"#20B2AA","colorField":"cost","colorMap":[{"color":"#008000","value":[2,53],"label":"2~53"},{"color":"#ff0000","value":[53,92],"label":"53~92"}],"tooltip":"cost: {=cost}","labelSize":6},"body":{"shape":"ellipse","color":"#cccccc"}},"edge":{"line":{"style":"solid","color":"#cccccc"},"marker":{"width":1,"type":"haystack"}},"aux":{"animation":true,"collapse":false,"cluster":false,"compound":false,"cumsum":false,"highlight":"neighbors"},"dataMode":"FieldLevel"}}',2,1,1,'GavinZ','2024-09-02 19:38:11','GavinZ','2024-09-02 19:59:30'),
+	 (12, 'Double tree stores',NULL,'footmart','tree_net','["country","state","store"]',NULL,NULL,'["sales"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Cytoscape','3.2','{"chartType":"Tree","config":{"nameField":[],"toolkit":{"fullscreen":true,"export":true},"layout":[{"alias":"DoubleTree","name":"DoubleTree","gojs":true,"options":{"widget":"gojs","balance":true,"dirField":"dir"},"checked":true}],"node":{"icon":{"shapeField":"nodeLevel","shapeMap":[{"shape":"star","value":0,"label":"country"},{"shape":"heart","value":1,"label":"state"},{"shape":"bell","value":2,"label":"store"}],"color":"#20B2AA","colorField":"sales","colorMap":[{"color":"#008000","value":[1,3],"label":"1~3"},{"color":"#555500","value":[3,5],"label":"3~5"},{"color":"#aa2b00","value":[5,8],"label":"5~8"},{"color":"#ff0000","value":[8,20],"label":"8~20"}],"tooltip":"sales: {=sales}","labelSize":6},"body":{"shape":"ellipse","color":"#cccccc"}},"edge":{"line":{"style":"solid","color":"#cccccc"},"marker":{"width":1,"type":"haystack"}},"aux":{"animation":true,"collapse":false,"cluster":false,"compound":false,"cumsum":false,"highlight":"neighbors"},"dataMode":"FieldLevel"}}',2,1,1,'GavinZ','2024-09-02 19:39:46','GavinZ','2024-09-02 19:59:31'),
+	 (13, 'product topology',NULL,'footmart','star_net','["productLine","productName"]',NULL,NULL,'["amount"]','sum',NULL,NULL,NULL,'[]',NULL,'{}','Cytoscape','3.2','{"chartType":"Star","config":{"nameField":[],"toolkit":{"fullscreen":true,"export":true},"layout":[{"alias":"Fcose","name":"fcose","options":{"fit":true,"animate":true}}],"node":{"icon":{"tooltip":"amount: {=amount}"},"body":{"shapeField":"nodeLevel","shapeMap":[{"shape":"ellipse","value":0,"label":"productLine"},{"shape":"triangle","value":1,"label":"productName"}],"color":"#20B2AA","colorField":"amount","colorMap":[{"color":"#008000","value":[643,2018],"label":"643~2018"},{"color":"#555500","value":[2018,2790],"label":"2018~2790"},{"color":"#aa2b00","value":[2790,3905],"label":"2790~3905"},{"color":"#ff0000","value":[3905,8353],"label":"3905~8353"}],"shape":"ellipse"}},"edge":{"line":{"style":"solid","color":"gray"},"marker":{"width":1,"type":"haystack"}},"aux":{"animation":true,"collapse":false,"cluster":false,"compound":false,"cumsum":false},"dataMode":"FieldLevel"}}',3,1,1,'GavinZ','2024-09-02 19:54:18','GavinZ','2024-09-02 19:59:32');
 
 
 
@@ -644,9 +805,9 @@ CREATE TABLE viz_report
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_report (id, name, `desc`, `group`, type, pages, org_id, `public`, pub_pub, menu_id, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Salary Distribution', 'employee salary', 'first', 'single', '[{id: 1, name:"aaa", layout:"2x2", dataviews:[1,2,3,4], filter:{label: "FULL_NAME", value: "Gavin"}}]', 1, true, true, null, 'Superman', null, null, null);
-
+INSERT INTO viz_report (id, name,`desc`,`group`,`type`,pages,org_id,public,pub_pub,menu_id,view_ids,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'Footmart analysis',NULL,'demo','report','[{"border":"dashed","filter":[],"label":true,"layout":"free","portrait":false,"toolbar":true,"grid":[{"id":1,"name":"footmart/Employee Salary Trend","type":"view","i":0,"h":8,"w":12,"x":12,"y":0},{"id":2,"name":"footmart/Region sales by Q","type":"view","i":1,"h":8,"w":12,"x":0,"y":0},{"id":11,"name":"footmart/Region store topology","type":"view","i":2,"h":10,"w":12,"x":12,"y":8},{"id":7,"name":"footmart/state cost map","type":"view","i":3,"h":10,"w":12,"x":0,"y":8}]}]',1,1,1,1,'[7]','GavinZ','2024-09-02 20:49:02','GavinZ','2024-09-02 20:59:28');
+	 
 
 # ----------------------------
 # Table: dataset
@@ -677,9 +838,11 @@ CREATE TABLE ml_dataset
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_dataset (id, name, `group`, `desc`, variable, query, final_query, features, target, transform, f_count, source_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Iris', 'first', 'test', '[{name:"aaa", type:"number", value:"35"}]', 'select * from iris', null, '[{name:"sepal_length", type:"number"}, {name:"sepal_width", type:"number"}, {name:"petal_length", type:"number"},{name:"petal_width", type:"number"},{name:"uid", hidden:true}]', '{name:"variety", type:"string", unique:["v1", "v2", "v3"]}', '[{field:"age", scale:"minmax", na:"mean"}]', 4, 1, 1, true, 'Admin', null, 'Admin', null);
-
+INSERT INTO ml_dataset (id, name,`desc`,`group`,variable,query,final_query,fields,target,`transform`,f_count,source_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'iris',NULL,'demo','[]','select * from iris','SELECT *
+FROM iris','[{"name":"petal_length","std":1.765,"type":"number","attr":"conti"},{"name":"petal_width","std":0.762,"type":"number","attr":"conti"},{"name":"sepal_length","std":0.828,"type":"number","attr":"conti"},{"name":"sepal_width","std":0.436,"type":"number","attr":"conti"},{"name":"target","std":0.819,"type":"number","attr":"disc","target":true},{"name":"uid","std":43.445,"type":"number","omit":true,"attr":"disc"}]','["target"]',NULL,NULL,3,1,1,'GavinZ','2024-09-02 21:07:33','GavinZ','2024-09-02 21:13:49'),
+	 (2, 'house price',NULL,'demo','[]','select * from bostonhousing','SELECT *
+FROM bostonhousing','[{"name":"age","std":28.149,"type":"number","attr":"conti"},{"name":"b","std":91.295,"type":"number","attr":"conti"},{"name":"chas","std":0.254,"type":"number","attr":"disc"},{"name":"crim","std":8.602,"type":"number","attr":"conti"},{"name":"dis","std":2.106,"type":"number","attr":"conti"},{"name":"indus","std":6.86,"type":"number","attr":"conti"},{"name":"lstat","std":7.141,"type":"number","attr":"conti"},{"name":"medv","std":9.197,"type":"number","attr":"conti","target":true,"miss":"drop"},{"name":"nox","std":0.116,"type":"number","attr":"conti"},{"name":"ptratio","std":2.165,"type":"number","attr":"conti"},{"name":"rad","std":8.707,"type":"number","attr":"disc"},{"name":"rm","std":0.703,"type":"number","attr":"conti"},{"name":"tax","std":168.537,"type":"number","attr":"disc"},{"name":"uid","std":146.214,"type":"number","omit":true,"attr":"disc"},{"name":"zn","std":23.335,"type":"number","attr":"disc"}]','["medv"]',NULL,NULL,3,1,1,'GavinZ','2024-09-02 21:12:57','GavinZ','2024-09-02 21:13:49');
 
 # ----------------------------
 # Table: eda
@@ -703,8 +866,8 @@ CREATE TABLE ml_eda
 	CONSTRAINT fk_eda_org      foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_eda (id, name, `group`, `desc`, config, dataset_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'Iris_eda', 'eda', 'test', '[{type:"hist", kde:true}]', 1, 1, true, 'Admin', null, 'Admin', null);
+INSERT INTO ml_eda (id, name,`desc`,`group`,config,dataset_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'Iris eda',NULL,'explorer','{"overall":{"pid":"stat"},"box":{"pid":"stat","outlier":"outliers"},"outlier":{"pid":"stat","method":"quantile","iqr":1.8}}',1,1,1,'GavinZ','2024-09-02 21:16:31','GavinZ','2024-09-02 21:16:39');
 
 
 
@@ -735,8 +898,43 @@ CREATE TABLE ml_algo
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_algo (id, name, `desc`, `group`, framework, frame_ver, category, algo_name, data_cfg, train_cfg, src_code, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'svm', 'new svm algorithm', 'first', 'python', '3.10', 'clf', 'svm', 5, 'svm() return data', '{dataset: 1}', '{timeout:5, trials:3, epochs: 2}', 1, true, 'Superman', null, null, null);
+INSERT INTO ml_algo (id, name,`desc`,`group`,framework,frame_ver,category,algo_name,data_cfg,train_cfg,src_code,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'RandomForestClassifier','','sklearn','sklearn','3.11','clf','RandomForestClassifier','{"datasetId":1,"evalRatio":0.2,"shuffle":false}','{"gpu":false,"strategy":"BasicVariantGenerator","trials":2,"epochs":1,"timeout":5,"params":{"n_estimators":"[5,10,15]","max_depth":"(4,10,2)"},"score":"accuracy","threshold":0.9}','
+import ray
+import mlflow
+import matplotlib
+from mlflow.utils.mlflow_tags import MLFLOW_RUN_NAME, MLFLOW_USER
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
+
+class CustomTrain:
+  def train(config: dict, data: dict):
+    setup_mlflow()
+
+    estimator = RandomForestClassifier(n_estimators=config[''n_estimators''],max_depth=config[''max_depth''])
+    for epoch in range(config.get("epochs", 1)):
+      estimator.fit(data[''x''], data[''y''])
+      accuracy_fn = metrics.get_scorer(''accuracy'')
+      accuracy = accuracy_fn(estimator, data[''x''], data[''y''])
+      ray.train.report({"accuracy": accuracy})
+',1,0,'GavinZ','2024-09-02 01:48:57','GavinZ','2024-09-02 21:17:45'),
+	 ('SVR','regression','sklearn','sklearn','3.11','reg','SVR','{"datasetId":2,"evalRatio":0.2,"shuffle":true}','{"gpu":false,"strategy":"BasicVariantGenerator","trials":3,"epochs":1,"timeout":5,"params":{"C":"[0.5,1,1.5]","gamma":"[\"auto\",\"rbf\",\"ploy\"]"},"score":"r2","threshold":0.5}','import ray
+import mlflow
+import matplotlib
+from mlflow.utils.mlflow_tags import MLFLOW_RUN_NAME, MLFLOW_USER
+from sklearn.svm import SVR
+from sklearn import metrics
+
+class CustomTrain:
+  def train(config: dict, data: dict):
+    setup_mlflow()
+
+    estimator = SVR(C=config[''C''],gamma=config[''gamma''])
+    for epoch in range(config.get("epochs", 1)):
+      estimator.fit(data[''x''], data[''y''])
+      r2_fn = metrics.get_scorer(''r2'')
+      r2 = r2_fn(estimator, data[''x''], data[''y''])
+      ray.train.report({"r2": r2})',1,0,'GavinZ','2024-09-02 22:07:26','GavinZ','2024-09-02 22:08:20');
 
 
 
@@ -764,8 +962,8 @@ CREATE TABLE ml_workflow
 	CONSTRAINT fk_flow_org       foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
 
-INSERT INTO ml_workflow (id, pid, name, `desc`, `group`, config, workflow, canvas, flow_ver, version, last_run, duration, status, error, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'Svm train', 'New svm train', 'first', '{timeout: 10}', '{nodes:[{id:"node1", shape:"rect", width: 20, height: 10}], edges:[]}', '{gbColor:"#123456"}', '2.0', '0', '2024-04-10 05:30:00', 88, 'success', null, 1, true, 'GavinZ', null, 'GavinZ', null);
+INSERT INTO ml_workflow (id, name,`desc`,`group`,config,workflow,canvas,x6_ver,version,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'sk classifer','Classification','demo','{"timeout":0}','{"nodes":[{"id":"11482720","shape":"ExeNode","data":{"type":"source","kind":"dataset","title":"Dataset","data":{"id":1},"text":"demo/iris"},"position":{"x":200,"y":260}},{"id":"11482722","shape":"ExeNode","data":{"type":"proc","kind":"clean","title":"Cleaning","data":{"miss":"drop","duplicate":"drop","outlier":"drop"},"text":"Miss: Drop"},"position":{"x":580,"y":120}},{"id":"11482726","shape":"ExeNode","data":{"type":"proc","kind":"scale","title":"Scaling","data":[{"sf":"aaa","method":"std","title":"aaa : STD"}],"text":"1 fields"},"position":{"x":580,"y":260}},{"id":"11482757","shape":"ExeNode","data":{"type":"fe","kind":"select","title":"Feature Selection","data":{"feature_selection_threshold":1,"multicollinearity_threshold":0,"pca_method":0,"pca_components":0,"ignore_low_variance":1,"cluster_iter":0,"seed":123,"metric":"gain"},"text":"pyCaret"},"position":{"x":580,"y":440}},{"id":"11482761","shape":"ExeNode","data":{"type":"ml","kind":"clf","title":"Classification","data":{"method":"pycaret","blacklist":["lr","qda","catboost"],"metric":"accuracy","fold":5},"text":"pyCaret"},"position":{"x":949,"y":260}}],"edges":[{"id":"11482742","shape":"edge","source":{"cell":"11482720"},"target":{"cell":"11482722"}},{"id":"11482744","shape":"edge","source":{"cell":"11482722"},"target":{"cell":"11482726"}},{"id":"11482758","shape":"edge","source":{"cell":"11482726"},"target":{"cell":"11482757"}},{"id":"11482763","shape":"edge","source":{"cell":"11482757"},"target":{"cell":"11482761"}}]}','{"width":600,"height":600,"bg":{"color":"#212121"},"grid":{"type":"dot","size":20,"color":"#FFF59C","thickness":1},"edge":{"color":"#a9a9a9","router":"smooth"}}',NULL,'0',1,0,'GavinZ','2024-09-02 23:54:55','GavinZ','2024-09-02 23:57:19');
 
 
 

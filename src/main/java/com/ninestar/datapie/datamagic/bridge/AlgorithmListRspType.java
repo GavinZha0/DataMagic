@@ -17,6 +17,7 @@ public class AlgorithmListRspType {
     public String algoName;
     public JSONObject dataCfg;
     public JSONObject trainCfg;
+    public String datasetName;
     public String srcCode;
     public Boolean pubFlag;
     public String createdBy;

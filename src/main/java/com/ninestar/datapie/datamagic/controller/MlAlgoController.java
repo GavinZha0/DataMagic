@@ -143,6 +143,12 @@ public class MlAlgoController {
             BeanUtil.copyProperties(entity, item, new String[]{"dataCfg", "trainCfg"});
             item.dataCfg = new JSONObject(entity.getDataCfg());
             item.trainCfg = new JSONObject(entity.getTrainCfg());
+            if(item.dataCfg.get("datasetId") != null){
+                MlDatasetEntity mlDataset = datasetRepository.findById(Integer.parseInt(item.dataCfg.get("datasetId").toString())).get();
+                if(mlDataset != null){
+                    item.datasetName = mlDataset.getGroup() + "/" + mlDataset.getName();
+                }
+            }
             rspList.add(item);
         }
 

@@ -154,7 +154,6 @@ public class VizDatasetController {
                 item.sourceName = entity.getDatasource().getGroup() + "/" + entity.getDatasource().getName();
                 item.variable = new JSONArray(entity.getVariable()); // convert string to json array
                 item.fields = new JSONArray(entity.getField());
-                item.graph = new JSONObject(entity.getGraph());
 
                 // get related dataset count
                 item.usage = dataviewRepository.countByDatasetId(entity.getId());
@@ -245,10 +244,7 @@ public class VizDatasetController {
             newEntity.setQuery(req.query);
 
             newEntity.setField(req.fields.toString());
-            if(req.graph!=null){
-                newEntity.setGraph(req.graph.toString());
-            }
-            newEntity.setGraphVer(req.graphVer);
+
             if(req.pubFlag==null){
                 newEntity.setPubFlag(false);
             }
@@ -312,8 +308,6 @@ public class VizDatasetController {
             targetEntity.setVariable(req.variable.toString());
             targetEntity.setQuery(req.query);
             targetEntity.setField(req.fields.toString());
-            targetEntity.setGraph(req.graph.toString());
-            targetEntity.setGraphVer(req.graphVer);
 
             // convert query based on variable, fields
             String err = "";

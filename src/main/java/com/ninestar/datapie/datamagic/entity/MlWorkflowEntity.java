@@ -24,9 +24,6 @@ public class MlWorkflowEntity {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "pid")
-    private Integer pid;
-
     @Column(name = "name", nullable = false, length = 64)
     private String name;
 
@@ -50,18 +47,6 @@ public class MlWorkflowEntity {
 
     @Column(name = "version", length = 8)
     private String version;
-
-    @Column(name = "last_run")
-    private Timestamp lastRun;
-
-    @Column(name = "duration")
-    private Integer duration;
-
-    @Column(name = "status", length = 16)
-    private String status;
-
-    @Column(name = "error")
-    private String error;
 
     @Column(name = "public", nullable = false)
     private Boolean pubFlag = false;

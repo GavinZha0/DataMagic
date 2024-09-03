@@ -54,14 +54,6 @@ public class VizDatasetEntity {
     private String field;
 
     @Basic
-    @Column(name = "graph", nullable = true, length = -1)
-    private String graph;
-
-    @Basic
-    @Column(name = "graph_ver", nullable = true, length = 8)
-    private String graphVer;
-
-    @Basic
     @Column(name = "`public`", nullable = false)
     private Boolean pubFlag;
 
