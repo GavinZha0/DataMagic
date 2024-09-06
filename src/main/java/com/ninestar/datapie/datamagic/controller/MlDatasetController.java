@@ -215,7 +215,7 @@ public class MlDatasetController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || req.sourceId<1 || StrUtil.isEmpty(req.query)){
+        if(StrUtil.isEmpty(req.name) || req.sourceId==0 || StrUtil.isEmpty(req.query)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -239,6 +239,7 @@ public class MlDatasetController {
             newEntity.setName(req.name);
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
+            newEntity.setType(req.type);
             if(req.variable!=null){
                 newEntity.setVariable(req.variable.toString());
             }
@@ -263,11 +264,13 @@ public class MlDatasetController {
             newEntity.setDatasource(source);
 
             // convert query based on variable, fields
-            String err = "";
-            String finalQuery = convertSqlQuery(newEntity, null, err);
-            newEntity.setFinalQuery(finalQuery);
-            if(!StrUtil.isEmpty(err)){
-                logger.error(err);
+            if(req.sourceId > 0){
+                String err = "";
+                String finalQuery = convertSqlQuery(newEntity, null, err);
+                newEntity.setFinalQuery(finalQuery);
+                if(!StrUtil.isEmpty(err)){
+                    logger.error(err);
+                }
             }
 
             // save source
@@ -291,7 +294,7 @@ public class MlDatasetController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(req.id==0 || StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.query) || req.sourceId<1){
+        if(req.id==0 || StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.query) || req.sourceId == 0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -308,6 +311,7 @@ public class MlDatasetController {
             targetEntity.setName(req.name);
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
+            targetEntity.setType(req.type);
             targetEntity.setVariable(req.variable.toString());
             targetEntity.setQuery(req.query);
             targetEntity.setFields(req.fields.toString());
@@ -315,11 +319,13 @@ public class MlDatasetController {
             targetEntity.setFCount(1);
 
             // convert query based on variable, fields
-            String err = "";
-            String finalQuery = convertSqlQuery(targetEntity, null, err);
-            targetEntity.setFinalQuery(finalQuery);
-            if(!StrUtil.isEmpty(err)){
-                logger.error(err);
+            if(req.sourceId > 0) {
+                String err = "";
+                String finalQuery = convertSqlQuery(targetEntity, null, err);
+                targetEntity.setFinalQuery(finalQuery);
+                if (!StrUtil.isEmpty(err)) {
+                    logger.error(err);
+                }
             }
             //create_time and update_time are generated automatically by jpa
 

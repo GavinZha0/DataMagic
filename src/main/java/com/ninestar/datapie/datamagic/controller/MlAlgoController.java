@@ -185,7 +185,7 @@ public class MlAlgoController {
             newEntity.setCategory(req.category);
             newEntity.setAlgoName(req.algoName);
             newEntity.setFramework(req.framework);
-            newEntity.setFrameVer("3.11");
+            newEntity.setFrameVer(req.frameVer);
             newEntity.setSrcCode(req.srcCode);
             if(req.dataCfg!=null){
                 newEntity.setDataCfg(req.dataCfg.toString());
@@ -236,7 +236,7 @@ public class MlAlgoController {
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
             targetEntity.setFramework(req.framework);
-            targetEntity.setFrameVer("3.11");
+            targetEntity.setFrameVer(req.frameVer);
             targetEntity.setDataCfg(req.dataCfg.toString());
             targetEntity.setTrainCfg(req.trainCfg.toString());
             targetEntity.setSrcCode(req.srcCode);

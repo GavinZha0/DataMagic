@@ -13,6 +13,7 @@ import java.util.List;
 
 public interface DataSourceRepository extends JpaRepository<DataSourceEntity, Integer>, JpaSpecificationExecutor<DataSourceEntity> {
     DataSourceEntity findByName(String name);
+    @Query(value = "select * from data_source where org_id = ? or org_id < 0",nativeQuery = true)
     List<DataSourceEntity> findByOrgId(Integer orgId);
     Page<DataSourceEntity> findByOrgId(Integer orgId, Pageable pageable);
     List<DataSourceEntity> findByNameContainingOrderByIdDesc(String name);

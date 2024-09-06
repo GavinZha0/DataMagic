@@ -10,6 +10,7 @@ public class AlgorithmActionReqType {
     public String desc;
     public String group;
     public String framework;
+    public String frameVer;
     public String category;
     public String algoName;
     public JSONObject dataCfg;

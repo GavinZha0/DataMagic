@@ -10,6 +10,7 @@ public class MlDatasetActionReqType {
     public String desc;
     public String group;
     public JSONArray variable;
+    public String type;
     public String query;
     public JSONArray fields;
     public JSONArray target;

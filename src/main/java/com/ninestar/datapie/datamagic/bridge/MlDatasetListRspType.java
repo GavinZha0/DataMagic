@@ -11,6 +11,7 @@ public class MlDatasetListRspType {
     public String name;
     public String desc;
     public String group;
+    public String type;
     public JSONArray variable;
     public String query;
     public JSONArray fields;

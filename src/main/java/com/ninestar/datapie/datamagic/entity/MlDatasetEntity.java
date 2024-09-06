@@ -42,6 +42,10 @@ public class MlDatasetEntity {
     private String variable;
 
     @Basic
+    @Column(name = "type", nullable = true, length = 16)
+    private String type;
+
+    @Basic
     @Column(name = "query", nullable = false, length = -1)
     private String query;
 

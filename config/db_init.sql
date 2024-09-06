@@ -820,6 +820,7 @@ CREATE TABLE ml_dataset
     `desc`         varchar(128) DEFAULT NULL,
     `group`        varchar(64)  DEFAULT 'default',
     variable       text         DEFAULT NULL comment 'json array', 
+	type		   varchar(16)  DEFAULT 'data',
     query          text         DEFAULT NULL comment 'sql query',
 	final_query    text         DEFAULT NULL comment 'final query',
     fields         text         NOT NULL comment 'json array like [{name:"age", type:"number", cat:"conti", weight:92, target:false, omit: false}]',
@@ -838,10 +839,10 @@ CREATE TABLE ml_dataset
 ) ENGINE = InnoDB;
 
 
-INSERT INTO ml_dataset (id, name,`desc`,`group`,variable,query,final_query,fields,target,`transform`,f_count,source_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
-	 (1, 'iris',NULL,'demo','[]','select * from iris','SELECT *
+INSERT INTO ml_dataset (id, name,`desc`,`group`,variable,type,query,final_query,fields,target,`transform`,f_count,source_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+	 (1, 'iris',NULL,'demo','[]','data','select * from iris','SELECT *
 FROM iris','[{"name":"petal_length","std":1.765,"type":"number","attr":"conti"},{"name":"petal_width","std":0.762,"type":"number","attr":"conti"},{"name":"sepal_length","std":0.828,"type":"number","attr":"conti"},{"name":"sepal_width","std":0.436,"type":"number","attr":"conti"},{"name":"target","std":0.819,"type":"number","attr":"disc","target":true},{"name":"uid","std":43.445,"type":"number","omit":true,"attr":"disc"}]','["target"]',NULL,NULL,3,1,1,'GavinZ','2024-09-02 21:07:33','GavinZ','2024-09-02 21:13:49'),
-	 (2, 'house price',NULL,'demo','[]','select * from bostonhousing','SELECT *
+	 (2, 'house price',NULL,'demo','[]','data','select * from bostonhousing','SELECT *
 FROM bostonhousing','[{"name":"age","std":28.149,"type":"number","attr":"conti"},{"name":"b","std":91.295,"type":"number","attr":"conti"},{"name":"chas","std":0.254,"type":"number","attr":"disc"},{"name":"crim","std":8.602,"type":"number","attr":"conti"},{"name":"dis","std":2.106,"type":"number","attr":"conti"},{"name":"indus","std":6.86,"type":"number","attr":"conti"},{"name":"lstat","std":7.141,"type":"number","attr":"conti"},{"name":"medv","std":9.197,"type":"number","attr":"conti","target":true,"miss":"drop"},{"name":"nox","std":0.116,"type":"number","attr":"conti"},{"name":"ptratio","std":2.165,"type":"number","attr":"conti"},{"name":"rad","std":8.707,"type":"number","attr":"disc"},{"name":"rm","std":0.703,"type":"number","attr":"conti"},{"name":"tax","std":168.537,"type":"number","attr":"disc"},{"name":"uid","std":146.214,"type":"number","omit":true,"attr":"disc"},{"name":"zn","std":23.335,"type":"number","attr":"disc"}]','["medv"]',NULL,NULL,3,1,1,'GavinZ','2024-09-02 21:12:57','GavinZ','2024-09-02 21:13:49');
 
 # ----------------------------
