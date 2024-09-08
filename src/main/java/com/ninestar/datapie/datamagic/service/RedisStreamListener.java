@@ -49,15 +49,23 @@ public class RedisStreamListener implements StreamListener<String, MapRecord<Str
                     newEntity.setCategory("ml");
                     newEntity.setFromId(0); // background job
                     newEntity.setToId(qMsg.getUid());
-                    newEntity.setCode(QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString());
+                    // unique code is MsgId_ExperimentId
+                    String unique_code = QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString();
+                    newEntity.setCode(unique_code);
                     newEntity.setContent(qMsg.getData().toString());
                     newEntity.setTid(Integer.parseInt(jsonData.get("algoId").toString()));
                     sysMsgRepository.save(newEntity);
                 } else if(jsonData.get("progress").toString().equals("100")){
                     // experiment end
-                    SysMsgEntity targetEntity = sysMsgRepository.findByCode(QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString());
-                    targetEntity.setContent(qMsg.getData().toString());
-                    sysMsgRepository.save(targetEntity);
+                    // unique code is MsgId_ExperimentId
+                    String unique_code = QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString();
+                    // should get only one record
+                    // duplicate issue should NOT happen
+                    SysMsgEntity targetEntity = sysMsgRepository.findByCodeOrderByTsDesc(unique_code).get(0);
+                    if(targetEntity != null){
+                        targetEntity.setContent(qMsg.getData().toString());
+                        sysMsgRepository.save(targetEntity);
+                    }
                 }
             }
             // PendingMessagesSummary ff = redisTemplate.opsForStream().pending(message.getStream(), redisConfig.getConsumerGroup());
