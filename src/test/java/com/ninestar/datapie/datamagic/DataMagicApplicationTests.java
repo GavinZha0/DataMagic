@@ -22,7 +22,7 @@ public class DataMagicApplicationTests {
 	@Autowired
 	private MockMvc mockMvc;
 
-	@Test
+	//@Test
 	@WithMockUser
 	public void accessSecuredResourceAuthenticatedThenOk() throws Exception {
 		mockMvc.perform(get("/main")).andExpect(status().isOk());

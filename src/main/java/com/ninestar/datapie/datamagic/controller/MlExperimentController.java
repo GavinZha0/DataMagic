@@ -202,6 +202,7 @@ public class MlExperimentController {
         List<ColumnField> cols = new ArrayList<>();
         List<Object[]> result = new ArrayList<>();
         String experName = "algo_"+ id;
+        // experiments.name = 'algo_{ID}_{TIME}'
         String sqlText = """
                 with runs as(
                   select m.experiment_id as exper_id, t.value as args, run_uuid, status, start_time as ts, round((end_time-start_time)/60000,1) as duration from experiments m join experiment_tags t using(experiment_id) join runs r using(experiment_id) where m.name like '%s_%%' and t.key='args' and r.user_id = %d
@@ -217,10 +218,14 @@ public class MlExperimentController {
                     select r.run_uuid, concat_ws('":"', concat('"', m.key), concat(ROUND(m.value, 3), '"')) as metric from runs r join metrics m using(run_uuid) where m.value != 'None' and m.value is not null and locate('_unknown_', m.key)=0
                   )y
                   group by run_uuid
+                ),
+                reg as (
+                  select run_id as run_uuid, version from model_versions where current_stage != 'Deleted_Internal'
                 )
-                select * from (
-                  select r.*, concat('{', params, '}') as params, concat('{', metrics, '}') as metrics from runs r join params p using(run_uuid) join metrics m using(run_uuid)    
+                select z.*, m.version from (
+                  select r.*, concat('{', params, '}') as params, concat('{', metrics, '}') as metrics from runs r join params p using(run_uuid) join metrics m using(run_uuid)
                 )z
+                left join reg m using(run_uuid)
                 order by ts DESC
                 """;
         sqlText = sqlText.formatted(experName, tokenUserId);
