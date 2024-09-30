@@ -66,8 +66,8 @@ public class DataSourceEntity {
     private Boolean pubFlag;
 
     @Basic
-    @Column(name = "locked_table", nullable = true, length = -1)
-    private String lockedTable;
+    @Column(name = "locked", nullable = true, length = -1)
+    private String locked;
 
     @Basic
     @CreatedBy

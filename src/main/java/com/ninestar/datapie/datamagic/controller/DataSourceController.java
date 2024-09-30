@@ -421,7 +421,7 @@ public class DataSourceController {
         try {
             // update public status
             String tables = Arrays.toString(request.names);
-            targetSource.setLockedTable(tables);
+            targetSource.setLocked(tables);
             sourceRepository.save(targetSource);
             return UniformResponse.ok();
         } catch (Exception e) {
@@ -568,7 +568,7 @@ public class DataSourceController {
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 
-        List<String> lockedTables = JSONUtil.parseArray(targetSource.getLockedTable()).toList(String.class);
+        List<String> lockedTables = JSONUtil.parseArray(targetSource.getLocked()).toList(String.class);
 
         // Database name is in jdbc url of targetSource so leave it null here
         DbTables dbTables = getSourceTables(sourceId, null);// via Hikari
@@ -640,7 +640,7 @@ public class DataSourceController {
 
         // handle dataset field config (filter, sorter and limit)
         // don't rename or hide any column
-        List<String> lockedTables = JSONUtil.parseArray(source.getLockedTable()).toList(String.class);
+        List<String> lockedTables = JSONUtil.parseArray(source.getLocked()).toList(String.class);
         selectSqlQuery = SqlUtils.sqlTransfer(selectSqlQuery, source.getType(), lockedTables, request.fields, request.limit, false);
         if(StrUtil.isEmpty(selectSqlQuery)){
             // not all config can be handled

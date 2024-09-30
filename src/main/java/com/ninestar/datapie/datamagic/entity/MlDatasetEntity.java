@@ -46,8 +46,8 @@ public class MlDatasetEntity {
     private String type;
 
     @Basic
-    @Column(name = "query", nullable = false, length = -1)
-    private String query;
+    @Column(name = "content", nullable = false, length = -1)
+    private String content;
 
     @Basic
     @Column(name = "final_query", nullable = true, length = -1)

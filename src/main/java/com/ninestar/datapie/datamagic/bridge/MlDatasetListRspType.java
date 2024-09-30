@@ -13,7 +13,7 @@ public class MlDatasetListRspType {
     public String group;
     public String type;
     public JSONArray variable;
-    public String query;
+    public String content;
     public JSONArray fields;
     public JSONArray target;
     public Integer fCount;

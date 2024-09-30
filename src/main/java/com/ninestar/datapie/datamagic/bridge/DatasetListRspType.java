@@ -12,7 +12,7 @@ public class DatasetListRspType {
     public String desc;
     public String group;
     public JSONArray variable;
-    public String query;
+    public String content;
     public JSONArray fields;
     public Boolean pubFlag;
     public Integer usage;

@@ -215,7 +215,7 @@ public class MlDatasetController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || req.sourceId==0 || StrUtil.isEmpty(req.query)){
+        if(StrUtil.isEmpty(req.name) || req.sourceId==0 || StrUtil.isEmpty(req.content)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -243,7 +243,7 @@ public class MlDatasetController {
             if(req.variable!=null){
                 newEntity.setVariable(req.variable.toString());
             }
-            newEntity.setQuery(req.query);
+            newEntity.setContent(req.content);
 
             newEntity.setFields(req.fields.toString());
             if(req.target!=null){
@@ -294,7 +294,7 @@ public class MlDatasetController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(req.id==0 || StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.query) || req.sourceId == 0){
+        if(req.id==0 || StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.content) || req.sourceId == 0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -313,7 +313,7 @@ public class MlDatasetController {
             targetEntity.setGroup(req.group);
             targetEntity.setType(req.type);
             targetEntity.setVariable(req.variable.toString());
-            targetEntity.setQuery(req.query);
+            targetEntity.setContent(req.content);
             targetEntity.setFields(req.fields.toString());
             targetEntity.setTarget(req.target.toString());
             targetEntity.setFCount(1);
@@ -583,22 +583,24 @@ public class MlDatasetController {
         }
 
         // get final sql query
-        String selectSqlQuery = datasetEntity.getQuery();
-        String finalSqlQuery = datasetEntity.getFinalQuery();
-        String err = "";
-        if(selectSqlQuery.length()>10 && (finalSqlQuery==null || finalSqlQuery.length()<=0)){
-            // convert to final query
-            finalSqlQuery = convertSqlQuery(datasetEntity, limit, err);
-        } else {
-            // add limit only
-            List<String> lockedTables = JSONUtil.parseArray(source.getLockedTable()).toList(String.class);
-            finalSqlQuery = SqlUtils.sqlTransfer(finalSqlQuery, source.getType(), lockedTables, null, limit, false);
+        String selectSqlQuery = datasetEntity.getContent();
+        if(selectSqlQuery == null || selectSqlQuery.length()<10){
+            response.code = UniformResponseCode.TARGET_RESOURCE_NOT_EXIST;
+            return response;
         }
+
+        String err = "";
+        // convert to final query
+        String finalSqlQuery = convertSqlQuery(datasetEntity, limit, err);
 
         if(finalSqlQuery==null || finalSqlQuery.length()<=0){
             // sql doesn't exist
             response.code = UniformResponseCode.TARGET_RESOURCE_NOT_EXIST;
             return response;
+        } else {
+            // add limit only
+            List<String> lockedTables = JSONUtil.parseArray(source.getLocked()).toList(String.class);
+            finalSqlQuery = SqlUtils.sqlTransfer(finalSqlQuery, source.getType(), lockedTables, null, limit, false);
         }
 
         if(!dbUtils.isSourceExist(source.getId())){
@@ -693,7 +695,7 @@ public class MlDatasetController {
     }
 
     public String convertSqlQuery(MlDatasetEntity datasetEntity, Integer limit, String err){
-        String selectSqlQuery = datasetEntity.getQuery();
+        String selectSqlQuery = datasetEntity.getContent();
         if(selectSqlQuery.length()<=0){
             // sql doesn't exist
             err = UniformResponseCode.TARGET_RESOURCE_NOT_EXIST.getMsg();
@@ -717,7 +719,7 @@ public class MlDatasetController {
 
         if(selectSqlQuery.length()>0 && datasetEntity.getFields().length()>0){
             JSONArray fieldArray = new JSONArray(datasetEntity.getFields());
-            List<String> lockedTables = JSONUtil.parseArray(source.getLockedTable()).toList(String.class);
+            List<String> lockedTables = JSONUtil.parseArray(source.getLocked()).toList(String.class);
             List<SqlUtils.FieldType> fieldList = JSONUtil.toList(fieldArray, SqlUtils.FieldType.class);
             // handle dataset field config (rename, hidden, filter, sorter and limit)
             selectSqlQuery = SqlUtils.sqlTransfer(selectSqlQuery, source.getType(), lockedTables, fieldList, limit, true);

@@ -42,8 +42,8 @@ public class VizDatasetEntity {
     private String variable;
 
     @Basic
-    @Column(name = "query", nullable = false, length = -1)
-    private String query;
+    @Column(name = "content", nullable = false, length = -1)
+    private String content;
 
     @Basic
     @Column(name = "final_query", nullable = true, length = -1)

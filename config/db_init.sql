@@ -485,15 +485,15 @@ CREATE TABLE data_source
     name           varchar(64)  NOT NULL,
     `desc`         varchar(128) DEFAULT NULL comment 'description',
     `group`        varchar(64)  NOT NULL DEFAULT 'default',
-    type           varchar(16)  NOT NULL comment 'csv, json, excel, mysql, vertica...',
-    url            varchar(255) NOT NULL comment 'host:port/db',
+    type           varchar(16)  NOT NULL comment 's3, mysql, http url, build-in',
+    url            varchar(255) NOT NULL comment 'host:port/db or s3 endpoint url',
     params         varchar(255) DEFAULT NULL comment "array like ['useUnicode=true']",
-    username       varchar(64)  NOT NULL comment 'db username',
-    password       varchar(255) NOT NULL comment 'db password',
-    version        varchar(64)  DEFAULT NULL comment 'db version',
+    username       varchar(64)  NOT NULL comment 'username or s3 access id',
+    password       varchar(255) NOT NULL comment 'password or s3 secret key',
+    version        varchar(64)  DEFAULT NULL comment 'db or s3 version',
     org_id         int          NOT NULL,
     `public`       boolean      NOT NULL DEFAULT false,
-    locked_table   text         DEFAULT NULL comment "array like ['user', 'salary']",
+    locked         text         DEFAULT NULL comment "lock tables or files for protection, ['user', 'salary']",
     created_by  varchar(64)     NOT NULL,
     created_at  timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by  varchar(64)     DEFAULT NULL,
@@ -502,7 +502,7 @@ CREATE TABLE data_source
 ) ENGINE = InnoDB;
 
 
-INSERT INTO data_source (id, name,`desc`,`group`,`type`,url,params,username,password,version,org_id,public,locked_table,created_by,created_at,updated_by,updated_at) VALUES
+INSERT INTO data_source (id, name,`desc`,`group`,`type`,url,params,username,password,version,org_id,public,locked,created_by,created_at,updated_by,updated_at) VALUES
 	 (1, 'Footmart','Public source','demo','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/footmart','[{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezone","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',1,1,NULL,'GavinZ','2024-09-02 00:22:42','GavinZ','2024-09-02 18:02:58'),
 	 (2, 'classicmodels','Public source','demo','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/classicmodels','[{"name":"characterEncoding","value":"UTF-8"},{"name":"serverTimezone","value":"UTC"}]','admin','YWRtaW4jNTIw','8.0.35',1,1,NULL,'GavinZ','2024-09-02 17:45:07','GavinZ','2024-09-02 18:01:36'),
 	 (3, 'Datastore','Public source','demo','MySQL','datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/datastore',NULL,'admin','YWRtaW4jNTIw','8.0.35',1,1,NULL,'GavinZ','2024-09-02 00:30:19','GavinZ','2024-09-02 18:01:36'),
@@ -556,9 +556,8 @@ CREATE TABLE viz_dataset
     `desc`         varchar(128) DEFAULT NULL,
     `group`        varchar(64)  DEFAULT 'UnGrouped',
     variable       text         DEFAULT NULL comment 'json array', 
-    query          text         DEFAULT NULL comment 'sql query',
+    content        text         DEFAULT NULL comment 'sql query or file name',
 	final_query    text         DEFAULT NULL comment 'final query',
-	error          varchar(255) DEFAULT NULL,
     field          text         DEFAULT NULL comment 'json array like [{name:"Name", type:"string", alias:"Username", metrics:true, hidden: true, order: -2}]',
     source_id      int          NOT NULL,
 	org_id         int          NOT NULL,
@@ -572,7 +571,7 @@ CREATE TABLE viz_dataset
 ) ENGINE = InnoDB;
 
 
-INSERT INTO viz_dataset (id, name,`desc`,`group`,variable,query,final_query,error,field,source_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
+INSERT INTO viz_dataset (id, name,`desc`,`group`,variable,content,final_query,field,source_id,org_id,public,created_by,created_at,updated_by,updated_at) VALUES
 	 (1, 'employee salary','Employee salary trend','footmart','[{"type":"date","name":"StartDay","value":"''1975-01-01''"}]','WITH
   xx AS (
     SELECT
@@ -712,7 +711,7 @@ FROM (
 		AND orderDate <= ''2004-12-31''
 ) x
 	JOIN products USING (productCode)
-ORDER BY orderDate',NULL,'[{"name":"orderDate","type":"timestamp"},{"name":"customerName","type":"string"},{"name":"city","type":"string"},{"name":"state","type":"string"},{"name":"country","type":"string"},{"name":"amount","type":"number","metrics":true},{"name":"productName","type":"string"},{"name":"productLine","type":"string"},{"name":"MSRP","type":"number","metrics":true},{"name":"buyPrice","type":"number","metrics":true}]',2,1,1,'GavinZ','2024-09-02 18:39:51',NULL,'2024-09-02 18:45:16');
+ORDER BY orderDate','[{"name":"orderDate","type":"timestamp"},{"name":"customerName","type":"string"},{"name":"city","type":"string"},{"name":"state","type":"string"},{"name":"country","type":"string"},{"name":"amount","type":"number","metrics":true},{"name":"productName","type":"string"},{"name":"productLine","type":"string"},{"name":"MSRP","type":"number","metrics":true},{"name":"buyPrice","type":"number","metrics":true}]',2,1,1,'GavinZ','2024-09-02 18:39:51',NULL,'2024-09-02 18:45:16');
 
 
 
@@ -820,8 +819,8 @@ CREATE TABLE ml_dataset
     `desc`         varchar(128) DEFAULT NULL,
     `group`        varchar(64)  DEFAULT 'default',
     variable       text         DEFAULT NULL comment 'json array', 
-	type		   varchar(16)  DEFAULT 'data',
-    query          text         DEFAULT NULL comment 'sql query',
+	type		   varchar(16)  DEFAULT 'data' comment 'data, text, image, audio',
+    content        text         DEFAULT NULL comment 'file name or sql query',
 	final_query    text         DEFAULT NULL comment 'final query',
     fields         text         NOT NULL comment 'json array like [{name:"age", type:"number", cat:"conti", weight:92, target:false, omit: false}]',
 	target		   text         DEFAULT NULL comment 'target array',
@@ -845,7 +844,7 @@ FROM iris','[{"name":"petal_length","std":1.765,"type":"number","attr":"conti"},
 	 (2, 'house price',NULL,'demo','[]','data','select * from bostonhousing','SELECT *
 FROM bostonhousing','[{"name":"age","std":28.149,"type":"number","attr":"conti"},{"name":"b","std":91.295,"type":"number","attr":"conti"},{"name":"chas","std":0.254,"type":"number","attr":"disc"},{"name":"crim","std":8.602,"type":"number","attr":"conti"},{"name":"dis","std":2.106,"type":"number","attr":"conti"},{"name":"indus","std":6.86,"type":"number","attr":"conti"},{"name":"lstat","std":7.141,"type":"number","attr":"conti"},{"name":"medv","std":9.197,"type":"number","attr":"conti","target":true,"miss":"drop"},{"name":"nox","std":0.116,"type":"number","attr":"conti"},{"name":"ptratio","std":2.165,"type":"number","attr":"conti"},{"name":"rad","std":8.707,"type":"number","attr":"disc"},{"name":"rm","std":0.703,"type":"number","attr":"conti"},{"name":"tax","std":168.537,"type":"number","attr":"disc"},{"name":"uid","std":146.214,"type":"number","omit":true,"attr":"disc"},{"name":"zn","std":23.335,"type":"number","attr":"disc"}]','["medv"]',NULL,NULL,3,1,1,'GavinZ','2024-09-02 21:12:57','GavinZ','2024-09-02 21:13:49');
 
-# ----------------------------
+# -------------------------
 # Table: eda
 # ----------------------------
 DROP TABLE IF EXISTS ml_eda;

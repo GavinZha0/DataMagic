@@ -11,7 +11,7 @@ public class MlDatasetActionReqType {
     public String group;
     public JSONArray variable;
     public String type;
-    public String query;
+    public String content;
     public JSONArray fields;
     public JSONArray target;
     public Boolean pubFlag;

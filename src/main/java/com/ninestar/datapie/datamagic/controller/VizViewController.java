@@ -575,7 +575,7 @@ public class VizViewController {
             return UniformResponse.error(UniformResponseCode.DATASET_NOT_EXIST);
         }
 
-        String selectSqlQuery = datasetEntity.getQuery();
+        String selectSqlQuery = datasetEntity.getContent();
         if(selectSqlQuery.length()<=0){
             // sql doesn't exist
             return UniformResponse.error(UniformResponseCode.DATASET_NOT_EXIST);
@@ -598,7 +598,7 @@ public class VizViewController {
         if(datasetEntity.getField().length()>0){
             JSONArray fieldArray = new JSONArray(datasetEntity.getField());
             List<SqlUtils.FieldType> fieldList = JSONUtil.toList(fieldArray, SqlUtils.FieldType.class);
-            List<String> lockedTables = JSONUtil.parseArray(source.getLockedTable()).toList(String.class);
+            List<String> lockedTables = JSONUtil.parseArray(source.getLocked()).toList(String.class);
             // handle dataset field config (rename, hidden, filter, sorter and limit)
             selectSqlQuery = SqlUtils.sqlTransfer(selectSqlQuery, source.getType(), lockedTables, fieldList, request.limit, true);
         }
@@ -769,15 +769,16 @@ public class VizViewController {
             return response;
         }
 
-        // get final sql query
-        String selectSqlQuery = datasetEntity.getQuery();
-        String finalSqlQuery = datasetEntity.getFinalQuery();
-        String err = "";
-        if(selectSqlQuery.length()>10 && (finalSqlQuery==null || finalSqlQuery.length()<=0)){
-            // convert to final query
-            finalSqlQuery = convertSqlQuery(datasetEntity, null, err);
+        // get sql query and replace parameters
+        String selectSqlQuery = datasetEntity.getContent();
+        if(selectSqlQuery == null || selectSqlQuery.length()<10){
+            response.code = UniformResponseCode.TARGET_RESOURCE_NOT_EXIST;
+            return response;
         }
 
+        String err = "";
+        // convert to final query
+        String finalSqlQuery = convertSqlQuery(datasetEntity, null, err);
         if(finalSqlQuery==null || finalSqlQuery.length()<=0){
             // sql doesn't exist
             response.code = UniformResponseCode.TARGET_RESOURCE_NOT_EXIST;
@@ -1054,7 +1055,7 @@ public class VizViewController {
     }
 
     public String convertSqlQuery(VizDatasetEntity datasetEntity, Integer limit, String err){
-        String selectSqlQuery = datasetEntity.getQuery();
+        String selectSqlQuery = datasetEntity.getContent();
         if(selectSqlQuery.length()<=0){
             // sql doesn't exist
             err = UniformResponseCode.TARGET_RESOURCE_NOT_EXIST.getMsg();
@@ -1079,7 +1080,7 @@ public class VizViewController {
         if(selectSqlQuery.length()>0 && datasetEntity.getField().length()>0){
             JSONArray fieldArray = new JSONArray(datasetEntity.getField());
             List<SqlUtils.FieldType> fieldList = JSONUtil.toList(fieldArray, SqlUtils.FieldType.class);
-            List<String> lockedTables = JSONUtil.parseArray(source.getLockedTable()).toList(String.class);
+            List<String> lockedTables = JSONUtil.parseArray(source.getLocked()).toList(String.class);
             // handle dataset field config (rename, hidden, filter, sorter and limit)
             selectSqlQuery = SqlUtils.sqlTransfer(selectSqlQuery, source.getType(), lockedTables, fieldList, limit, true);
         }

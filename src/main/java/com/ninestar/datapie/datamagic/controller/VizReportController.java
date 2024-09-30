@@ -433,7 +433,7 @@ public class VizReportController {
                     VizDatasetEntity datasetEntity = viewEntity.getDataset();
                     DataSourceEntity sourceEntity = datasetEntity.getDatasource();
 
-                    String selectSqlQuery = datasetEntity.getQuery();
+                    String selectSqlQuery = datasetEntity.getContent();
                     // translate variable of sql
                     selectSqlQuery = SqlUtils.sqlTranslate(selectSqlQuery, new JSONArray(datasetEntity.getVariable()));
                     if(StrUtil.count(selectSqlQuery, "@")>0 || StrUtil.count(selectSqlQuery, "$")>0){
