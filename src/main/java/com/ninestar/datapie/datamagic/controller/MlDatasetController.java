@@ -263,8 +263,11 @@ public class MlDatasetController {
             // get and fill org
             newEntity.setDatasource(source);
 
+            // db only
+            List dbList = new ArrayList<>(){{add("mysql");add("mariadb");}};
+
             // convert query based on variable, fields
-            if(req.sourceId > 0){
+            if(req.sourceId > 0 && dbList.contains(source.getType())) {
                 String err = "";
                 String finalQuery = convertSqlQuery(newEntity, null, err);
                 newEntity.setFinalQuery(finalQuery);
@@ -318,8 +321,11 @@ public class MlDatasetController {
             targetEntity.setTarget(req.target.toString());
             targetEntity.setFCount(1);
 
+            // db only
+            List dbList = new ArrayList<>(){{add("mysql");add("mariadb");}};
+
             // convert query based on variable, fields
-            if(req.sourceId > 0) {
+            if(req.sourceId > 0 && dbList.contains(targetEntity.getDatasource().getType())) {
                 String err = "";
                 String finalQuery = convertSqlQuery(targetEntity, null, err);
                 targetEntity.setFinalQuery(finalQuery);

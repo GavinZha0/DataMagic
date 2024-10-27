@@ -14,9 +14,7 @@ import com.ninestar.datapie.datamagic.entity.DataSourceEntity;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.repository.DataSourceRepository;
 import com.ninestar.datapie.datamagic.repository.VizDatasetRepository;
-import com.ninestar.datapie.datamagic.utils.DbUtils;
-import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
-import com.ninestar.datapie.datamagic.utils.SqlUtils;
+import com.ninestar.datapie.datamagic.utils.*;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.*;
 import com.ninestar.datapie.framework.utils.UniformResponse;
@@ -69,6 +67,9 @@ public class DataSourceController {
 
     @Resource
     private DbUtils dbUtils;
+
+    @Resource
+    private MinioUtil minioUtil;
 
     @PostMapping("/list")
     @Operation(description = "getSourceList")
@@ -568,26 +569,37 @@ public class DataSourceController {
             return UniformResponse.error(UniformResponseCode.USER_NO_PERMIT);
         }
 
-        List<String> lockedTables = JSONUtil.parseArray(targetSource.getLocked()).toList(String.class);
+        String srcType = targetSource.getType().toUpperCase();
+        switch (srcType){
+            case "MYSQL":{
+                List<String> lockedTables = JSONUtil.parseArray(targetSource.getLocked()).toList(String.class);
 
-        // Database name is in jdbc url of targetSource so leave it null here
-        DbTables dbTables = getSourceTables(sourceId, null);// via Hikari
-        dbTables.setDbType(targetSource.getType());
-        List<TableField> tables = dbTables.getTables();
-        for (int i = tables.size() - 1; i >= 0; i--) {
-            TableField field = tables.get(i);
-            if (lockedTables.contains(field.getName())) {
-                if(!includeLocked){
-                    // remove locked table from list
-                    tables.remove(field);
+                // Database name is in jdbc url of targetSource so leave it null here
+                DbTables dbTables = getSourceTables(sourceId, null);// via Hikari
+                dbTables.setDbType(targetSource.getType());
+                List<TableField> tables = dbTables.getTables();
+                for (int i = tables.size() - 1; i >= 0; i--) {
+                    TableField field = tables.get(i);
+                    if (lockedTables.contains(field.getName())) {
+                        if(!includeLocked){
+                            // remove locked table from list
+                            tables.remove(field);
+                        }
+                        else{
+                            field.setLocked(true);
+                        }
+                    }
                 }
-                else{
-                    field.setLocked(true);
-                }
+                return UniformResponse.ok().data(dbTables);
+            }
+            case "S3BUCKET":{
+                List<TreeSelect> listFiles = getS3Files(targetSource);
+                return UniformResponse.ok().data(listFiles);
+            }
+            default:{
+                return UniformResponse.ok();
             }
         }
-
-        return UniformResponse.ok().data(dbTables);
     }
 
     @PostMapping("/fields")
@@ -785,5 +797,52 @@ public class DataSourceController {
         }
 
         return tableColumns;
+    }
+
+    private List<TreeSelect> getS3Files(DataSourceEntity src) throws Exception {
+        String[] https = src.getUrl().split("//");
+        String[] urls = https[1].split("/");
+        String folder = null;
+        if(urls.length < 2){
+            return null;
+        } else if (urls.length > 2){
+            folder = String.join("/", Arrays.copyOfRange(urls, 2, urls.length));
+        }
+
+        try {
+            String s3EndPoint = String.join("//", https[0], urls[0]);
+            String pwd = new String(Base64.decode(src.getPassword()));
+
+            Boolean conn = minioUtil.connect(s3EndPoint, src.getUsername(), pwd);
+            if(!conn){
+                return null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        List<FileInfo> s3fs = minioUtil.listFiles(urls[1], folder);
+        minioUtil.disconnect();
+
+        List<String> folders = s3fs.stream().filter(f -> f.getDirectory() && f.getFilename().indexOf("/")==f.getFilename().length()-1).map(FileInfo::getFilename).toList();
+        List<TreeSelect> treeSources = new ArrayList<>();
+        Integer i = 1000;
+        for (String fd : folders) {
+            TreeSelect treeGroup = new TreeSelect(i, "folder", fd, fd, false, false);
+            Integer j = 1;
+            for (FileInfo fs: s3fs) {
+                if(fs.getFilename().startsWith(fd) && !fs.getFilename().endsWith("/")){
+                    // selectable and isLeaf should be handled by front end. so it should be removed here
+                    TreeSelect treeNode = new TreeSelect(i+j, "file", fs.getFilename(), fs.getFilename(), true, true);
+                    treeGroup.getChildren().add(treeNode);
+                    j += 1;
+                }
+            }
+            if(treeGroup.getChildren().size()>0){
+                treeSources.add(treeGroup);
+                i += 100;
+            }
+        }
+        return treeSources;
     }
 }

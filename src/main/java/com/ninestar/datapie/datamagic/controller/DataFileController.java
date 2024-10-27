@@ -106,7 +106,7 @@ public class DataFileController {
 
         if(minioUtil.existsBucket(bucket_name)){
             JSONObject jsonResponse = new JSONObject();
-            jsonResponse.set("records", minioUtil.listFiles(bucket_name));
+            jsonResponse.set("records", minioUtil.listFiles(bucket_name, null));
             return UniformResponse.ok().data(jsonResponse);
         } else {
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
