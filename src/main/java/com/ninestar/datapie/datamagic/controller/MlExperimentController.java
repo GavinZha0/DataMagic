@@ -24,6 +24,7 @@ import com.ninestar.datapie.framework.utils.UniformResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.mlflow.tracking.MlflowClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -81,6 +82,8 @@ public class MlExperimentController {
         Integer algoId = Integer.parseInt(param.get("algoId").toString());
         List<MlExperimentEntity> experList = new ArrayList<>();
         experList = experimentRepository.findByMlIdAndUserIdOrderByStartAtDesc(algoId, tokenUserId);
+
+        MlflowClient client = new MlflowClient("// admin:admin#520@datapie. cjiaoci4g12w. us-east-1.rds. amazonaws. com:3306/ mlflow");
 
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", experList);
@@ -220,12 +223,12 @@ public class MlExperimentController {
                   group by run_uuid
                 ),
                 reg as (
-                  select run_id as run_uuid, version from model_versions where current_stage != 'Deleted_Internal'
+                  select v.run_id as run_uuid, v.version, t.key, t.value as published from model_versions v join model_version_tags t on v.name=t.name AND v.version=t.version where current_stage != 'Deleted_Internal' AND t.key='published'
                 )
-                select z.*, m.version from (
+                select z.*, g.version, g.published from (
                   select r.*, concat('{', params, '}') as params, concat('{', metrics, '}') as metrics from runs r join params p using(run_uuid) join metrics m using(run_uuid)
                 )z
-                left join reg m using(run_uuid)
+                left join reg g using(run_uuid)
                 order by ts DESC
                 """;
         sqlText = sqlText.formatted(experName, tokenUserId);
@@ -244,16 +247,21 @@ public class MlExperimentController {
             JSONObject jsonObject = new JSONObject();
             for(int m=0; m<cols.size(); m++){
                 String key = cols.get(m).getName();
-                String val = objs[m].toString();
-                if(key.equals("args")){
-                    // args='aaa|bbb|ccc'
-                    // convert args to array
-                    jsonObject.set(key, val.split("\\|"));
-                } else if(val.startsWith("{\"")){
-                    // convert string to json object
-                    jsonObject.set(key, new JSONObject(val.replace("training_", "")));
-                } else {
-                    jsonObject.set(key, val);
+                if(objs[m] != null){
+                    String val = objs[m].toString();
+                    if(key.equals("args")){
+                        // args='aaa|bbb|ccc'
+                        // convert args to array
+                        jsonObject.set(key, val.split("\\|"));
+                    } else if(val.startsWith("{\"")){
+                        // convert string to json object
+                        jsonObject.set(key, new JSONObject(val.replace("training_", "")));
+                    } else if(key.equals("published")){
+                        // convert string to bool
+                        jsonObject.set(key, Boolean.valueOf(val));
+                    } else {
+                        jsonObject.set(key, val);
+                    }
                 }
             }
             // record response
