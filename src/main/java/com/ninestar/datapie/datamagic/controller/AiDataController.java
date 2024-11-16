@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/aidata")
-@Tag(name = "AiDataApp")
+@RequestMapping("/ai/data")
+@Tag(name = "AiData")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class AiDataController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -73,8 +73,8 @@ public class AiDataController {
 
 
     @PostMapping("/list")
-    @Operation(description = "getImageList")
-    public UniformResponse getImageList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws InterruptedException, IOException {
+    @Operation(description = "getDataList")
+    public UniformResponse getDataList(@RequestBody @Parameter(name = "req", description = "request") TableListReqType req) throws InterruptedException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
         Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
@@ -138,8 +138,6 @@ public class AiDataController {
         for(AiDataEntity entity: queryEntities){
             AiImageListRspType item = new AiImageListRspType();
             BeanUtil.copyProperties(entity, item, new String[]{"model", "content"});
-            item.modelId = entity.getModel().getId();
-            item.modelName = entity.getModel().getName();
             item.content = new JSONArray(entity.getContent());
             rspList.add(item);
         }
@@ -154,8 +152,8 @@ public class AiDataController {
     }
 
     @PostMapping("/create")
-    @Operation(description = "createImageApp")
-    public UniformResponse createImageApp(@RequestBody @Parameter(name = "req", description = "image info") AiImageActionReqType req){
+    @Operation(description = "createDataApp")
+    public UniformResponse createDataApp(@RequestBody @Parameter(name = "req", description = "image info") AiImageActionReqType req){
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
@@ -200,8 +198,8 @@ public class AiDataController {
     }
 
     @PostMapping("/update")
-    @Operation(description = "updateImageApp")
-    public UniformResponse updateImageApp(@RequestBody @Parameter(name = "req", description = "Image info") AiImageActionReqType req){
+    @Operation(description = "updateDataApp")
+    public UniformResponse updateDataApp(@RequestBody @Parameter(name = "req", description = "Image info") AiImageActionReqType req){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -244,8 +242,8 @@ public class AiDataController {
 
     @LogAnn(logType = LogType.ACTION, actionType = ActionType.SHARE)
     @PostMapping("/public")
-    @Operation(description = "publicImageApp")
-    public UniformResponse publicImageApp(@RequestBody @Parameter(name = "params", description = "app id and pub flag") PublicReqType params){
+    @Operation(description = "publicDataApp")
+    public UniformResponse publicDataApp(@RequestBody @Parameter(name = "params", description = "app id and pub flag") PublicReqType params){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -272,8 +270,8 @@ public class AiDataController {
     }
 
     @PostMapping("/clone")
-    @Operation(description = "cloneImageApp")
-    public UniformResponse cloneImageApp(@RequestBody @Parameter(name = "param", description = "Image app id") JSONObject param){
+    @Operation(description = "cloneDataApp")
+    public UniformResponse cloneDataApp(@RequestBody @Parameter(name = "param", description = "Image app id") JSONObject param){
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
@@ -321,8 +319,8 @@ public class AiDataController {
     }
 
     @DeleteMapping("/delete")
-    @Operation(description = "deleteImageApp")
-    public UniformResponse deleteImageApp(@RequestParam @Parameter(name = "id", description = "Image app id") Integer id){
+    @Operation(description = "deleteDataApp")
+    public UniformResponse deleteDataApp(@RequestParam @Parameter(name = "id", description = "Image app id") Integer id){
         //Hibernate: delete from data_source where id=?
         String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
         String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
@@ -349,8 +347,8 @@ public class AiDataController {
     }
 
     @PostMapping("/tree")
-    @Operation(description = "getImageTree")
-    public UniformResponse getImageTree(){
+    @Operation(description = "getDataTree")
+    public UniformResponse getDataTree(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();
@@ -412,22 +410,22 @@ public class AiDataController {
         String msgTarget = userId + "_image" + id;
 
 
-        String modelPath = FILE_SERVER+"/public/model/" + marketModel.getType() + "/" + marketModel.getName();
+        String modelPath = FILE_SERVER+"/public/model/" + marketModel.getArea() + "/" + marketModel.getName();
         List<String> fileList = null;
-        if(!StrUtil.isEmpty(marketModel.getFiles())){
-            fileList = JSONUtil.parseArray(marketModel.getFiles()).toList(String.class);
+        if(!StrUtil.isEmpty(marketModel.getArea())){
+            fileList = JSONUtil.parseArray(marketModel.getArea()).toList(String.class);
         }
 
         // run DL4J/DJL example
         CompletableFuture<Integer> future = null;
         logger.info("Start a thread to execute DJL model, inform UI to start progressbar via stomp......");
-        switch (marketModel.getFramework().toLowerCase()){
+        switch (marketModel.getArea().toLowerCase()){
             case "djl": {
                 future = asyncService.executeDJL(modelPath, path + fileName, outputDir, msgTarget);
                 break;
             }
             default: {
-                future = asyncService.executeDJL(modelPath, fileList, marketModel.getFramework(), path + fileName, outputDir, msgTarget);
+                future = asyncService.executeDJL(modelPath, fileList, marketModel.getArea(), path + fileName, outputDir, msgTarget);
                 break;
             }
         }
@@ -441,20 +439,20 @@ public class AiDataController {
 
     }
 
-    @PostMapping("/category")
-    @Operation(description = "getCatOptions")
-    public UniformResponse getCatOptions() {
+    @PostMapping("/groups")
+    @Operation(description = "getGroups")
+    public UniformResponse getGroups() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = dataAppRepository.findDistinctGroup();
+        Set<Object> distinctGroups = dataAppRepository.findDistinctGroup();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;
         // get distinct category set
-        for(Object item: distinctCategory){
+        for(Object item: distinctGroups){
             OptionsRspType cat = new OptionsRspType();
             cat.id = i;
             cat.name = item.toString();
@@ -469,8 +467,8 @@ public class AiDataController {
 
 
     @PostMapping("/upload")
-    @Operation(description = "imageUpload")
-    public UniformResponse imageUpload(@RequestParam("files") MultipartFile[] files) throws Exception {
+    @Operation(description = "dataUpload")
+    public UniformResponse dataUpload(@RequestParam("files") MultipartFile[] files) throws Exception {
         //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -145,15 +145,16 @@ public class JpaSpecUtil {
                             }
                             else if(root.get(fieldName).getJavaType().getName().startsWith("java.")){
                                 // regular type like Integer, string
-                                filterConditions.add(root.get(fieldName).in(fieldValue[i]));
+                                filterConditions.add(root.get(fieldName).in(fieldValue));
                             } else {
                                 // class like SysOrgEntity
                                 // use fixed field 'id' here, need enhancement, Gavin !!!
-                                filterConditions.add(root.get(fieldName).get("id").in(fieldValue[i]));
+                                filterConditions.add(root.get(fieldName).get("id").in(fieldValue));
                             }
                         }
                         // 'or' for filtering multiple values in one field(column)
-                        filterPredicate = cb.or(filterConditions.toArray(new Predicate[filterConditions.size()]));
+                        // 'and' or 'or' ? -- Gavin
+                        filterPredicate = cb.and(filterConditions.toArray(new Predicate[filterConditions.size()]));
                     }
 
                     // build search query condition and predicate

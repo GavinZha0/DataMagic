@@ -74,6 +74,7 @@ public enum UniformResponseCode {
     DATAREPORT_IN_USE(2415, "api.datareport.in.use"),
     DATAREPORT_CONFIG_ERR(2416, "api.datareport.config.error"),
 
+    AI_MODEL_SERVING(2801, "api.ai.model.serving"),
     /**
      * 3000～3999 区间表示接口异常
      */

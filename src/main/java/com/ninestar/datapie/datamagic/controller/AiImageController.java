@@ -138,8 +138,6 @@ public class AiImageController {
         for(AiImageEntity entity: queryEntities){
             AiImageListRspType item = new AiImageListRspType();
             BeanUtil.copyProperties(entity, item, new String[]{"model", "content"});
-            item.modelId = entity.getModel().getId();
-            item.modelName = entity.getModel().getName();
             item.content = new JSONArray(entity.getContent());
             rspList.add(item);
         }
@@ -185,7 +183,6 @@ public class AiImageController {
             newEntity.setPlatform(req.platform);
             newEntity.setPlatformVer(req.platformVer);
             newEntity.setContent(req.content.toString());
-            newEntity.setModel(modelEntity);
             newEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jp
 
@@ -228,7 +225,6 @@ public class AiImageController {
             targetEntity.setPlatform(req.platform);
             targetEntity.setPlatformVer(req.platformVer);
             targetEntity.setContent(req.content.toString());
-            targetEntity.setModel(modelEntity);
             targetEntity.setPubFlag(req.pubFlag);
             //create_time and update_time are generated automatically by jpa
 
@@ -412,22 +408,22 @@ public class AiImageController {
         String msgTarget = userId + "_image" + id;
 
 
-        String modelPath = FILE_SERVER+"/public/model/" + marketModel.getType() + "/" + marketModel.getName();
+        String modelPath = FILE_SERVER+"/public/model/" + marketModel.getArea() + "/" + marketModel.getName();
         List<String> fileList = null;
-        if(!StrUtil.isEmpty(marketModel.getFiles())){
-            fileList = JSONUtil.parseArray(marketModel.getFiles()).toList(String.class);
+        if(!StrUtil.isEmpty(marketModel.getArea())){
+            fileList = JSONUtil.parseArray(marketModel.getArea()).toList(String.class);
         }
 
         // run DL4J/DJL example
         CompletableFuture<Integer> future = null;
         logger.info("Start a thread to execute DJL model, inform UI to start progressbar via stomp......");
-        switch (marketModel.getFramework().toLowerCase()){
+        switch (marketModel.getArea().toLowerCase()){
             case "djl": {
                 future = asyncService.executeDJL(modelPath, path + fileName, outputDir, msgTarget);
                 break;
             }
             default: {
-                future = asyncService.executeDJL(modelPath, fileList, marketModel.getFramework(), path + fileName, outputDir, msgTarget);
+                future = asyncService.executeDJL(modelPath, fileList, marketModel.getArea(), path + fileName, outputDir, msgTarget);
                 break;
             }
         }

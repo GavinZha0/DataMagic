@@ -4,7 +4,6 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.ninestar.datapie.datamagic.annotation.SingleReqParam;
 import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
@@ -201,6 +200,14 @@ public class MlExperimentController {
             dbUtils.add(mLflowConfig.getId(), mLflowConfig.getName(), mLflowConfig.getType(), mLflowConfig.getUrl(),
                     mLflowConfig.getParams(), mLflowConfig.getUsername(), mLflowConfig.getPassword());
         }
+
+
+        // MlflowClient support tracking server uri and databricks only
+        // Create a Mlflow client and get/set something via the client API
+        // String trackingUri = "http://localhost:5138";
+        // MlflowClient client = new MlflowClient(trackingUri);
+        // Service.Experiment exper = client.getExperiment("49");
+        // logger.info(exper.getName());
 
         List<ColumnField> cols = new ArrayList<>();
         List<Object[]> result = new ArrayList<>();

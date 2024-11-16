@@ -1004,42 +1004,53 @@ DROP TABLE IF EXISTS ai_model;
 CREATE TABLE ai_model
 (
     id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    sid            int            DEFAULT NULL comment 'history version',
     name           varchar(64)    NOT NULL,
     `desc`         varchar(128)   DEFAULT NULL comment 'description',
-    category       varchar(64)    NOT NULL comment 'image, video, audio, text, data, security',
-    type           varchar(32)    NOT NULL comment 'clacification, regression, clustering, reduction',
-    tags           varchar(64)    DEFAULT NULL comment 'used to search like ["image", "autopilot", "medicine"]',
-    version        varchar(16)    NOT NULL comment 'model version',
-    network        varchar(16)    DEFAULT NULL comment 'CNN, RNN, Resnet, Letnet',
-    framework      varchar(16)    NOT NULL comment 'pytorch, tensorflow, paddle, dj4j, JDL, auto-sklearn', 
-    frame_ver      varchar(16)    DEFAULT NULL,
-    trainset       varchar(64)    DEFAULT NULL comment 'dataset of training',
-    files          text           NOT NULL comment 'array like ["aaa.pkl", "bbb.json", "ccc.txt"]',
-    input          text           NOT NULL comment 'json object like {batch:true, grayscale:false, size: [224,224], normalize: true}',
-    output         text           NOT NULL comment 'json object like {boundary,accuracy}',
-    eval           text           DEFAULT NULL comment 'json object like {precision: 98}',
-    score          int            DEFAULT NULL comment '0 to 10',
+    area           varchar(32)    NOT NULL comment 'image, video, audio, text, data, security',
+    tags           varchar(128)    DEFAULT NULL comment 'used to search like ["image", "autopilot", "medicine"]',
+	algo_id        int            DEFAULT NULL comment 'point to a ml algo like a foreign key',
+    rate           int            DEFAULT NULL comment '0 to 10',
     price          varchar(16)    DEFAULT NULL comment '$10/year',
-    detail         text           DEFAULT NULL, 
-    weblink        varchar(64)    DEFAULT NULL comment 'demo link or home page',
-    model_id       int            DEFAULT NULL comment 'point to a ml model like a foreign key',
+	org_id         int            NOT NULL,
+    `public`       boolean        NOT NULL DEFAULT false,
+	run_id         varchar(32)    NOT NULL comment 'run_id of mlflow model_versions',
+	version		   int			  NOT NULL comment 'version of mlflow model_versions',
+	deploy_to      varchar(64)    DEFAULT NULL comment 'mlflow, ray, docker segmaker or databricks',
+	endpoint       varchar(64)    DEFAULT NULL comment 'http://IP:PORT/invocations',
+	status		   int            NOT NULL DEFAULT 0 comment '0:ready;1:serving;2:exception',
+    created_by  varchar(64)    NOT NULL comment 'registered_by',
+    created_at  timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP comment 'registered_at',
+	updated_by     varchar(64)   DEFAULT NULL,
+    updated_at     timestamp     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	deployed_by    varchar(64)    DEFAULT NULL,
+    deployed_at    timestamp      DEFAULT NULL,
+	CONSTRAINT fk_ai_model_org    foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
+
+
+# ----------------------------
+# Table: ai_data
+# ----------------------------
+DROP TABLE IF EXISTS ai_data;
+CREATE TABLE ai_data
+(
+    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name           varchar(64)    NOT NULL,
+    `desc`         varchar(128)   DEFAULT NULL comment 'description',
+    `group`        varchar(64)    DEFAULT 'default',
+    model_id       int            NOT NULL,
+    dataset        text           NOT NULL comment '["/aa/bb.csv", "/aa/cc.csv"]',
+	fields		   text           DEFAULT NULL comment 'field map',
+	result         text           DEFAULT NULL comment '[1,2,1]',
 	org_id         int            NOT NULL,
     `public`       boolean        NOT NULL DEFAULT false,
     created_by     varchar(64)    NOT NULL,
     created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by     varchar(64)    DEFAULT NULL,
     updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT fk_aimodel_org       foreign key(org_id)     REFERENCES sys_org(id)
+    CONSTRAINT fk_aidata_model   foreign key(model_id)  REFERENCES ai_model(id),
+	CONSTRAINT fk_ai_data_org    foreign key(org_id)     REFERENCES sys_org(id)
 ) ENGINE = InnoDB;
-
-INSERT INTO ai_model (id, sid, name, `desc`, category, type, tags, version, network, framework, frame_ver, trainset, files, input, output, eval, score, price, detail, weblink, model_id, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, null, 'resnet50', 'Detect daily objects', 'image', 'Object detection', '["image", "autopilot"]', '1.0', 'Resnet50', 'DJL', '0.17.0', 'ImageNet', '{model: "null"}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 98}', 9, '0', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, 'GavinZ', null),
-(2, null, 'resnet18', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'pytorch', '1.11', null, '{file:["resnet18.pt","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
-(3, null, 'resnet18_v1', 'Recognize daily supplies', 'image', 'Classification', '["image"]', '1.0', 'Resnet18', 'mxnet', '0.17.0', null, '{file:["resnet18_v1-0000.params","resnet18_v1-symbol.json","synset.txt"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '5', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
-(4, null, 'hwr_mnist', 'Handwriting numerals recognition', 'image', 'Classification', '["handwriting","number", "image"]', '1.0', 'MPL', 'mxnet', '0.17.0', null, '{file:["hwr_mnist.params"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '10', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null),
-(5, null, 'pneumonia', 'Pneumonia recognition', 'image', 'Classification', '["pneumonia", "image"]', '1.0', 'Resnet', 'tensorflow', '0.17.0', null, '{file:["pneumonia.pb"]}', '{batch:true, grayscale: false, size: [224,224], normalize: true}', '{boundary: boundaryBox, accuracy: accuracy}', '{precision: 95}', 8, '0', null, 'www.baidu.com', null, 1, true, 'GavinZ', null, null, null);
-
 
 
 
@@ -1163,34 +1174,6 @@ VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'C
 (2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
 
 
-# ----------------------------
-# Table: ai_data
-# ----------------------------
-DROP TABLE IF EXISTS ai_data;
-CREATE TABLE ai_data
-(
-    id             int            NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name           varchar(64)    NOT NULL,
-    `desc`         varchar(128)   DEFAULT NULL comment 'description',
-    `group`        varchar(64)    DEFAULT 'UnGrouped',
-    area           varchar(64)    DEFAULT NULL comment 'like autopilot, medicine',
-    type           varchar(64)    NOT NULL comment 'come from model like clacification, regression, clustering, reduction',
-    model_id       int            NOT NULL,
-    platform       varchar(64)    DEFAULT 'DJL' comment 'running platform',
-    platform_ver   varchar(16)    DEFAULT NULL,
-    content        text           DEFAULT NULL comment '[{file: "/aaa/bbb/abc.jpg", prediction: {}}, {file: "/abc/bcd/fg.png", prediction: {}}]',
-	org_id         int            NOT NULL,
-    `public`       boolean        NOT NULL DEFAULT false,
-    created_by     varchar(64)    NOT NULL,
-    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_by     varchar(64)    DEFAULT NULL,
-    updated_at     timestamp      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_aidata_model   foreign key(model_id)  REFERENCES ai_model(id)
-) ENGINE = InnoDB;
-
-INSERT INTO ai_data (id, name, `desc`, `group`, type, field, model_id, platform, platform_ver, content, org_id, `public`, created_by, created_at, updated_by, updated_at)
-VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'Classification', 'autopilot', 1, 'DJL', '2.0', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null),
-(2, 'pneumonia detecting', 'Pneumonia classification', 'demo', 'Classification', 'medicine', 4, 'DJL', '4.5', '[{file: "/aaa/bbb/abc.jpg", prediction: {}}]', 1, true, 'GavinZ', null, null, null);
 
 # ----------------------------
 # Table: ai_security
@@ -1224,6 +1207,22 @@ VALUES (1, 'object detecting', 'Object classification and detection', 'demo', 'C
 
 
 
+# ----------------------------
+# Table: ai_history
+# ----------------------------
+DROP TABLE IF EXISTS ai_history;
+CREATE TABLE ai_history
+(
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	app_id          int           NOT NULL,
+	area		   varchar(32)   NOT NULL comment 'image, video, audio, text, data, security',
+	dataset		   text          NOT NULL comment '{file:"S3://aa/bb.csv", map:{a1:"b1",a2:"b2"}}',
+	result		   text          NOT NULL comment '[1,2,3,1]',
+	org_id         int           NOT NULL,
+    created_by     varchar(64)    NOT NULL,
+    created_at     timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_ai_history_org       foreign key(org_id)     REFERENCES sys_org(id)
+) ENGINE = InnoDB;
 
 
 

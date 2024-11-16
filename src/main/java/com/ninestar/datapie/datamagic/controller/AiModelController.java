@@ -1,46 +1,48 @@
 package com.ninestar.datapie.datamagic.controller;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.ninestar.datapie.datamagic.aop.ActionType;
 import com.ninestar.datapie.datamagic.aop.LogAnn;
 import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
-import com.ninestar.datapie.datamagic.entity.AiImageEntity;
+import com.ninestar.datapie.datamagic.config.MLflowConfig;
 import com.ninestar.datapie.datamagic.entity.AiModelEntity;
 import com.ninestar.datapie.datamagic.repository.AiImageRepository;
 import com.ninestar.datapie.datamagic.repository.AiModelRepository;
-import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
+import com.ninestar.datapie.datamagic.repository.MlAlgoRepository;
+import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
+import com.ninestar.datapie.datamagic.utils.DbUtils;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
+import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.framework.model.TreeSelect;
 import com.ninestar.datapie.framework.utils.UniformResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import com.ninestar.datapie.datamagic.utils.JpaSpecUtil;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 
 /**
  * <p>
@@ -51,17 +53,27 @@ import java.util.stream.Collectors;
  * @since 2021-09-18
  */
 @RestController
-@RequestMapping("/aimodel")
-@Tag(name = "AiTrainedModel")
+@RequestMapping("/ai/model")
+@Tag(name = "AiModel")
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class AiModelController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
-    public AiModelRepository trainedModelRepository;
+    public AiModelRepository modelRepository;
 
     @Resource
-    public AiImageRepository imageAppRepository;
+    private DbUtils dbUtils;
+
+    @Resource
+    private MLflowConfig mLflowConfig;
+
+    @Resource
+    private MlAlgoRepository mlAlgoRepository;
+
+    @Resource
+    private SysOrgRepository orgRepository;
+
 
     @PostMapping("/list")
     @Operation(description = "getModels")
@@ -73,6 +85,7 @@ public class AiModelController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
         Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
 
         Long totalRecords = 0L;
         Page<AiModelEntity> pageEntities = null;
@@ -115,50 +128,66 @@ public class AiModelController {
 
         // query data from database
         if(pageable!=null){
-            pageEntities = trainedModelRepository.findAll(specification, pageable);
+            pageEntities = modelRepository.findAll(specification, pageable);
             queryEntities = pageEntities.getContent();
             totalRecords = pageEntities.getTotalElements();
         }
         else{
-            queryEntities = trainedModelRepository.findAll(specification);
+            queryEntities = modelRepository.findAll(specification);
             totalRecords = (long) queryEntities.size();
         }
 
         // build response
         List<AiModelListRspType> rspList = new ArrayList<AiModelListRspType>();
+        List<String> runIds = new ArrayList<>();
         for(AiModelEntity entity: queryEntities){
             AiModelListRspType item = new AiModelListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"tags", "content", "input", "output", "evaluation", "detail"});
+            BeanUtil.copyProperties(entity, item, new String[]{"tags"});
             if(!StrUtil.isEmpty(entity.getTags())) {
                 // convert string to array
                 item.tags = JSONUtil.parseArray(entity.getTags()).toList(String.class);
             }
-            if(!StrUtil.isEmpty(entity.getFiles())) {
-                // convert string to array
-                item.files = JSONUtil.parseArray(entity.getFiles()).toList(String.class);
-            }
-            if(!StrUtil.isEmpty(entity.getInput())) {
-                item.input = new JSONArray(entity.getInput());
-            }
-            if(!StrUtil.isEmpty(entity.getOutput())) {
-                item.output = new JSONArray(entity.getOutput());
-            }
-            if(!StrUtil.isEmpty(entity.getEval())) {
-                item.evaluation = new JSONArray(entity.getEval());
-            }
-            if(!StrUtil.isEmpty(entity.getDetail())) {
-                item.detail = new JSONObject(entity.getDetail());
-            }
 
-            if(entity.getScore()!=null){
-                item.rate = entity.getScore().floatValue()/2;
-            }
-
-            // get model usage
-            List<AiImageEntity> images = imageAppRepository.findByModelId(entity.getId());
-            item.usage = images.size();
-
+            runIds.add(entity.getRunId());
             rspList.add(item);
+        }
+
+        if(runIds.size() > 0){
+            JSONArray mlflowRecords = new JSONArray();
+            try {
+                // find registered models in mlflow db
+                mlflowRecords = listRegisteredModels("'" + String.join("','", runIds) + "'");
+            } catch (Exception e){
+                logger.error(e.getMessage());
+                return UniformResponse.error(UniformResponseCode.API_EXCEPTION_SQL_EXE);
+            }
+
+            for(AiModelListRspType item: rspList){
+                // Find it by run id and version
+                JSONObject registeredMoel = mlflowRecords.stream()
+                        .map(JSONObject.class::cast)
+                        .filter(obj -> obj.getStr("run_uuid").equals(item.runId) && Objects.equals(obj.getInt("version"), item.version))
+                        .findFirst()
+                        .orElse(null);
+
+                // append registered info of mlflow to response
+                if(registeredMoel != null){
+                    JSONObject reg = new JSONObject(registeredMoel.get("register"));
+                    item.algoName = reg.get("algoName").toString();
+
+                    item.trainedAt = Timestamp.from(Instant.ofEpochMilli(Long.parseLong(registeredMoel.get("trained_at").toString())));
+                    item.trainedBy = registeredMoel.get("trained_by").toString();
+
+
+                    JSONObject evals = new JSONObject(registeredMoel.get("metrics"));
+                    if(evals.get("accuracy_score") != null){
+                        item.eval = "Accuracy: " + evals.get("accuracy_score").toString();
+                    }
+
+                    item.metrics = registeredMoel.get("metrics");
+                    item.schema = registeredMoel.get("in_schema");
+                }
+            }
         }
 
 
@@ -168,53 +197,64 @@ public class AiModelController {
         jsonResponse.set("current", req.page.current);
 
         return UniformResponse.ok().data(jsonResponse);
+
     }
 
     @PostMapping("/create")
     @Operation(description = "createModel")
     public UniformResponse createModel(@RequestBody @Parameter(name = "req", description = "model info") AiModelActionReqType req){
-        //Hibernate: insert into sys_user (active, avatar, create_time, created_by, deleted, department, email, name, realname, org_id, password, phone, update_time, updated_by) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        //Hibernate: insert into sys_user_role (user_id, role_id) values (?, ?)
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.category) || StrUtil.isEmpty(req.type) || StrUtil.isEmpty(req.framework)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.area)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<AiModelEntity> duplicatedEntities = trainedModelRepository.findByNameAndCategoryAndType(req.name, req.category, req.type);
+        List<AiModelEntity> duplicatedEntities = modelRepository.findByNameAndArea(req.name, req.area);
         if(duplicatedEntities.size()!=0){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
+        }
+
+        // default value
+        if(StrUtil.isEmpty(req.deployTo)){
+            req.deployTo = "MlFlow";
+        }
+
+        if(StrUtil.isEmpty(req.endpoint)){
+            req.endpoint = "http://127.0.0.1:7788/invocations";
+        }
+
+        if(StrUtil.isEmpty(req.price)){
+            req.price = "0";
         }
 
         try {
             AiModelEntity newEntity = new AiModelEntity();
             //don't set ID for create
             newEntity.setName(req.name);
-            newEntity.setDesc(req.description);
-            newEntity.setCategory(req.category);
-            newEntity.setType(req.type);
-            newEntity.setFramework(req.framework);
-            newEntity.setFrameVer(req.frameVer);
-            newEntity.setNetwork(req.network);
-            newEntity.setTrainset(req.trainset);
+            newEntity.setDesc(req.desc);
+            newEntity.setArea(req.area);
             newEntity.setPrice(req.price);
-            //newEntity.setDetail(req.detail.toString());
-            newEntity.setWeblink(req.weblink);
             newEntity.setVersion(req.version);
-            newEntity.setModelId(req.modelId);
-
+            newEntity.setAlgoId(req.algoId);
+            newEntity.setRunId(req.runId);
             newEntity.setTags(req.tags.toString());
-            newEntity.setEval(req.eval.toString());
-            newEntity.setInput(req.input.toString());
-            newEntity.setOutput(req.output.toString());
-            newEntity.setFiles(req.files.toString());
-
+            newEntity.setDeployTo(req.deployTo);
+            newEntity.setEndpoint(req.endpoint);
             newEntity.setPubFlag(req.pubFlag);
+            newEntity.setRate(req.rate);
+            newEntity.setPubFlag(false);
+            newEntity.setStatus(0);
+            newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
             //create_time and update_time are generated automatically by jp
 
             // save source
-            trainedModelRepository.save(newEntity);
+            modelRepository.save(newEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -226,44 +266,43 @@ public class AiModelController {
     @PostMapping("/update")
     @Operation(description = "updateModel")
     public UniformResponse updateModel(@RequestBody @Parameter(name = "req", description = "model info") AiModelActionReqType req){
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.category) || StrUtil.isEmpty(req.type) || StrUtil.isEmpty(req.framework)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.area) || StrUtil.isEmpty(req.desc)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(req.id).get();
+        AiModelEntity targetEntity = modelRepository.findById(req.id).get();
         if(targetEntity==null){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
         try {
+            if(!targetEntity.getDeployTo().equals(req.deployTo) || !targetEntity.getEndpoint().equals(req.endpoint)){
+                // reset status when deployTo or endpoint is changed
+                targetEntity.setStatus(0);
+            }
             targetEntity.setName(req.name);
-            targetEntity.setDesc(req.description);
-            targetEntity.setCategory(req.category);
-            targetEntity.setType(req.type);
-            targetEntity.setFramework(req.framework);
-            targetEntity.setFrameVer(req.frameVer);
-            targetEntity.setNetwork(req.network);
-            targetEntity.setTrainset(req.trainset);
-            targetEntity.setPrice(req.price);
-            //targetEntity.setDetail(req.detail.toString());
-            targetEntity.setWeblink(req.weblink);
-            targetEntity.setVersion(req.version);
-            targetEntity.setModelId(req.modelId);
-
+            targetEntity.setDesc(req.desc);
+            targetEntity.setArea(req.area);
             targetEntity.setTags(req.tags.toString());
-            targetEntity.setEval(req.eval.toString());
-            targetEntity.setInput(req.input.toString());
-            targetEntity.setOutput(req.output.toString());
-            targetEntity.setFiles(req.files.toString());
+            targetEntity.setAlgoId(req.algoId);
+            targetEntity.setRate(req.rate);
+            targetEntity.setPrice(req.price);
+            targetEntity.setDeployTo(req.deployTo);
+            targetEntity.setEndpoint(req.endpoint);
 
-            targetEntity.setPubFlag(req.pubFlag);
-            //create_time and update_time are generated automatically by jpa
+            // create_time and update_time are generated automatically by jpa
+            // runId, version, orgId should not be updated
 
-            // update source
-            trainedModelRepository.save(targetEntity);
+            // update pre-trained model
+            modelRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -283,7 +322,7 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(params.id).get();
+        AiModelEntity targetEntity = modelRepository.findById(params.id).get();
         if(targetEntity==null){
             //target doesn't exist
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
@@ -292,7 +331,7 @@ public class AiModelController {
         try {
             // update public status
             targetEntity.setPubFlag(params.pub);
-            trainedModelRepository.save(targetEntity);
+            modelRepository.save(targetEntity);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -301,53 +340,27 @@ public class AiModelController {
         }
     }
 
-    @PostMapping("/clone")
-    @Operation(description = "cloneModel")
-    public UniformResponse cloneModel(@RequestBody @Parameter(name = "param", description = "model id") JSONObject param){
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+    @PostMapping("/deploy")
+    @Operation(description = "deployModel")
+    public UniformResponse deployModel(@RequestBody @Parameter(name = "req", description = "model info") AiModelActionReqType req){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
 
-        Integer id = Integer.parseInt(param.get("id").toString());
-        if(id==0){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.area)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(id).get();
-        if(targetEntity==null){
-            //target doesn't exist
-            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
+        List<AiModelEntity> duplicatedEntities = modelRepository.findByNameAndArea(req.name, req.area);
+        if(duplicatedEntities.size()!=0){
+            return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
         }
 
-        String copyName = targetEntity.getName();
-        List<AiModelEntity> targetCopies = trainedModelRepository.findByNameContainingOrderByIdDesc(copyName+"(");
-        if(targetCopies.size()>0){
-            String tmp = targetCopies.get(0).getName();
-            tmp = tmp.substring(tmp.indexOf("(")+1, tmp.indexOf(")"));
-            Pattern pattern = Pattern.compile("[0-9]*");
-            if(pattern.matcher(tmp).matches())
-            {
-                Integer idx = Integer.parseInt(tmp)+1;
-                copyName += "(" + idx.toString() + ")";
-            }
-            else{
-                copyName += "(1)";
-            }
-        }
-        else{
-            copyName += "(1)";
-        }
-
-        try {
-            // update public status
-            targetEntity.setId(0);
-            targetEntity.setName(copyName);
-            trainedModelRepository.save(targetEntity);
-            return UniformResponse.ok();
-        }
-        catch (Exception e){
-            logger.error(e.toString());
-            return UniformResponse.error(e.getMessage());
-        }
+        return UniformResponse.ok();
     }
 
     @DeleteMapping("/delete")
@@ -361,15 +374,19 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        AiModelEntity targetEntity = trainedModelRepository.findById(id).get();
+        AiModelEntity targetEntity = modelRepository.findById(id).get();
         if(targetEntity==null){
             //target entity doesn't exist
             return UniformResponse.ok();
         }
 
+        if(targetEntity.getStatus() != 0){
+            return UniformResponse.error(UniformResponseCode.AI_MODEL_SERVING);
+        }
+
         try {
             // delete entity
-            trainedModelRepository.deleteById(id);
+            modelRepository.deleteById(id);
             return UniformResponse.ok();
         }
         catch (Exception e){
@@ -387,16 +404,16 @@ public class AiModelController {
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
         // jpa page is starting with 0
-        List<AiModelEntity> datasetEntities = trainedModelRepository.findAll();
+        List<AiModelEntity> datasetEntities = modelRepository.findAll();
 
         // convert list to tree by category
-        Map<String, List<AiModelEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getCategory()));
+        Map<String, List<AiModelEntity>> datasetMap = datasetEntities.stream().collect(Collectors.groupingBy(t -> t.getArea()));
         List<TreeSelect> treeDatasets = new ArrayList<>();
         Integer i = 1000;
         for(String group : datasetMap.keySet()){
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
             for(AiModelEntity source: datasetMap.get(group)){
-                TreeSelect treeNode = new TreeSelect(source.getId(), source.getType(), source.getName(), source.getName(), true, true);
+                TreeSelect treeNode = new TreeSelect(source.getId(), source.getArea(), source.getName(), source.getName(), true, true);
                 treeGroup.getChildren().add(treeNode);
             }
             treeDatasets.add(treeGroup);
@@ -415,7 +432,7 @@ public class AiModelController {
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctType = trainedModelRepository.findDistinctType();
+        Set<Object> distinctType = modelRepository.findDistinctType();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;
@@ -441,7 +458,7 @@ public class AiModelController {
         //String tokenUser = auth.getCredentials().toString();
         Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
 
-        Set<Object> distinctCategory = trainedModelRepository.findDistinctCategory();
+        Set<Object> distinctCategory = modelRepository.findDistinctCategory();
         Set<OptionsRspType> catSet = new HashSet<>();
 
         Integer i = 0;
@@ -500,5 +517,89 @@ public class AiModelController {
         }
 
         return UniformResponse.ok();
+    }
+
+    private JSONArray listRegisteredModels(String runIds) throws Exception {
+        if(!dbUtils.isSourceExist(mLflowConfig.getId())){
+            // add datasource to manage
+            dbUtils.add(mLflowConfig.getId(), mLflowConfig.getName(), mLflowConfig.getType(), mLflowConfig.getUrl(),
+                    mLflowConfig.getParams(), mLflowConfig.getUsername(), mLflowConfig.getPassword());
+        }
+
+        List<ColumnField> cols = new ArrayList<>();
+        List<Object[]> result = new ArrayList<>();
+        String sqlText = """
+                with runs as (
+                    select v.*, r.user_id as trained_by, r.start_time as trained_at, r.experiment_id FROM runs r
+                    join (
+                        select mv.name, mv.version, mv.run_id as run_uuid, mv.status, mv.user_id as registered_by, mv.last_updated_time as registered_at
+                        from model_versions mv join model_version_tags mvt on mv.name=mvt.name AND mv.version=mvt.version
+                        where
+                            current_stage != 'Deleted_Internal'
+                            AND mvt.key = 'user_id'
+                            AND run_id IN (%s)
+                    )v using(run_uuid)
+                ),
+                
+                register as (
+                    select run_uuid, group_concat(reg) as register from (
+                        select r.run_uuid as run_uuid, concat_ws('":"', concat('"', mvt.key), concat(mvt.value, '"')) as reg from runs r join model_version_tags mvt  on r.name=mvt.name AND r.version=mvt.version
+                    )g
+                    group by run_uuid
+                ),
+                
+                metrics as (
+                    select run_uuid, group_concat(metric) as metrics 
+                    from (
+                        select r.run_uuid, concat_ws('":"', concat('"', m.key), concat(ROUND(m.value, 3), '"')) as metric from runs r join metrics m using(run_uuid) where m.value != 'None' and m.value is not null and locate('_unknown_', m.key)=0
+                    )y
+                    group by run_uuid
+                ),
+                
+                in_schema as (
+                    select run_uuid, dataset_schema as in_schema from runs r join datasets d using (experiment_id)
+                )
+
+                select r.*, concat('{', register, '}') as register, concat('{', metrics, '}') as metrics, in_schema
+                from runs r 
+                join register g using(run_uuid) 
+                join metrics m using(run_uuid) 
+                join in_schema d using(run_uuid) 
+                """;
+
+        sqlText = sqlText.formatted(runIds);
+        // get query result
+        dbUtils.execute(mLflowConfig.getId(), sqlText, cols, result);
+
+        // build response
+        JSONArray records = new JSONArray();
+        for(int row = 0; row < result.size(); row++){
+            Object[] objs = result.get(row);
+            JSONObject jsonObject = new JSONObject();
+            for(int m=0; m<cols.size(); m++){
+                String key = cols.get(m).getName();
+                if(objs[m] != null){
+                    String val = objs[m].toString();
+                    if(val.startsWith("{\"")){
+                        // convert string to json object
+                        JSONObject tmpValue = new JSONObject(val.replace("training_", ""));
+                        if(key.equals("in_schema")){
+                            jsonObject.set(key, tmpValue.get("mlflow_colspec"));
+                        } else {
+                            jsonObject.set(key, tmpValue);
+                        }
+                    } else if(key.equals("deployed")){
+                        // convert string to bool
+                        jsonObject.set(key, Boolean.valueOf(val));
+                    } else {
+                        jsonObject.set(key, val);
+                    }
+                }
+            }
+            // record response
+            records.add(jsonObject);
+        }
+
+        return records;
     }
 }

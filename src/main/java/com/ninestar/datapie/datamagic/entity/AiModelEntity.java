@@ -12,7 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @EqualsAndHashCode
@@ -26,74 +25,54 @@ public class AiModelEntity {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "sid")
-    private Integer sid;
 
     @Column(name = "name", nullable = false, length = 64)
     private String name;
 
-    @Column(name = "desc", length = 64)
+    @Column(name = "`desc`", length = 64)
     private String desc;
 
-    @Column(name = "category", nullable = false, length = 64)
-    private String category;
-
-    @Column(name = "type", nullable = false, length = 32)
-    private String type;
+    @Column(name = "area", nullable = false, length = 64)
+    private String area;
 
     @Column(name = "tags", length = 64)
     private String tags;
 
-    @Column(name = "version", nullable = false, length = 16)
-    private String version;
+    @Column(name = "algo_id")
+    private Integer algoId;
 
-    @Column(name = "network", length = 16)
-    private String network;
-
-    @Column(name = "framework", nullable = false, length = 16)
-    private String framework;
-
-    @Column(name = "frame_ver", length = 16)
-    private String frameVer;
-
-    @Column(name = "trainset", length = 64)
-    private String trainset;
-
-    @Column(name = "files", nullable = false)
-    private String files;
-
-    @Column(name = "input", nullable = false)
-    private String input;
-
-    @Column(name = "output", nullable = false)
-    private String output;
-
-    @Column(name = "eval")
-    private String eval;
-
-    @Column(name = "score")
-    private Integer score;
+    @Column(name = "rate")
+    private Integer rate;
 
     @Column(name = "price", length = 16)
     private String price;
 
-    @Column(name = "detail")
-    private String detail;
-
-    @Column(name = "weblink", length = 64)
-    private String weblink;
-
-    @Column(name = "model_id")
-    private Integer modelId;
-
-    @Column(name = "public", nullable = false)
+    @Column(name = "`public`", nullable = false)
     private Boolean pubFlag = false;
 
+    // // 0:idle; 1:serving; 2:exception; 3:unknown;
+    @Column(name = "status", nullable = false)
+    private Integer status = 0;
+
+    @Column(name = "run_id", length = 32)
+    private String runId;
+
+    @Column(name = "version")
+    private Integer version;
+
+    @Column(name = "deploy_to", length = 64)
+    private String deployTo;
+
+    @Column(name = "endpoint", length = 64)
+    private String endpoint;
+
+    // registered by
     @Basic
     @CreatedBy
     @Column(name = "created_by", nullable = false, length = 64)
     private String createdBy;
 
+    // registered at
     @Basic
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -108,6 +87,14 @@ public class AiModelEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = true)
     private Timestamp updatedAt;
+
+    @Basic
+    @Column(name = "deployed_by", nullable = true, length = 64)
+    private String deployedBy;
+
+    @Basic
+    @Column(name = "deployed_at", nullable = true)
+    private Timestamp deployedAt;
 
     // foreign key org_id
     @ManyToOne(optional = false, fetch = FetchType.EAGER)

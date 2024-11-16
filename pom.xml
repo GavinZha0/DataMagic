@@ -31,6 +31,7 @@
 		<jnl.version>5.8.0</jnl.version>
 		<dl4j.version>1.0.0-beta7</dl4j.version>
 		<ray.version>2.23.0</ray.version>
+		<mlflow.version>2.17.2</mlflow.version>
 		<redis.version>3.3.2</redis.version>
 		<mysql.version>8.4.0</mysql.version>
 		<ip2region.version>2.7.0</ip2region.version>
@@ -212,6 +213,11 @@
 			<artifactId>minio</artifactId>
 			<version>${minio.version}</version>
 		</dependency>
+		<!--dependency>
+			<groupId>org.mlflow</groupId>
+			<artifactId>mlflow-client</artifactId>
+			<version>${mlflow.version}</version>
+		</dependency-->
 	</dependencies>
 
 	<build>
