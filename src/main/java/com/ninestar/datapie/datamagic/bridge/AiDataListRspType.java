@@ -1,6 +1,7 @@
 package com.ninestar.datapie.datamagic.bridge;
 
 import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 
 import java.sql.Timestamp;
 
@@ -8,15 +9,14 @@ import java.sql.Timestamp;
 public class AiDataListRspType {
     public Integer id;
     public String name;
-    public String description;
+    public String desc;
     public String group;
-    public String type;
+    public String dataset;
     public String area;
+    public JSONObject fields;
     public Integer modelId;
     public String modelName;
-    public String platform;
-    public String platformVer;
-    public JSONArray content;
+    public Integer status;
     public Boolean pubFlag;
     public String createdBy;
     public Timestamp createdAt;

@@ -28,32 +28,23 @@ public class AiDataEntity {
     @Column(name = "name", nullable = false, length = 64)
     private String name;
 
-    @Column(name = "desc", length = 64)
+    @Column(name = "`desc`", length = 64)
     private String desc;
 
-    @Column(name = "group", length = 64)
+    @Column(name = "`group`", length = 64)
     private String group;
 
-    @Column(name = "type", nullable = false, length = 32)
-    private String type;
-
-    @Column(name = "area", length = 64)
+    @Column(name = "area", length = 32)
     private String area;
 
-    @Column(name = "platform", length = 32)
-    private String platform;
-
-    @Column(name = "platform_ver", length = 16)
-    private String platformVer;
+    @Column(name = "fields")
+    private String fields;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "model_id", nullable = false)
     private AiModelEntity model;
 
-    @Column(name = "content")
-    private String content;
-
-    @Column(name = "public", nullable = false)
+    @Column(name = "`public`", nullable = false)
     private Boolean pubFlag = false;
 
     @Basic

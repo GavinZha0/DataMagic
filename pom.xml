@@ -213,11 +213,11 @@
 			<artifactId>minio</artifactId>
 			<version>${minio.version}</version>
 		</dependency>
-		<!--dependency>
+		<dependency>
 			<groupId>org.mlflow</groupId>
 			<artifactId>mlflow-client</artifactId>
 			<version>${mlflow.version}</version>
-		</dependency-->
+		</dependency>
 	</dependencies>
 
 	<build>
