@@ -215,7 +215,7 @@ public class AiModelController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        List<AiModelEntity> duplicatedEntities = modelRepository.findByNameAndArea(req.name, req.area);
+        List<AiModelEntity> duplicatedEntities = modelRepository.findByNameAndAreaAndVersion(req.name, req.area, req.version);
         if(duplicatedEntities.size()!=0){
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_EXIST);
         }
@@ -366,9 +366,14 @@ public class AiModelController {
     @DeleteMapping("/delete")
     @Operation(description = "deleteModel")
     public UniformResponse deleteModel(@RequestParam @Parameter(name = "id", description = "model id") Integer id){
-        //Hibernate: delete from data_source where id=?
-        String loginUser = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-        String orgId = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
 
         if(id==0){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
@@ -387,6 +392,44 @@ public class AiModelController {
         try {
             // delete entity
             modelRepository.deleteById(id);
+            return UniformResponse.ok();
+        }
+        catch (Exception e){
+            logger.error(e.toString());
+            return UniformResponse.error(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/remove")
+    @Operation(description = "removeModel")
+    public UniformResponse removeModel(@RequestBody @Parameter(name = "id", description = "model id") AiModelRemoveReqType req){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer tokenOrgId = Integer.parseInt(auth.getDetails().toString());
+        Integer tokenUserId = Integer.parseInt(auth.getPrincipal().toString());
+        String tokenUsername = auth.getCredentials().toString();
+        List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
+        Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
+        Boolean tokenIsAdmin = tokenRoles.contains("ROLE_Administrator") || tokenRoles.contains("ROLE_Admin");
+
+
+        if(req.algoId==0 || req.version == 0){
+            return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
+        }
+
+        AiModelEntity targetEntity = modelRepository.findByAlgoIdAndVersion(req.algoId, req.version).get(0);
+        if(targetEntity==null){
+            //target entity doesn't exist
+            return UniformResponse.ok();
+        }
+
+        if(targetEntity.getStatus() != 0){
+            return UniformResponse.error(UniformResponseCode.AI_MODEL_SERVING);
+        }
+
+        try {
+            // delete entity
+            modelRepository.deleteById(targetEntity.getId());
             return UniformResponse.ok();
         }
         catch (Exception e){

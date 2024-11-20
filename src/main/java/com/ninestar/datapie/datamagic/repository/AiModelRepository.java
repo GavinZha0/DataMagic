@@ -9,6 +9,8 @@ import java.util.Set;
 
 public interface AiModelRepository extends JpaRepository<AiModelEntity, Integer>, JpaSpecificationExecutor<AiModelEntity> {
     public List<AiModelEntity> findByNameAndArea(String name, String area);
+    public List<AiModelEntity> findByNameAndAreaAndVersion(String name, String area, Integer version);
+    public List<AiModelEntity> findByAlgoIdAndVersion(Integer algoId, Integer version);
     public List<AiModelEntity> findByNameContainingOrderByIdDesc(String name);
 
     @Query(value = "select distinct type from ai_model where category ='image'",nativeQuery = true)
