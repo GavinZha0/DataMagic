@@ -10,7 +10,6 @@ import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
 import com.ninestar.datapie.datamagic.config.MLflowConfig;
 import com.ninestar.datapie.datamagic.entity.AiModelEntity;
-import com.ninestar.datapie.datamagic.repository.AiImageRepository;
 import com.ninestar.datapie.datamagic.repository.AiModelRepository;
 import com.ninestar.datapie.datamagic.repository.MlAlgoRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
@@ -222,7 +221,7 @@ public class AiModelController {
 
         // default value
         if(StrUtil.isEmpty(req.deployTo)){
-            req.deployTo = "MlFlow";
+            req.deployTo = "MLflow";
         }
 
         if(StrUtil.isEmpty(req.endpoint)){
