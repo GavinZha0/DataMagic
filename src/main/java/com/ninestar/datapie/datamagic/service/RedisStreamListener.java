@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
+import java.util.List;
 
 
 @Component
@@ -61,10 +62,11 @@ public class RedisStreamListener implements StreamListener<String, MapRecord<Str
                     String unique_code = QmsgCode.RAY_EXPERIMENT_REPORT.getCode()+"_"+jsonData.get("experId").toString();
                     // should get only one record
                     // duplicate issue should NOT happen
-                    SysMsgEntity targetEntity = sysMsgRepository.findByCodeOrderByTsDesc(unique_code).get(0);
-                    if(targetEntity != null){
-                        targetEntity.setContent(qMsg.getData().toString());
-                        sysMsgRepository.save(targetEntity);
+                    List<SysMsgEntity> targetEntity = sysMsgRepository.findByCodeOrderByTsDesc(unique_code);
+                    if(!targetEntity.isEmpty()){
+                        SysMsgEntity existedEntity = targetEntity.get(0);
+                        existedEntity.setContent(qMsg.getData().toString());
+                        sysMsgRepository.save(existedEntity);
                     }
                 }
             }
