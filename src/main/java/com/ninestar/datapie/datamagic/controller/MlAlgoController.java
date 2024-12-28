@@ -140,9 +140,13 @@ public class MlAlgoController {
         List<AlgorithmListRspType> rspList = new ArrayList<AlgorithmListRspType>();
         for(MlAlgoEntity entity: queryEntities){
             AlgorithmListRspType item = new AlgorithmListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"dataCfg", "trainCfg"});
+            BeanUtil.copyProperties(entity, item, new String[]{"tags", "dataCfg", "trainCfg"});
             item.dataCfg = new JSONObject(entity.getDataCfg());
             item.trainCfg = new JSONObject(entity.getTrainCfg());
+            if(!StrUtil.isEmpty(entity.getTags())) {
+                // convert string to array
+                item.tags = JSONUtil.parseArray(entity.getTags()).toList(String.class);
+            }
             if(item.dataCfg.get("datasetId") != null){
                 MlDatasetEntity mlDataset = datasetRepository.findById(Integer.parseInt(item.dataCfg.get("datasetId").toString())).get();
                 if(mlDataset != null){
@@ -172,7 +176,7 @@ public class MlAlgoController {
         List<String> tokenRoles = auth.getAuthorities().stream().map(role->role.getAuthority()).collect(Collectors.toList());
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.srcCode)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.srcCode)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -184,8 +188,7 @@ public class MlAlgoController {
             newEntity.setGroup(req.group);
             newEntity.setCategory(req.category);
             newEntity.setAlgoName(req.algoName);
-            newEntity.setFramework(req.framework);
-            newEntity.setFrameVer(req.frameVer);
+            newEntity.setTags(req.tags.toString());
             newEntity.setSrcCode(req.srcCode);
             if(req.dataCfg!=null){
                 newEntity.setDataCfg(req.dataCfg.toString());
@@ -219,7 +222,7 @@ public class MlAlgoController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
 
-        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.framework) || StrUtil.isEmpty(req.srcCode)){
+        if(StrUtil.isEmpty(req.name) || StrUtil.isEmpty(req.srcCode)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
@@ -235,8 +238,7 @@ public class MlAlgoController {
             targetEntity.setAlgoName(req.algoName);
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
-            targetEntity.setFramework(req.framework);
-            targetEntity.setFrameVer(req.frameVer);
+            targetEntity.setTags(req.tags.toString());
             targetEntity.setDataCfg(req.dataCfg.toString());
             targetEntity.setTrainCfg(req.trainCfg.toString());
             targetEntity.setSrcCode(req.srcCode);
@@ -457,8 +459,8 @@ public class MlAlgoController {
             return UniformResponse.error(UniformResponseCode.TARGET_RESOURCE_NOT_EXIST);
         }
 
-        List<String> frames = Arrays.asList("python", "sklearn", "pytorch", "tensorflow");
-        if(frames.contains(targetEntity.getFramework())){
+        List<String> pyAlgoCats = Arrays.asList("classifier", "regressor", "cluster", "transformer", "vision", "inno");
+        if(pyAlgoCats.contains(targetEntity.getCategory())){
             // forward command to python server for user x and algorithm y
             try{
                 Map<String, Object> taskMap = BeanUtil.beanToMap(targetEntity);
@@ -491,7 +493,7 @@ public class MlAlgoController {
         Boolean tokenIsSuperuser = tokenRoles.contains("ROLE_Superuser");
 
 
-        if(request==null || request.id==null || StrUtil.isEmpty(request.srcCode) || StrUtil.isEmpty(request.framework)){
+        if(request==null || request.id==null || StrUtil.isEmpty(request.srcCode) || StrUtil.isEmpty(request.category)){
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 

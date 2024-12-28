@@ -36,15 +36,11 @@ public class MlAlgoEntity {
     private String group;
 
     @Basic
-    @Column(name = "framework", length = 16)
-    private String framework;
+    @Column(name = "tags", length = 128)
+    private String tags;
 
     @Basic
-    @Column(name = "frame_ver", length = 8)
-    private String frameVer;
-
-    @Basic
-    @Column(name = "category", nullable = true, length = 16)
+    @Column(name = "category", nullable = false, length = 32)
     private String category;
 
     @Basic

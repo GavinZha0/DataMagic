@@ -213,6 +213,7 @@ public class MlExperimentController {
         List<Object[]> result = new ArrayList<>();
         String experName = "algo_"+ id;
         // experiments.name = 'algo_{ID}_{TIME}'
+        // get metrics of max(step) using 'having 1'
         String sqlText = """
                 with runs as(
                   select m.experiment_id as exper_id, t.value as args, run_uuid, status, start_time as ts, round((end_time-start_time)/60000,1) as duration from experiments m join experiment_tags t using(experiment_id) join runs r using(experiment_id) where m.name like '%s_%%' and t.key='args' and r.user_id = %d
@@ -225,7 +226,10 @@ public class MlExperimentController {
                 ),
                 metrics as (
                   select run_uuid, group_concat(metric) as metrics from (
-                    select r.run_uuid, concat_ws('":"', concat('"', m.key), concat(ROUND(m.value, 3), '"')) as metric from runs r join metrics m using(run_uuid) where m.value != 'None' and m.value is not null and locate('_unknown_', m.key)=0
+                    select r.run_uuid, concat_ws('":"', concat('"', m.key), concat(ROUND(m.value, 3), '"')) as metric from runs r 
+                    join (
+                        select * from (select * from metrics s where s.value != 'None' and s.value is not null and locate('_unknown_', s.key)=0 having 1 order by step desc) k group by k.run_uuid, k.key
+                    ) m using(run_uuid)
                   )y
                   group by run_uuid
                 ),

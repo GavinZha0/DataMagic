@@ -149,12 +149,13 @@ public class MlDatasetController {
                 // filter by userId and pubFlag
                 // this filter can be moved to specification later. Gavin!!!
                 MlDatasetListRspType item = new MlDatasetListRspType();
-                BeanUtil.copyProperties(entity, item, new String[]{"variable", "fields", "target"});
+                BeanUtil.copyProperties(entity, item, new String[]{"variable", "fields", "target", "transform"});
                 item.sourceId = entity.getDatasource().getId();
                 item.sourceName = entity.getDatasource().getGroup() + "/" + entity.getDatasource().getName();
                 item.variable = new JSONArray(entity.getVariable()); // convert string to json array
+                item.transform = new JSONArray(entity.getTransform()); // convert string to json array
                 item.fields = new JSONArray(entity.getFields());
-                item.target = new JSONArray(entity.getTarget());
+                item.target = JSONUtil.parseArray(entity.getTarget()).toList(String.class);
                 rspList.add(item);
             }
         }
@@ -246,6 +247,11 @@ public class MlDatasetController {
             newEntity.setContent(req.content);
 
             newEntity.setFields(req.fields.toString());
+
+            if(req.transform!=null){
+                newEntity.setTransform(req.transform.toString());
+            }
+
             if(req.target!=null){
                 newEntity.setTarget(req.target.toString());
             }
@@ -318,7 +324,12 @@ public class MlDatasetController {
             targetEntity.setVariable(req.variable.toString());
             targetEntity.setContent(req.content);
             targetEntity.setFields(req.fields.toString());
-            targetEntity.setTarget(req.target.toString());
+            if(req.transform != null){
+                targetEntity.setTransform(req.transform.toString());
+            }
+            if(req.target != null) {
+                targetEntity.setTarget(req.target.toString());
+            }
             targetEntity.setFCount(1);
 
             // db only
@@ -513,7 +524,7 @@ public class MlDatasetController {
         response.sourceName = targetEntity.getDatasource().getGroup() + "/" + targetEntity.getDatasource().getName();
         response.variable = new JSONArray(targetEntity.getVariable()); // convert string to json array
         response.fields = new JSONArray(targetEntity.getFields());
-        response.target = new JSONArray(targetEntity.getTarget());
+        response.target = JSONUtil.parseArray(targetEntity.getTarget()).toList(String.class);
 
         return UniformResponse.ok().data(response);
     }

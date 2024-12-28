@@ -4,6 +4,8 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 //camel style to match with column name of DB
 public class AlgorithmListRspType {
@@ -11,8 +13,7 @@ public class AlgorithmListRspType {
     public String name;
     public String desc;
     public String group;
-    public String framework;
-    public String frameVer;
+    public List<String> tags = new ArrayList<>();
     public String category;
     public String algoName;
     public JSONObject dataCfg;

@@ -4,6 +4,8 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 //camel style to match with column name of DB
 public class MlDatasetListRspType {
@@ -15,7 +17,9 @@ public class MlDatasetListRspType {
     public JSONArray variable;
     public String content;
     public JSONArray fields;
-    public JSONArray target;
+    public JSONArray transform;
+    //public JSONArray target;
+    public List<String> target = new ArrayList<>();
     public Integer fCount;
     public Boolean pubFlag;
     public Integer usage;
