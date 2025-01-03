@@ -241,6 +241,8 @@ public class MlDatasetController {
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
             newEntity.setType(req.type);
+            newEntity.setVolume(req.volume);
+            newEntity.setFCount(req.fCount);
             if(req.variable!=null){
                 newEntity.setVariable(req.variable.toString());
             }
@@ -324,13 +326,14 @@ public class MlDatasetController {
             targetEntity.setVariable(req.variable.toString());
             targetEntity.setContent(req.content);
             targetEntity.setFields(req.fields.toString());
+            targetEntity.setFCount(req.fCount);
+            targetEntity.setVolume(req.volume);
             if(req.transform != null){
                 targetEntity.setTransform(req.transform.toString());
             }
             if(req.target != null) {
                 targetEntity.setTarget(req.target.toString());
             }
-            targetEntity.setFCount(1);
 
             // db only
             List dbList = new ArrayList<>(){{add("mysql");add("mariadb");}};

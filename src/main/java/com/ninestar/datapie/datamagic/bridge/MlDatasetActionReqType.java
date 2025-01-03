@@ -15,6 +15,8 @@ public class MlDatasetActionReqType {
     public JSONArray variable;
     public String type;
     public String content;
+    public Integer fCount;
+    public Integer volume;
     public JSONArray fields;
     public JSONArray transform;
     public List<String> target = new ArrayList<>();

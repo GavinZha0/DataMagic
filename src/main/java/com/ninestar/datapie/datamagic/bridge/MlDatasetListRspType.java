@@ -21,6 +21,7 @@ public class MlDatasetListRspType {
     //public JSONArray target;
     public List<String> target = new ArrayList<>();
     public Integer fCount;
+    public Integer volume;
     public Boolean pubFlag;
     public Integer usage;
     public Integer sourceId;

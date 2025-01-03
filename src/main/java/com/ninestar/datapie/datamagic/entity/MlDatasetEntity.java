@@ -70,6 +70,10 @@ public class MlDatasetEntity {
     private Integer fCount;
 
     @Basic
+    @Column(name = "volume", nullable = true)
+    private Integer volume;
+
+    @Basic
     @Column(name = "`public`", nullable = false)
     private Boolean pubFlag;
 
