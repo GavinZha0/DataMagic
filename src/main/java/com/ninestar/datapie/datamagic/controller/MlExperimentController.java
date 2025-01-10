@@ -216,7 +216,7 @@ public class MlExperimentController {
         // get metrics of max(step) using 'having 1'
         String sqlText = """
                 with runs as(
-                  select m.experiment_id as exper_id, t.value as args, run_uuid, status, start_time as ts, round((end_time-start_time)/60000,1) as duration from experiments m join experiment_tags t using(experiment_id) join runs r using(experiment_id) where m.name like '%s_%%' and t.key='args' and r.user_id = %d
+                  select m.experiment_id as exper_id, t.value as args, run_uuid, status, start_time as ts, round((end_time-start_time)/60000,1) as duration from experiments m join experiment_tags t using(experiment_id) join runs r using(experiment_id) where m.name like '%s\\_%%' and t.key='args' and r.user_id = %d
                 ),
                 params as (
                   select run_uuid, group_concat(param) as params from (
