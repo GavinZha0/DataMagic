@@ -37,8 +37,8 @@ public class AiDataEntity {
     @Column(name = "area", length = 32)
     private String area;
 
-    @Column(name = "fields")
-    private String fields;
+    @Column(name = "field_map")
+    private String fieldMap;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "model_id", nullable = false)

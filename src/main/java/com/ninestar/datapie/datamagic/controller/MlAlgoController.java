@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,7 +60,8 @@ import java.util.stream.Collectors;
 public class MlAlgoController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String pyServerUrl = "http://localhost:9538/ml/";
+    @Value("${server.py.url}")
+    private String pyServerUrl;
 
     @Resource
     public MlDatasetRepository datasetRepository;
@@ -497,8 +499,7 @@ public class MlAlgoController {
             return UniformResponse.error(UniformResponseCode.REQUEST_INCOMPLETE);
         }
 
-        String pythonServerUrl = "http://localhost:9538/ml/execute_script";
-        HttpResponse response = HttpRequest.post(pythonServerUrl)
+        HttpResponse response = HttpRequest.post(pyServerUrl + "/ml/execute_script")
                 .body(JSONUtil.parseObj(request).toString())
                 .execute();
         JSONObject result = new JSONObject(response.body());

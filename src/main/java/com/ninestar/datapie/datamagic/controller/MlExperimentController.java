@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.mlflow.tracking.MlflowClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +50,9 @@ import java.util.stream.Collectors;
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
 public class MlExperimentController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Value("${server.py.url}")
+    private String pyServerUrl;
 
     @Resource
     private DbUtils dbUtils;
@@ -82,7 +86,7 @@ public class MlExperimentController {
         List<MlExperimentEntity> experList = new ArrayList<>();
         experList = experimentRepository.findByMlIdAndUserIdOrderByStartAtDesc(algoId, tokenUserId);
 
-        MlflowClient client = new MlflowClient("// admin:admin#520@datapie. cjiaoci4g12w. us-east-1.rds. amazonaws. com:3306/ mlflow");
+        MlflowClient client = new MlflowClient("//admin:admin#520@datapie.cjiaoci4g12w.us-east-1.rds.amazonaws.com:3306/mlflow");
 
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.set("records", experList);
@@ -115,7 +119,7 @@ public class MlExperimentController {
         String token = JwtTokenUtil.createToken(userInfo, null);
 
         // send http request to python server
-        HttpResponse response = HttpRequest.post("http://localhost:9138/ml/algo/execute")
+        HttpResponse response = HttpRequest.post(pyServerUrl + "/ml/algo/execute")
                 .header("authorization", "Bearer " + token)
                 .body(pyParams.toString())
                 .execute();

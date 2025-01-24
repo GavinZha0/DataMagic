@@ -2,6 +2,8 @@ package com.ninestar.datapie.datamagic.controller;
 
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.ninestar.datapie.datamagic.aop.ActionType;
@@ -10,10 +12,14 @@ import com.ninestar.datapie.datamagic.aop.LogType;
 import com.ninestar.datapie.datamagic.bridge.*;
 import com.ninestar.datapie.datamagic.config.MLflowConfig;
 import com.ninestar.datapie.datamagic.entity.AiModelEntity;
+import org.springframework.beans.factory.annotation.Value;
+import com.ninestar.datapie.datamagic.entity.MlDatasetEntity;
 import com.ninestar.datapie.datamagic.repository.AiModelRepository;
 import com.ninestar.datapie.datamagic.repository.MlAlgoRepository;
+import com.ninestar.datapie.datamagic.repository.MlDatasetRepository;
 import com.ninestar.datapie.datamagic.repository.SysOrgRepository;
 import com.ninestar.datapie.datamagic.utils.DbUtils;
+import com.ninestar.datapie.datamagic.utils.JwtTokenUtil;
 import com.ninestar.datapie.framework.consts.UniformResponseCode;
 import com.ninestar.datapie.framework.model.ColumnField;
 import com.ninestar.datapie.framework.model.TreeSelect;
@@ -58,6 +64,12 @@ import cn.hutool.json.JSONUtil;
 public class AiModelController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Value("${server.py.url}")
+    private String pyServerUrl;
+
+    @Value("${server.mlflow.endpoint}")
+    private String mlflowServerEndpoint;
+
     @Resource
     public AiModelRepository modelRepository;
 
@@ -69,6 +81,9 @@ public class AiModelController {
 
     @Resource
     private MlAlgoRepository mlAlgoRepository;
+
+    @Resource
+    private MlDatasetRepository mlDatasetRepository;
 
     @Resource
     private SysOrgRepository orgRepository;
@@ -141,10 +156,14 @@ public class AiModelController {
         List<String> runIds = new ArrayList<>();
         for(AiModelEntity entity: queryEntities){
             AiModelListRspType item = new AiModelListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"tags"});
+            BeanUtil.copyProperties(entity, item, new String[]{"transform", "schema", "tags"});
             if(!StrUtil.isEmpty(entity.getTags())) {
                 // convert string to array
                 item.tags = JSONUtil.parseArray(entity.getTags()).toList(String.class);
+                // fields transform which is from ML dataset
+                item.transform = new JSONArray(entity.getTransform());
+                // schema includes inputs and outputs
+                item.schema = new JSONObject(entity.getSchema());
             }
 
             runIds.add(entity.getRunId());
@@ -184,7 +203,8 @@ public class AiModelController {
                     }
 
                     item.metrics = registeredMoel.get("metrics");
-                    item.schema = registeredMoel.get("in_schema");
+                    // schema is in model definition (no longer to get from mlflow)
+                    // item.schema = registeredMoel.get("in_schema");
                 }
             }
         }
@@ -225,11 +245,43 @@ public class AiModelController {
         }
 
         if(StrUtil.isEmpty(req.endpoint)){
-            req.endpoint = "http://127.0.0.1:7788/invocations";
+            req.endpoint = mlflowServerEndpoint;
         }
 
         if(StrUtil.isEmpty(req.price)){
             req.price = "0";
+        }
+
+        // get data transform from dataset
+        String dataTransform = null;
+        if(req.datasetId!=null){
+            MlDatasetEntity datasetEntity = mlDatasetRepository.findById(req.datasetId).get();
+            dataTransform = datasetEntity.getFields();
+        }
+
+        // create a new token
+        AuthLoginRspType userInfo = new AuthLoginRspType();
+        userInfo.id = tokenUserId;
+        userInfo.name = tokenUsername;
+        userInfo.orgId = tokenOrgId;
+        String token = JwtTokenUtil.createToken(userInfo, null);
+
+        // build request parameters
+        JSONObject pyParams = new JSONObject();
+        pyParams.set("run_id", req.runId);
+
+        // send http request to python server to get model schema
+        HttpResponse response = HttpRequest.post(pyServerUrl + "/ai/model/schema")
+                .header("authorization", "Bearer " + token)
+                .body(pyParams.toString())
+                .execute();
+
+        // decode response of python server
+        JSONObject result = new JSONObject(response.body());
+        String schema = null;
+        UniformResponse pyRsp = result.toBean(UniformResponse.class);
+        if(pyRsp.getCode() == 0 || pyRsp.getCode() == 200){
+            schema = pyRsp.getData().toString();
         }
 
         try {
@@ -241,6 +293,8 @@ public class AiModelController {
             newEntity.setPrice(req.price);
             newEntity.setVersion(req.version);
             newEntity.setAlgoId(req.algoId);
+            newEntity.setTransform(dataTransform);
+            newEntity.setSchema(schema);
             newEntity.setRunId(req.runId);
             newEntity.setTags(req.tags.toString());
             newEntity.setDeployTo(req.deployTo);

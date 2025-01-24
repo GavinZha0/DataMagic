@@ -1,5 +1,7 @@
 package com.ninestar.datapie.datamagic.bridge;
 
+import cn.hutool.json.JSONArray;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class AiModelListRspType {
     public Boolean pubFlag;
     public Object metrics;
     public Object schema;
+    public JSONArray transform;
     // 0:idle; 1:serving; 2:exception; 3:unknown;
     public Integer status;
     public String trainedBy;

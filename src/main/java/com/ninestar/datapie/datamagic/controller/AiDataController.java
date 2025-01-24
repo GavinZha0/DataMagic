@@ -58,8 +58,6 @@ public class AiDataController {
 
     private static final String FILE_SERVER = System.getProperty("user.dir") + "/fileServer";
 
-    private static final String pyServerUrl = "http://localhost:9538/ml/";
-
     @Resource
     public AiDataRepository dataAppRepository;
 
@@ -138,8 +136,8 @@ public class AiDataController {
         List<AiDataListRspType> rspList = new ArrayList<AiDataListRspType>();
         for(AiDataEntity entity: queryEntities){
             AiDataListRspType item = new AiDataListRspType();
-            BeanUtil.copyProperties(entity, item, new String[]{"fields"});
-            item.fields = new JSONObject(entity.getFields());
+            BeanUtil.copyProperties(entity, item, new String[]{"field_map"});
+            item.fieldMap = new JSONObject(entity.getFieldMap());
             item.modelId = entity.getModel().getId();
             item.modelName = entity.getModel().getName();
             item.status = entity.getModel().getStatus();
@@ -187,7 +185,7 @@ public class AiDataController {
             newEntity.setDesc(req.desc);
             newEntity.setGroup(req.group);
             newEntity.setArea(modelEntity.getArea());
-            newEntity.setFields(req.fields.toString());
+            newEntity.setFieldMap(req.fieldMap.toString());
             newEntity.setModel(modelEntity);
             newEntity.setPubFlag(false);
             newEntity.setOrg(orgRepository.findById(tokenOrgId).get());
@@ -234,7 +232,7 @@ public class AiDataController {
             targetEntity.setArea(modelEntity.getArea());
             targetEntity.setDesc(req.desc);
             targetEntity.setGroup(req.group);
-            targetEntity.setFields(req.fields.toString());
+            targetEntity.setFieldMap(req.fieldMap.toString());
             targetEntity.setModel(modelEntity);
             //create_time and update_time are generated automatically by jpa
 

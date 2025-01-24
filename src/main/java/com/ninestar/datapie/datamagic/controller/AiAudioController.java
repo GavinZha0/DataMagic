@@ -61,8 +61,6 @@ public class AiAudioController {
 
     private static final String FILE_SERVER = System.getProperty("user.dir") + "/fileServer";
 
-    private static final String pyServerUrl = "http://localhost:9538/ml/";
-
     @Resource
     public AiAudioRepository audioAppRepository;
 

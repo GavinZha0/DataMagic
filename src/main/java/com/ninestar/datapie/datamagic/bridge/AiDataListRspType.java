@@ -13,7 +13,7 @@ public class AiDataListRspType {
     public String group;
     public String dataset;
     public String area;
-    public JSONObject fields;
+    public JSONObject fieldMap;
     public Integer modelId;
     public String modelName;
     public Integer status;

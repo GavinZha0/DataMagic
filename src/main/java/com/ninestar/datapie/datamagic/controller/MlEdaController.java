@@ -60,8 +60,6 @@ import java.util.stream.Collectors;
 public class MlEdaController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String pyServerUrl = "http://localhost:9538/ml/";
-
     @Resource
     private RedisConfig redisConfig;
     @Resource

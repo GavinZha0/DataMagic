@@ -9,7 +9,7 @@ public class AiDataActionReqType {
     public String desc;
     public String group;
     public Integer modelId;
-    public JSONObject fields;
+    public JSONObject fieldMap;
     public Boolean pubFlag;
 }
 

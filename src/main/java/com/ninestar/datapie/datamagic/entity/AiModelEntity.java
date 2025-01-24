@@ -41,6 +41,12 @@ public class AiModelEntity {
     @Column(name = "algo_id")
     private Integer algoId;
 
+    @Column(name = "`schema`")
+    private String schema;
+
+    @Column(name = "transform")
+    private String transform;
+
     @Column(name = "rate")
     private Integer rate;
 

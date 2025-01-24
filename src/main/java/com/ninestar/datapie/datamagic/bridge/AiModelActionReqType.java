@@ -13,6 +13,7 @@ public class AiModelActionReqType {
     public Integer rate;
     public String price;
     public Integer algoId;
+    public Integer datasetId;
     public Boolean pubFlag;
     public String runId;
     public Integer version;
