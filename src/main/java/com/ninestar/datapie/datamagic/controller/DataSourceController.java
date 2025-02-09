@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -55,6 +56,9 @@ import java.util.stream.Collectors;
 @CrossOrigin(originPatterns = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class DataSourceController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Value("${ftp.server.path}")
+    private String ftpPath;
 
     @Resource
     public DataSourceRepository sourceRepository;
@@ -596,6 +600,10 @@ public class DataSourceController {
                 List<TreeSelect> listFiles = getS3Files(targetSource);
                 return UniformResponse.ok().data(listFiles);
             }
+            case "FTP": {
+                List<TreeSelect> listFiles = getFtpFiles(targetSource);
+                return UniformResponse.ok().data(listFiles);
+            }
             default:{
                 return UniformResponse.ok();
             }
@@ -845,4 +853,39 @@ public class DataSourceController {
         }
         return treeSources;
     }
+
+    private List<TreeSelect> getFtpFiles(DataSourceEntity src) throws Exception {
+        String targetDir = ftpPath + src.getUrl();
+        List<TreeSelect> treeSources = new ArrayList<>();
+        recurveFolders(targetDir, treeSources, 0);
+        return treeSources;
+    }
+
+    private Integer recurveFolders(String path, List<TreeSelect> treeList, Integer id) {
+        File folder = new File(path);
+        if(!folder.exists()){
+            return null;
+        }
+
+        File[] files = folder.listFiles();
+        if (files != null){
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    TreeSelect treeGroup = new TreeSelect(id, "folder", file.getName(), file.getName(), false, false);
+                    id++;
+                    treeList.add(treeGroup);
+                    id = recurveFolders(file.getAbsolutePath(), treeGroup.getChildren(), id);
+                } else {
+                    if(file.getName().endsWith(".csv") || file.getName().endsWith(".CSV") || file.getName().endsWith(".json") || file.getName().endsWith(".JSON")){
+                        TreeSelect treeNode = new TreeSelect(id, "file", file.getName(), file.getName(), true, true);
+                        id++;
+                        treeList.add(treeNode);
+                    }
+                }
+            }
+        }
+
+        return id;
+    }
+
 }
