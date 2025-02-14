@@ -191,7 +191,7 @@ public class MlDatasetController {
             TreeSelect treeGroup = new TreeSelect(i, "group", group, group, false, false);
             for(MlDatasetEntity source: datasetMap.get(group)){
                 if((allPublic && !source.getCreatedBy().equals(tokenUsername) && source.getPubFlag()) ||
-                        (!allPublic && source.getCreatedBy().equals(tokenUsername))){
+                        (source.getCreatedBy().equals(tokenUsername))){
                     TreeSelect treeNode = new TreeSelect(source.getId(), source.getDatasource().getType(), source.getName(), source.getName(), true, true);
                     treeGroup.getChildren().add(treeNode);
                 }
