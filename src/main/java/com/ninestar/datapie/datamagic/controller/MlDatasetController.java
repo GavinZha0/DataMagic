@@ -153,9 +153,11 @@ public class MlDatasetController {
                 item.sourceId = entity.getDatasource().getId();
                 item.sourceName = entity.getDatasource().getGroup() + "/" + entity.getDatasource().getName();
                 item.variable = new JSONArray(entity.getVariable()); // convert string to json array
-                item.transform = new JSONArray(entity.getTransform()); // convert string to json array
                 item.fields = new JSONArray(entity.getFields());
                 item.target = JSONUtil.parseArray(entity.getTarget()).toList(String.class);
+                if(StrUtil.isNotEmpty(entity.getTransform())){
+                    item.transform = new JSONObject(entity.getTransform());
+                }
                 rspList.add(item);
             }
         }

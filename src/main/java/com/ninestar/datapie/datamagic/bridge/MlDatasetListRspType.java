@@ -17,7 +17,7 @@ public class MlDatasetListRspType {
     public JSONArray variable;
     public String content;
     public JSONArray fields;
-    public JSONArray transform;
+    public JSONObject transform;
     //public JSONArray target;
     public List<String> target = new ArrayList<>();
     public Integer fCount;

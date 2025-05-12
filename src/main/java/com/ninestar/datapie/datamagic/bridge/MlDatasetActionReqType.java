@@ -18,7 +18,7 @@ public class MlDatasetActionReqType {
     public Integer fCount;
     public Integer volume;
     public JSONArray fields;
-    public JSONArray transform;
+    public JSONObject transform;
     public List<String> target = new ArrayList<>();
     public Boolean pubFlag;
     public Integer sourceId;
